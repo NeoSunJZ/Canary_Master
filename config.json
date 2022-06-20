@@ -1,0 +1,27 @@
+{
+  "appName": "CANARY官方测试集成平台",
+  "appDesc": "",
+  "modelSupportApi": {
+    "VisionTransformer": {
+
+    },
+    "Alexnet": {}
+  },
+  "dataset":{
+    "ILSVRC-2012": {
+      "name": "ImageNet Large Scale Visual Recognition Challenge_2012数据集(VAL)",
+      "path": "J:\\ImageNet\\data\\ImageNet2012\\ILSVRC2012_img_val"
+    }
+  },
+  "temp": "Dataset_Temp/",
+  "attackConfig":{
+    "MI-FGSM": {
+      "no_model": false
+    }
+  },
+  "attackSupportApi":{
+    "MI-FGSM":{
+
+    }
+  }
+}
