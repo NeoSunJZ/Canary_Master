@@ -29,7 +29,7 @@ from CANARY_SEFI.core.exec_local.make_AEs import make_AEs
 if __name__ == "__main__":
     # SEFI_component_manager.debug()
     dataset = "ILSVRC-2012"
-    attacker_list = ["MI-FGSM"]
+    attacker_list = ["MI-FGSM", "JSMA"]
     attacker_config = {
         "MI-FGSM": {
             "T": 1000,  # 迭代攻击轮数
@@ -41,7 +41,7 @@ if __name__ == "__main__":
         }
     }
     # model_list = ["Alexnet", "VisionTransformer"]
-    model_list = ["Alexnet", "VisionTransformer"]
+    model_list = ["Alexnet"]
     model_config = {
         "Alexnet": {},
         "VisionTransformer": {}

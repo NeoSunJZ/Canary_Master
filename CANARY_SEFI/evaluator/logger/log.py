@@ -3,6 +3,13 @@ from CANARY_SEFI.handler.csv_handler.csv_io_handler import save_log_data_to_file
 
 class Log:
     def __init__(self):
+        self.attack_log_data = {}
+        self.adv_disturbance_aware_data = {}
+        self.inference_log_data = {}
+
+        self.init()
+
+    def init(self):
         self.attack_log_data = {
             "atk_name": [],
             "atk_base_model_name": [],
