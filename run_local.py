@@ -1,13 +1,10 @@
 import random
-import string
 
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 
 # 模型
 # VTI
-from CANARY_SEFI.core.exec_local.AEs_inference import AEs_inference
-from CANARY_SEFI.core.exec_local.clear_inference import clear_inference
-from CANARY_SEFI.core.exec_local.full_security_test import full_security_test
+from CANARY_SEFI.core.exec_local.security_evaluation import SecurityEvaluation
 from Model.Vision_Transformer import sefi_component as vision_transformer_model
 SEFI_component_manager.add(vision_transformer_model)
 # Alexnet
@@ -24,12 +21,13 @@ SEFI_component_manager.add(mim_attacker)
 from Dataset.ImageNet2012.dataset_loader import sefi_component as imgnet2012_dataset
 SEFI_component_manager.add(imgnet2012_dataset)
 
-from CANARY_SEFI.core.exec_local.make_AEs import make_AEs
+
+from CANARY_SEFI.evaluator.analyzer.test_analyzer import TestAnalyzer
 
 if __name__ == "__main__":
     # SEFI_component_manager.debug()
     dataset = "ILSVRC-2012"
-    attacker_list = ["MI-FGSM", "JSMA"]
+    attacker_list = ["MI-FGSM"]
     attacker_config = {
         "MI-FGSM": {
             "T": 1000,  # 迭代攻击轮数
@@ -50,6 +48,12 @@ if __name__ == "__main__":
         "Alexnet": {},
         "VisionTransformer": {}
     }
-    dataset_size = 2
+    dataset_size = 10
 
-    full_security_test(dataset, dataset_size, attacker_list, attacker_config, model_list, model_config, img_proc_config)
+    # test_analyzer = TestAnalyzer()
+    # test_analyzer.test_result_analysis("MUWR1veB", "model")
+
+    dataset_seed = random.randint(1000000000000, 10000000000000)
+
+    security_evaluation = SecurityEvaluation()
+    security_evaluation.full_security_test(dataset, dataset_size, dataset_seed, attacker_list, attacker_config, model_list, model_config, img_proc_config)

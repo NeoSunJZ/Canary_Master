@@ -1,26 +1,23 @@
 from functools import reduce
 import piq
 import torch
-from CANARY_SEFI.evaluator.logger.adv_da_logger import AdvExampleDALogger
 
 
 class AdvDisturbanceAwareTester:
-    def __init__(self, img_name, batch_token, max_pixel=255.0, min_pixel=0.0):
+    def __init__(self, img_name, max_pixel=255.0, min_pixel=0.0):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.img_name = img_name
-        self.batch_token = batch_token
         self.max_pixel = max_pixel
         self.min_pixel = min_pixel
-        self.adv_da_logger = AdvExampleDALogger(img_name)
 
     def test_all(self, ori_img, img):
-        self.adv_da_logger.maximum_disturbance = self.calculate_maximum_disturbance(ori_img, img)
-        self.adv_da_logger.euclidean_distortion = self.calculate_euclidean_distortion(ori_img, img)
-        self.adv_da_logger.pixel_change_ratio = self.calculate_pixel_change_ratio(ori_img, img)
-        self.adv_da_logger.deep_metrics_similarity = self.calculate_deep_metrics_similarity(ori_img, img)
-        self.adv_da_logger.low_level_metrics_similarity = self.calculate_low_level_metrics_similarity(ori_img, img)
-
-        self.adv_da_logger.next(self.batch_token)
+        return {
+            "maximum_disturbance": self.calculate_maximum_disturbance(ori_img, img),
+            "euclidean_distortion": self.calculate_euclidean_distortion(ori_img, img),
+            "pixel_change_ratio": self.calculate_pixel_change_ratio(ori_img, img),
+            "deep_metrics_similarity": self.calculate_deep_metrics_similarity(ori_img, img),
+            "low_level_metrics_similarity": self.calculate_low_level_metrics_similarity(ori_img, img),
+        }
 
     def calculate_maximum_disturbance(self, ori_img, img):
         # L-inf
@@ -63,4 +60,3 @@ class AdvDisturbanceAwareTester:
     def img_handler(self, img):
         img = img / (self.max_pixel - self.min_pixel)
         return torch.from_numpy(img.transpose(2, 0, 1)).to(self.device).float()
-

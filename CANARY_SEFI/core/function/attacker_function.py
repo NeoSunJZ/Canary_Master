@@ -1,19 +1,18 @@
 import torch
+
+from CANARY_SEFI.core.batch_flag import batch_flag
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
 from CANARY_SEFI.core.function.dataset_function import dataset_image_reader
-from CANARY_SEFI.evaluator.logger.attack_logger import AdvAttackLogger
+from CANARY_SEFI.evaluator.logger.attack_logger import add_adv_build_log, add_attack_log, add_adv_da_log
 from CANARY_SEFI.evaluator.monitor.attack_effect import time_cost_statistics
 from CANARY_SEFI.evaluator.tester.adv_disturbance_aware import AdvDisturbanceAwareTester
-from CANARY_SEFI.handler.image_handler.img_io_handler import get_pic_nparray_from_dataset, save_pic_to_temp
+from CANARY_SEFI.handler.image_handler.img_io_handler import save_pic_to_temp
 
 
 class AdvAttacker:
     def __init__(self, atk_name, atk_args, model_name, model_args, img_proc_args):
-        # 测评日志
-        self.logger = AdvAttackLogger(atk_name, model_name)
-
         self.atk_component = SEFI_component_manager.attack_method_list.get(atk_name)
         # 攻击处理参数JSON转DICT
         self.atk_args_dict = build_dict_with_json_args(self.atk_component, "attack", atk_args)
@@ -32,7 +31,8 @@ class AdvAttacker:
 
         self.atk_func = self.atk_component.get('attack_func')
         # 增加计时修饰
-        self.atk_func = time_cost_statistics(self.logger)(self.atk_func)
+        self.cost_time = 0.0
+        self.atk_func = time_cost_statistics(self)(self.atk_func)
 
         # 判断攻击方法的构造模式
         if self.atk_component.get('is_inclass') is True:
@@ -62,28 +62,34 @@ class AdvAttacker:
         return adv_result
 
 
-def adv_attack_4_img_batch(batch_token, atk_name, atk_args, model_name, model_args, img_proc_args, dataset_name, dataset_size=None,
-                           img_list=None, each_img_finish_callback=None):
+def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info,
+                           each_img_finish_callback=None):
+    adv_img_id_list = []
     adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args)
 
-    def attack_iterator(img, img_name, img_label):
+    def attack_iterator(img, img_log_id, img_label):
         # 执行攻击
         adv_result = adv_attacker.adv_attack_4_img(img, img_label)
+
         # 保存至临时文件夹
-        img_name = "adv_" + str(img_name)
-        save_pic_to_temp(batch_token, img_name, adv_result)
+        img_name = "adv_{}_{}.png".format(str(batch_flag.batch_id), str(img_log_id))
+        save_pic_to_temp(batch_flag.batch_id, img_name, adv_result)
+
+        # 写入日志
+        adv_img_id = add_attack_log(atk_name, model_name, img_log_id, img_name)
+        adv_img_id_list.append(adv_img_id)
+        add_adv_build_log(adv_img_id, adv_attacker.cost_time)
+
         if each_img_finish_callback is not None:
             each_img_finish_callback(img, adv_result)
 
-        # 写入必要日志
-        adv_attacker.logger.adv_name = img_name
-        adv_attacker.logger.ori_label = img_label
-        adv_attacker.logger.next(batch_token)
-
         # 对抗样本综合测试
-        adv_da_tester = AdvDisturbanceAwareTester(img_name, batch_token)
-        adv_da_tester.test_all(img, adv_result)
+        adv_da_tester = AdvDisturbanceAwareTester(img_name)
+        adv_da_test_result = adv_da_tester.test_all(img, adv_result)
 
-    dataset_image_reader(batch_token, attack_iterator, dataset_name, dataset_size, img_list)
+        # 写入日志
+        add_adv_da_log(adv_img_id, adv_da_test_result)
 
-    return batch_token
+    dataset_image_reader(attack_iterator, dataset_info)
+
+    return adv_img_id_list
