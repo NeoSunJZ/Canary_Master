@@ -13,6 +13,6 @@ def print_logo():
     print(" ╚══════╝ ╚══════╝ ╚═╝      ╚═╝")
     print("\n")
     print(" Security Evaluation Fast Integration Framework")
-    print(" V20220620.beta  \n")
+    print(" V20220630.beta C.2  \n")
     print(" Design By Jiazheng Sun [BIT] \n")
     print(Style.RESET_ALL)
