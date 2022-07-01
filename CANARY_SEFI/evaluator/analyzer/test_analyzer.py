@@ -93,8 +93,8 @@ def attack_capability_evaluation(batch_id):
                             record["misclassification"].append(0)
 
                     # 获取置信偏移
-                    adv_inference_conf_array = np.array(eval(''.join(adv_img_inference_log[6].replace(' ', ' ').replace(' ', ', '))))
-                    ori_inference_conf_array = np.array(eval(''.join(ori_img_inference_log[6].replace(' ', ' ').replace(' ', ', '))))
+                    adv_inference_conf_array = np.array(eval(', '.join(adv_img_inference_log[6].split())))
+                    ori_inference_conf_array = np.array(eval(', '.join(ori_img_inference_log[6].split())))
 
                     record["increase_adversarial_class_confidence"]\
                         .append(adv_inference_conf_array[adv_inference_label] - ori_inference_conf_array[adv_inference_label])
@@ -130,7 +130,7 @@ def attack_capability_evaluation(batch_id):
                                    average_euclidean_distortion, average_pixel_change_ratio,
                                    average_deep_metrics_similarity, average_low_level_metrics_similarity)
 
-        average_cost_time = sum(record["deep_metrics_similarity"]) / len(record["low_level_metrics_similarity"])
+        average_cost_time = sum(record["cost_time"]) / len(record["cost_time"])
 
         attack_test_result = analyzer_log[attack_id]["attack_test_result"]
 
