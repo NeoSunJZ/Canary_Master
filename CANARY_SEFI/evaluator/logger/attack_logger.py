@@ -1,4 +1,5 @@
 from colorama import Fore, Style
+from tqdm import tqdm
 
 from CANARY_SEFI.core.batch_flag import batch_flag
 from CANARY_SEFI.evaluator.logger.db_logger import log
@@ -17,14 +18,14 @@ def add_attack_log(atk_name, base_model, atk_type=None):
     if len(result) != 0:
         attack_id = result[0][0]
         if log.debug_log:
-            print(Fore.CYAN + "[LOGGER] 日志存在 本次选定的攻击方法attack_id为{}".format(attack_id))
-            print(Style.RESET_ALL)
+            tqdm.write(Fore.CYAN + "[LOGGER] 日志存在 本次选定的攻击方法attack_id为{}".format(attack_id))
+            tqdm.write(Style.RESET_ALL)
         return attack_id
     else:
         attack_id = log.insert_log(sql_insert)
         if log.debug_log:
-            print(Fore.CYAN + "[LOGGER] 已写入日志 本次选定的攻击方法attack_id为{}".format(attack_id))
-            print(Style.RESET_ALL)
+            tqdm.write(Fore.CYAN + "[LOGGER] 已写入日志 本次选定的攻击方法attack_id为{}".format(attack_id))
+            tqdm.write(Style.RESET_ALL)
         return attack_id
 
 def find_attack_log(attack_id):

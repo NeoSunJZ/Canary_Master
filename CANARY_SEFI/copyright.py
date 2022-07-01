@@ -1,18 +1,19 @@
 from colorama import Fore, Style
+from tqdm import tqdm
 
 
 def print_logo():
-    print(Fore.GREEN + "\n")
-    print(" POWERED BY")
-    print("\n")
-    print(" ███████╗ ███████╗ ███████╗ ██╗")
-    print(" ██╔════╝ ██╔════╝ ██╔════╝ ██║")
-    print(" ███████╗ █████╗   █████╗   ██║")
-    print(" ╚════██║ ██╔══╝   ██╔══╝   ██║")
-    print(" ███████║ ███████╗ ██║      ██║")
-    print(" ╚══════╝ ╚══════╝ ╚═╝      ╚═╝")
-    print("\n")
-    print(" Security Evaluation Fast Integration Framework")
-    print(" V20220630.beta C.2  \n")
-    print(" Design By Jiazheng Sun [BIT] \n")
-    print(Style.RESET_ALL)
+    tqdm.write(Fore.GREEN + "\n")
+    tqdm.write(" POWERED BY")
+    tqdm.write("\n")
+    tqdm.write(" ███████╗ ███████╗ ███████╗ ██╗")
+    tqdm.write(" ██╔════╝ ██╔════╝ ██╔════╝ ██║")
+    tqdm.write(" ███████╗ █████╗   █████╗   ██║")
+    tqdm.write(" ╚════██║ ██╔══╝   ██╔══╝   ██║")
+    tqdm.write(" ███████║ ███████╗ ██║      ██║")
+    tqdm.write(" ╚══════╝ ╚══════╝ ╚═╝      ╚═╝")
+    tqdm.write("\n")
+    tqdm.write(" Security Evaluation Fast Integration Framework")
+    tqdm.write(" V20220630.beta C.2  \n")
+    tqdm.write(" Design By Jiazheng Sun [BIT] \n")
+    tqdm.write(Style.RESET_ALL)

@@ -2,6 +2,7 @@ import random
 import string
 
 from colorama import Fore, Style
+from tqdm import tqdm
 
 from CANARY_SEFI.copyright import print_logo
 from CANARY_SEFI.core.batch_flag import batch_flag
@@ -26,25 +27,25 @@ class SecurityEvaluation:
             img_proc_args = img_proc_config.get(model_name, {})
 
             # 模型基线测试
-            print(Fore.GREEN + "---->> [ BATCH {} ] [ 模型测试基线确定 ] 在模型 {} 上运行模型能力评估".format(batch_flag.batch_id, model_name))
-            print(Style.RESET_ALL)
+            tqdm.write(Fore.GREEN + "---->> [ BATCH {} ] [ 模型测试基线确定 ] 在模型 {} 上运行模型能力评估".format(batch_flag.batch_id, model_name))
+            tqdm.write(Style.RESET_ALL)
             clear_inference(dataset_info, model_name, model_args, img_proc_args)
 
     def adv_img_build_and_evaluation(self, dataset_info, attacker_list, attacker_config, model_list, model_config, img_proc_config):
         # 生成对抗样本
         for atk_name in attacker_list:
-            print(Fore.GREEN + "---->> [  LIST  ] 攻击方案队列 {} ".format(attacker_list))
-            print(Fore.GREEN + "---->> [ SELECT ] 攻击方案选定 {} ".format(atk_name))
+            tqdm.write(Fore.GREEN + "---->> [  LIST  ] 攻击方案队列 {} ".format(attacker_list))
+            tqdm.write(Fore.GREEN + "---->> [ SELECT ] 攻击方案选定 {} ".format(atk_name))
             atk_args = attacker_config.get(atk_name, {})
 
             for model_name in model_list:
-                print(Fore.GREEN + "---->> [  LIST  ] 待攻击模型队列 {} ".format(model_list))
-                print(Fore.GREEN + "---->> [ SELECT ] 待攻击模型选定 {} ".format(model_name))
+                tqdm.write(Fore.GREEN + "---->> [  LIST  ] 待攻击模型队列 {} ".format(model_list))
+                tqdm.write(Fore.GREEN + "---->> [ SELECT ] 待攻击模型选定 {} ".format(model_name))
                 model_args = model_config.get(model_name, {})
                 img_proc_args = img_proc_config.get(model_name, {})
 
-                print(Fore.GREEN + "---->> [ BATCH {} ] [ 生成对抗样本 ] 基于攻击方法 {} 在模型 {} 上生成上述样本的对抗样本并运行对抗样本质量评估".format(batch_flag.batch_id, atk_name, model_name))
-                print(Style.RESET_ALL)
+                tqdm.write(Fore.GREEN + "---->> [ BATCH {} ] [ 生成对抗样本 ] 基于攻击方法 {} 在模型 {} 上生成上述样本的对抗样本并运行对抗样本质量评估".format(batch_flag.batch_id, atk_name, model_name))
+                tqdm.write(Style.RESET_ALL)
                 make_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args)
 
     def attack_capability_test(self, batch_id, model_list, model_config, img_proc_config):
@@ -55,8 +56,8 @@ class SecurityEvaluation:
             model_args = model_config.get(model_name, {})
             img_proc_args = img_proc_config.get(model_name, {})
 
-            print(Fore.GREEN + "---->> [ BATCH {} ] [ 模型攻击测试 ] 基于对抗样本在模型 {} 上运行模型能力评估".format(batch_id, model_name))
-            print(Style.RESET_ALL)
+            tqdm.write(Fore.GREEN + "---->> [ BATCH {} ] [ 模型攻击测试 ] 基于对抗样本在模型 {} 上运行模型能力评估".format(batch_id, model_name))
+            tqdm.write(Style.RESET_ALL)
 
             adv_img_cursor_list = []
             for adv_log in all_adv_log:
@@ -76,10 +77,10 @@ class SecurityEvaluation:
         print_logo()
 
         batch_flag.new_batch()
-        print(Fore.GREEN + "---->> [  SEFI 开始测试 批次 {}  ] <<----".format(batch_flag.batch_id))
+        tqdm.write(Fore.GREEN + "---->> [  SEFI 开始测试 批次 {}  ] <<----".format(batch_flag.batch_id))
 
         # 数据集选定
-        print(Fore.GREEN + "---->> [ STEP 0  测试数据集 ] 从数据集 {} (根据种子{}) 选定 {} 张样本在模型".format(dataset_name, dataset_seed, dataset_size))
+        tqdm.write(Fore.GREEN + "---->> [ STEP 0  测试数据集 ] 从数据集 {} (根据种子{}) 选定 {} 张样本在模型".format(dataset_name, dataset_seed, dataset_size))
         dataset_log_id = add_dataset_log(dataset_name, dataset_seed, dataset_size)
 
         # 构建数据集对象
@@ -87,24 +88,23 @@ class SecurityEvaluation:
         dataset_info.dataset_log_id = dataset_log_id
 
         # 模型基线能力评估
-        print(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 0  模型基线能力评估 ] <<----".format(batch_flag.batch_id))
-        print(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 0  正在运行测试 ] <<----".format(batch_flag.batch_id))
+        tqdm.write(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 0  模型基线能力评估 ] <<----".format(batch_flag.batch_id))
+        tqdm.write(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 0  正在运行测试 ] <<----".format(batch_flag.batch_id))
         self.model_capability_test(dataset_info, model_list, model_config, img_proc_config)
-        print(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 0  分析测试结果 ] <<----".format(batch_flag.batch_id))
+        tqdm.write(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 0  分析测试结果 ] <<----".format(batch_flag.batch_id))
         model_capability_evaluation(batch_flag.batch_id)
-        print(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 0  模型基线能力评估完成 ] <<----".format(batch_flag.batch_id))
+        tqdm.write(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 0  模型基线能力评估完成 ] <<----".format(batch_flag.batch_id))
 
 
         # 生成对抗样本
-        print(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 1  生成对抗样本    ] <<----".format(batch_flag.batch_id))
+        tqdm.write(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 1  生成对抗样本    ] <<----".format(batch_flag.batch_id))
         self.adv_img_build_and_evaluation(dataset_info, attacker_list, attacker_config, model_list, model_config, img_proc_config)
 
         # 生成对抗样本
-        print(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 2  模型攻击测试    ] <<----".format(batch_flag.batch_id))
+        tqdm.write(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 2  模型攻击测试    ] <<----".format(batch_flag.batch_id))
         self.attack_capability_test(batch_flag.batch_id, model_list, model_config, img_proc_config)
 
         # 攻击测试结果分析
-        print(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 3  攻击测试结果分析 ] <<----".format(batch_flag.batch_id))
-        # attack_capability_evaluation("nJDx1KZB")
+        tqdm.write(Fore.GREEN + "---->> [ BATCH {} ] [ STEP 3  攻击测试结果分析 ] <<----".format(batch_flag.batch_id))
         attack_capability_evaluation(batch_flag.batch_id)
         log.finish()
