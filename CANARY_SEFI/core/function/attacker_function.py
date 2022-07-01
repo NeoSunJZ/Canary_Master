@@ -76,7 +76,7 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
         adv_result = adv_attacker.adv_attack_4_img(img, img_label)
 
         # 保存至临时文件夹
-        img_name = "adv_{}_{}.png".format(str(batch_flag.batch_id), str(img_log_id))
+        img_name = "adv_{}_{}_{}.png".format(str(batch_flag.batch_id), str(attack_id), str(img_log_id))
         save_pic_to_temp(batch_flag.batch_id, img_name, adv_result)
 
         # 写入日志
