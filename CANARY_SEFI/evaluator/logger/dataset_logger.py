@@ -16,8 +16,8 @@ def add_dataset_log(dataset_name, dataset_seed, dataset_size):
 
 
 def find_dataset_log(dataset_id):
-    sql = " SELECT dataset_id,dataset_name,dataset_seed,dataset_size FROM dataset_log " \
-          " WHERE dataset_id = '{}' AND batch_id = '{}'".format(str(dataset_id), str(batch_flag.batch_id))
+    sql = " SELECT * FROM dataset_log WHERE dataset_id = '{}' AND batch_id = '{}'"\
+        .format(str(dataset_id), str(batch_flag.batch_id))
     return log.query_log(sql)
 
 
@@ -42,3 +42,7 @@ def add_img_log(dataset_id, ori_img_label, ori_img_cursor):
             print(Fore.CYAN + "[LOGGER] 已写入日志 本次选定的图片img_id为{}".format(img_id))
             print(Style.RESET_ALL)
         return img_id
+
+def find_img_log(ori_img_id):
+    sql = " SELECT * FROM ori_img_log WHERE ori_img_id = '{}'".format(str(ori_img_id))
+    return log.query_log(sql)

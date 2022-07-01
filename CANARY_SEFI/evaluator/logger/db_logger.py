@@ -11,8 +11,7 @@ class Logger:
         cursor.execute('create table if not exists adv_example_log '
                        '(adv_img_id INTEGER PRIMARY KEY AUTOINCREMENT, '
                        'batch_id varchar(20), '
-                       'atk_name varchar(20), '
-                       'base_model varchar(20), '
+                       'attack_id integer(8), '
                        'cost_time float, '
                        
                        'ori_img_id integer(8), '
@@ -31,6 +30,13 @@ class Logger:
                        'dataset_seed varchar(20), '
                        'dataset_size varchar(20))')
 
+        cursor.execute('create table if not exists attack_log '
+                       '(attack_id INTEGER PRIMARY KEY AUTOINCREMENT, '
+                       'batch_id varchar(20), '
+                       'atk_name  varchar(20), '
+                       'base_model varchar(20), '
+                       'atk_type varchar(20))')
+
         cursor.execute('create table if not exists ori_img_log '
                        '(ori_img_id INTEGER PRIMARY KEY AUTOINCREMENT, '
                        'batch_id varchar(20), '
@@ -48,20 +54,31 @@ class Logger:
                        'inference_img_conf_array varchar)')
 
         cursor.execute('create table if not exists test_report_model_capability '
-                       '(batch_id integer(8) primary key, '
+                       '(batch_id integer(8), '
                        'model_name varchar(8), '
                        'clear_acc float, '
                        'clear_f1 float, '
                        'clear_conf integer)')
 
         cursor.execute('create table if not exists test_report_attack_capability '
-                       '(batch_id integer(8) primary key, '
+                       '(batch_id integer(8), '
                        'atk_name varchar(8), '
+                       'base_model varchar(20), '
                        'test_model_name varchar(8), '
                        'misclassification_ratio float, '
                        'average_increase_adversarial_class_confidence float, '
                        'average_reduction_true_class_confidence float, '
-                       'cost_time float)')
+                       'average_cost_time float)')
+
+        cursor.execute('create table if not exists test_report_adv_da_capability '
+                       '(batch_id integer(8), '
+                       'atk_name varchar(8), '
+                       'base_model varchar(20), '
+                       'average_maximum_disturbance varchar, '
+                       'average_euclidean_distortion varchar, '
+                       'average_pixel_change_ratio varchar, '
+                       'average_deep_metrics_similarity varchar, '
+                       'average_low_level_metrics_similarity varchar)')
 
         cursor.close()
         self.conn.commit()

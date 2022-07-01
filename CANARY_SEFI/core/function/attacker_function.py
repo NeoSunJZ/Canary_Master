@@ -5,7 +5,8 @@ from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
 from CANARY_SEFI.core.function.dataset_function import dataset_image_reader
-from CANARY_SEFI.evaluator.logger.attack_logger import add_adv_build_log, add_attack_log, add_adv_da_log
+from CANARY_SEFI.evaluator.logger.adv_logger import add_adv_build_log, add_adv_base_log, add_adv_da_log
+from CANARY_SEFI.evaluator.logger.attack_logger import add_attack_log
 from CANARY_SEFI.evaluator.monitor.attack_effect import time_cost_statistics
 from CANARY_SEFI.evaluator.tester.adv_disturbance_aware import AdvDisturbanceAwareTester
 from CANARY_SEFI.handler.image_handler.img_io_handler import save_pic_to_temp
@@ -67,6 +68,9 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
     adv_img_id_list = []
     adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args)
 
+    # 写入日志
+    attack_id = add_attack_log(atk_name, model_name)
+
     def attack_iterator(img, img_log_id, img_label):
         # 执行攻击
         adv_result = adv_attacker.adv_attack_4_img(img, img_label)
@@ -76,7 +80,7 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
         save_pic_to_temp(batch_flag.batch_id, img_name, adv_result)
 
         # 写入日志
-        adv_img_id = add_attack_log(atk_name, model_name, img_log_id, img_name)
+        adv_img_id = add_adv_base_log(attack_id, img_log_id, img_name)
         adv_img_id_list.append(adv_img_id)
         add_adv_build_log(adv_img_id, adv_attacker.cost_time)
 

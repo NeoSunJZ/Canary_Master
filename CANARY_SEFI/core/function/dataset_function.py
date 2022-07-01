@@ -1,7 +1,7 @@
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
-from CANARY_SEFI.evaluator.logger.attack_logger import find_adv_log
+from CANARY_SEFI.evaluator.logger.adv_logger import find_adv_log
 from CANARY_SEFI.evaluator.logger.dataset_logger import add_img_log
 from CANARY_SEFI.handler.csv_handler.csv_io_handler import get_log_data_to_file
 from CANARY_SEFI.handler.image_handler.img_io_handler import get_pic_nparray_from_dataset
@@ -69,7 +69,7 @@ def adv_dataset_image_reader(iterator, dataset_info):
         adv_log = find_adv_log(adv_img_cursor_list[i])[0]
         adv_img_id = adv_log[0]
         adv_batch = adv_log[1]
-        adv_filename = adv_log[6]
+        adv_filename = adv_log[5]
 
         adv_file_path = adv_dataset_temp_path + adv_batch + "/"
 
