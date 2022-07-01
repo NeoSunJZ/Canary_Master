@@ -10,6 +10,9 @@ SEFI_component_manager.add(vision_transformer_model)
 # Alexnet
 from Model.Alexnet import sefi_component as alexnet_model
 SEFI_component_manager.add(alexnet_model)
+# VGG16
+from Model.VGG16 import sefi_component as vgg_16_model
+SEFI_component_manager.add(vgg_16_model)
 
 # 攻击方案
 # MIM
@@ -20,9 +23,6 @@ SEFI_component_manager.add(mim_attacker)
 # IMAGENET2012
 from Dataset.ImageNet2012.dataset_loader import sefi_component as imgnet2012_dataset
 SEFI_component_manager.add(imgnet2012_dataset)
-
-
-from CANARY_SEFI.evaluator.analyzer.test_analyzer import TestAnalyzer
 
 if __name__ == "__main__":
     # SEFI_component_manager.debug()
@@ -38,20 +38,16 @@ if __name__ == "__main__":
             "attacktype": 'untargeted'  # 攻击类型：靶向 or 非靶向
         }
     }
-    # model_list = ["Alexnet", "VisionTransformer"]
-    model_list = ["Alexnet"]
+    model_list = ["Alexnet", "VGG-16"]
     model_config = {
         "Alexnet": {},
-        "VisionTransformer": {}
+        "VGG-16": {}
     }
     img_proc_config = {
         "Alexnet": {},
-        "VisionTransformer": {}
+        "VGG-16": {}
     }
-    dataset_size = 10
-
-    # test_analyzer = TestAnalyzer()
-    # test_analyzer.test_result_analysis("MUWR1veB", "model")
+    dataset_size = 2
 
     dataset_seed = random.randint(1000000000000, 10000000000000)
 
