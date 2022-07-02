@@ -47,9 +47,10 @@ if __name__ == "__main__":
         "Alexnet": {},
         "VGG-16": {}
     }
-    dataset_size = 2
+    dataset_size = 1000
 
     dataset_seed = random.randint(1000000000000, 10000000000000)
 
     security_evaluation = SecurityEvaluation()
+    security_evaluation.full_adv_transfer_test = True
     security_evaluation.full_security_test(dataset, dataset_size, dataset_seed, attacker_list, attacker_config, model_list, model_config, img_proc_config)

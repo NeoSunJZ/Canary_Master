@@ -3,7 +3,7 @@ import sqlite3
 class Logger:
     def __init__(self):
         self.conn = sqlite3.connect('logger.db')
-        self.debug_log = False
+        self.debug_log = True
         self.init()
 
     def init(self):
