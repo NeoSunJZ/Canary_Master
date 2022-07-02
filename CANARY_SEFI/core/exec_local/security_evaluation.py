@@ -1,6 +1,7 @@
 import random
 import string
 
+import torch
 from colorama import Fore, Style
 from tqdm import tqdm
 
@@ -31,6 +32,9 @@ class SecurityEvaluation:
             tqdm.write(Style.RESET_ALL)
             clear_inference(dataset_info, model_name, model_args, img_proc_args)
 
+            torch.cuda.empty_cache()
+            tqdm.write(" [ BATCH {} ] [ 模型测试基线确定 ] [CUDA-REPORT] 已清理CUDA缓存，当前CUDA显存使用量:\n{}".format(batch_flag.batch_id,torch.cuda.memory_summary()))
+
     def adv_img_build_and_evaluation(self, dataset_info, attacker_list, attacker_config, model_list, model_config, img_proc_config):
         # 生成对抗样本
         for atk_name in attacker_list:
@@ -47,6 +51,9 @@ class SecurityEvaluation:
                 tqdm.write(Fore.GREEN + "---->> [ BATCH {} ] [ 生成对抗样本 ] 基于攻击方法 {} 在模型 {} 上生成上述样本的对抗样本并运行对抗样本质量评估".format(batch_flag.batch_id, atk_name, model_name))
                 tqdm.write(Style.RESET_ALL)
                 make_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args)
+
+                torch.cuda.empty_cache()
+                tqdm.write(" [ BATCH {} ] [ 生成对抗样本 ] [CUDA-REPORT] 已清理CUDA缓存，当前CUDA显存使用量:\n{}".format(batch_flag.batch_id,torch.cuda.memory_summary()))
 
     def attack_capability_test(self, batch_id, model_list, model_config, img_proc_config):
         # 验证攻击效果
@@ -72,6 +79,9 @@ class SecurityEvaluation:
             adv_dataset_info.dataset_type = DatasetType.ADVERSARIAL_EXAMPLE
 
             AEs_inference(adv_dataset_info, model_name, model_args, img_proc_args)
+
+            torch.cuda.empty_cache()
+            tqdm.write(" [ BATCH {} ] [ 模型攻击测试 ] [CUDA-REPORT] 已清理CUDA缓存，当前CUDA显存使用量:\n{}".format(batch_flag.batch_id, torch.cuda.memory_summary()))
 
     def full_security_test(self, dataset_name, dataset_size, dataset_seed, attacker_list, attacker_config, model_list, model_config, img_proc_config):
         print_logo()
