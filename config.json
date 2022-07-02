@@ -23,5 +23,8 @@
     "MI-FGSM":{
 
     }
+  },
+  "system": {
+    "limited_read_img_size": 900
   }
 }

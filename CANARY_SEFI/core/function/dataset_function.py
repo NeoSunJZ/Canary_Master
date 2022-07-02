@@ -1,3 +1,5 @@
+import cv2
+
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
@@ -45,6 +47,9 @@ def dataset_image_reader(iterator, dataset_info):
                 img, img_label = image_getter(img_cursor, dataset_path, dataset_info.dataset_seed, dataset_info.dataset_size,
                                               with_label=True)
 
+                # 检查尺寸
+                img = limit_img_size(img)
+
                 # 写入日志
                 img_log_id = add_img_log(dataset_info.dataset_log_id, img_label, img_cursor)
 
@@ -55,10 +60,31 @@ def dataset_image_reader(iterator, dataset_info):
         for img_cursor in dataset_info.img_name_list:
             img, img_label = image_getter(img_cursor, dataset_path, dataset_seed=None, dataset_size=None, with_label=True)
 
+            # 检查尺寸
+            img = limit_img_size(img)
+
             # 写入日志
             img_log_id = add_img_log(dataset_info.dataset_log_id, img_label, img_cursor)
 
             iterator(img, img_log_id, img_label)
+
+
+def limit_img_size(img):
+    # 检查尺寸
+    limited_img_size = config_manager.config.get("system", {}).get("limited_read_img_size", None)
+    if limited_img_size is not None:
+        height, width = img.shape[0], img.shape[1]
+        if height >= limited_img_size and height >= width:  # 高度超限
+            scale = height / limited_img_size
+            width_size = int(width / scale)
+            # 缩放之
+            img = cv2.resize(img, (width_size, limited_img_size), interpolation=cv2.INTER_CUBIC)
+        elif width >= limited_img_size and width >= height:  # 宽度超限
+            scale = width / limited_img_size
+            height_size = int(height / scale)
+            # 缩放之
+            img = cv2.resize(img, (limited_img_size, height_size), interpolation=cv2.INTER_CUBIC)
+    return img
 
 
 def adv_dataset_image_reader(iterator, dataset_info):
