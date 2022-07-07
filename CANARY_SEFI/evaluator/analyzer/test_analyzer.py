@@ -137,7 +137,13 @@ def attack_capability_evaluation(batch_id):
         for test_model_name in attack_test_result:
 
             record = attack_test_result[test_model_name]
-            misclassification_ratio = sum(record["misclassification"]) / len(record["misclassification"])
+
+            valid_sample_count = len(record["misclassification"])
+            if valid_sample_count == 0:
+                misclassification_ratio = 0
+            else:
+                misclassification_ratio = sum(record["misclassification"]) / valid_sample_count
+
             average_increase_adversarial_class_confidence = sum(record["increase_adversarial_class_confidence"]) / len(record["increase_adversarial_class_confidence"])
             average_reduction_true_class_confidence = sum(record["reduction_true_class_confidence"]) / len(record["reduction_true_class_confidence"])
             # 写入日志
