@@ -1,4 +1,13 @@
-torch
-torchvision
-piq
-sklearn
+torch~=1.13.0.dev20220607+cu113
+torchvision~=0.14.0.dev20220607+cu113
+piq~=0.7.0
+sklearn~=0.0
+numpy~=1.22.4
+opencv-python~=4.6.0.66
+tqdm~=4.64.0
+colorama~=0.4.4
+flask~=2.1.2
+pandas~=1.4.2
+matplotlib~=3.5.2
+pillow~=7.1.2
+scikit-learn~=1.1.1
