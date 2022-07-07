@@ -37,7 +37,7 @@ class MI_FGSM():
         self.model.zero_grad()
         # 模型前向传播
         output = self.model(x)
-        # 定义损失函数
+        # 获取Loss类
         loss_ = self.get_loss()
         # 这里实际上写的不好，如果是其他任务比如人脸做非靶向攻击的话，还得每一轮都找到他的原始人脸特征，再比如如果是靶向标签的话，还需要传入靶向标签。这里只用分类模型非靶向进行测试
         if self.attacktype == 'untargeted':
