@@ -35,7 +35,8 @@ class Logger:
                        'batch_id varchar(20), '
                        'atk_name  varchar(20), '
                        'base_model varchar(20), '
-                       'atk_type varchar(20))')
+                       'atk_type varchar(20),'
+                       'atk_perturbation_budget float)')
 
         cursor.execute('create table if not exists ori_img_log '
                        '(ori_img_id INTEGER PRIMARY KEY AUTOINCREMENT, '

@@ -5,14 +5,14 @@ from CANARY_SEFI.core.batch_flag import batch_flag
 from CANARY_SEFI.evaluator.logger.db_logger import log
 
 
-def add_attack_log(atk_name, base_model, atk_type=None):
-    sql_insert = " INSERT INTO attack_log (attack_id,batch_id,atk_name,base_model,atk_type) " + \
-                 " VALUES (NULL,'{}','{}','{}','{}')" \
-                     .format(str(batch_flag.batch_id), str(atk_name), str(base_model), str(atk_type))
+def add_attack_log(atk_name, base_model, atk_type=None, atk_perturbation_budget=None):
+    sql_insert = " INSERT INTO attack_log (attack_id,batch_id,atk_name,base_model,atk_type,atk_perturbation_budget) " + \
+                 " VALUES (NULL,'{}','{}','{}','{}','{}')" \
+                     .format(str(batch_flag.batch_id), str(atk_name), str(base_model), str(atk_type), str(atk_perturbation_budget))
 
     sql_query = " SELECT attack_id FROM attack_log " \
-                " WHERE atk_name = '{}' AND batch_id = '{}' AND base_model = '{}' AND atk_type = '{}'"\
-        .format(str(atk_name), str(batch_flag.batch_id), str(base_model), str(atk_type))
+                " WHERE atk_name = '{}' AND batch_id = '{}' AND base_model = '{}' AND atk_type = '{}' AND atk_perturbation_budget = {}"\
+        .format(str(atk_name), str(batch_flag.batch_id), str(base_model), str(atk_type), str(atk_perturbation_budget))
     result = log.query_log(sql_query)
 
     if len(result) != 0:

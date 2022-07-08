@@ -40,6 +40,10 @@ class AdvAttacker:
             # 构造类传入
             attacker_class_builder = self.atk_component.get('attacker_class').get('class')
             self.attacker_class = attacker_class_builder(**self.atk_args_dict)
+            # 扰动变量名称
+            self.perturbation_budget_var_name = self.atk_component.get('attacker_class').get('perturbation_budget_var_name')
+        else:
+            self.perturbation_budget_var_name = self.atk_component.get('perturbation_budget_var_name')
 
     def adv_attack_4_img(self, ori_img, ori_label):
         img = ori_img
@@ -69,7 +73,8 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
     adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args)
 
     # 写入日志
-    attack_id = add_attack_log(atk_name, model_name)
+    attack_id = add_attack_log(atk_name, model_name,
+                               atk_perturbation_budget=atk_args[adv_attacker.perturbation_budget_var_name])
 
     def attack_iterator(img, img_log_id, img_label):
         # 执行攻击

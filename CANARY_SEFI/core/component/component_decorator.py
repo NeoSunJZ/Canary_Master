@@ -87,7 +87,7 @@ class SEFIComponent:
 
         return wrapper
 
-    def attack(self, name, is_inclass, support_model=[], attack_type='', attack_support_multi_model=False):
+    def attack(self, name, is_inclass, support_model=[], attack_type='', perturbation_budget_var_name=None):
         target_attack_method = self.get_attack_methods(name)
 
         def wrapper(decorated):
@@ -99,12 +99,15 @@ class SEFIComponent:
             target_attack_method['support_model'] = support_model
             target_attack_method['is_inclass'] = is_inclass
             target_attack_method['attack_type'] = attack_type
-            target_attack_method['attack_support_multi_model'] = attack_support_multi_model
+
+            # 扰动预算变量名
+            target_attack_method['perturbation_budget_var_name'] = perturbation_budget_var_name
+
             return inner
 
         return wrapper
 
-    def attacker_class(self, attack_name, attacker_class_model_param_name="model"):
+    def attacker_class(self, attack_name, attacker_class_model_var_name="model", perturbation_budget_var_name=None):
         target_attack_method = self.attack_methods.get(attack_name)
         if target_attack_method is None:
             self.attack_methods[attack_name] = {}
@@ -113,7 +116,8 @@ class SEFIComponent:
         def wrapper(decorated):
             target_attack_method['attacker_class'] = {
                 "class": decorated,
-                "attacker_class_model_param_name": attacker_class_model_param_name,
+                "attacker_class_model_var_name": attacker_class_model_var_name,
+                "perturbation_budget_var_name": perturbation_budget_var_name,  # 扰动预算变量名
             }
             return decorated
 

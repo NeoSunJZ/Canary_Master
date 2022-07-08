@@ -8,13 +8,13 @@ from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 sefi_component = SEFIComponent()
 
 
-@sefi_component.attacker_class(attack_name="MI-FGSM")
+@sefi_component.attacker_class(attack_name="MI-FGSM", perturbation_budget_var_name="epsilon")
 class MI_FGSM():
-    def __init__(self, model, T=50, ephslion=0.2, pixel_min=-3, pixel_max=3, alpha=6 / 25, attacktype='untargeted',
-                 modeltype='Classification', tlabel=-1):
+    def __init__(self, model, T=50, epsilon=0.2, pixel_min=-3, pixel_max=3, alpha=6 / 25, attacktype='untargeted',
+                 tlabel=-1):
         self.model = model  # 待攻击的白盒模型
         self.T = T  # 迭代攻击轮数
-        self.ephslion = ephslion  # 以无穷范数作为约束，设置最大值
+        self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.pixel_min = pixel_min  # 像素值的下限
         self.pixel_max = pixel_max  # 像素值的上限（这与当前图片范围有一定关系，建议0-255，因为对于无穷约束来将不会因为clip原因有一定损失）
         self.alpha = alpha  # 每一轮迭代攻击的步长
@@ -25,7 +25,7 @@ class MI_FGSM():
 
     # 将图片进行clip
     def clip_value(self, x, ori_x):
-        x = torch.clamp((x - ori_x), -self.ephslion, self.ephslion) + ori_x
+        x = torch.clamp((x - ori_x), -self.epsilon, self.epsilon) + ori_x
         x = torch.clamp(x, self.pixel_min, self.pixel_max)
         return x.data
 

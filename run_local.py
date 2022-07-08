@@ -31,14 +31,15 @@ if __name__ == "__main__":
     attacker_config = {
         "MI-FGSM": {
             "T": 1000,  # 迭代攻击轮数
-            "ephslion": 0.1,  # 以无穷范数作为约束，设置最大值
+            "epsilon": 0.1,  # 以无穷范数作为约束，设置最大值
             "pixel_min": -3,  # 像素值的下限
             "pixel_max": 3,  # 像素值的上限
             "alpha": 6 / 25,  # 每一轮迭代攻击的步长
             "attacktype": 'untargeted'  # 攻击类型：靶向 or 非靶向
         }
     }
-    model_list = ["Alexnet", "VGG-16"]
+    # model_list = ["Alexnet", "VGG-16"]
+    model_list = ["Alexnet"]
     model_config = {
         "Alexnet": {},
         "VGG-16": {}
@@ -47,10 +48,20 @@ if __name__ == "__main__":
         "Alexnet": {},
         "VGG-16": {}
     }
-    dataset_size = 1000
+    dataset_size = 5
+
+    explore_perturbation_config = {
+        "MI-FGSM": {
+            "upper_bound": 0.2,
+            "lower_bound": 0,
+            "step": 0.01,
+            "dataset_size": None
+        }
+    }
 
     dataset_seed = random.randint(1000000000000, 10000000000000)
 
     security_evaluation = SecurityEvaluation()
     security_evaluation.full_adv_transfer_test = True
     security_evaluation.full_security_test(dataset, dataset_size, dataset_seed, attacker_list, attacker_config, model_list, model_config, img_proc_config)
+    security_evaluation.explore_attack_perturbation_test(dataset, dataset_size, dataset_seed, attacker_list, attacker_config, model_list, model_config, img_proc_config, explore_perturbation_config)
