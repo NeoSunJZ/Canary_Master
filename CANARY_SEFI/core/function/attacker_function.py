@@ -66,6 +66,10 @@ class AdvAttacker:
         torch.cuda.empty_cache()
         return adv_result
 
+    def destroy(self):
+        del self.attacker_class
+        torch.cuda.empty_cache()
+
 
 def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info,
                            each_img_finish_callback=None):
@@ -101,4 +105,6 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
 
     dataset_image_reader(attack_iterator, dataset_info)
 
+    adv_attacker.destroy()
+    del adv_attacker
     return adv_img_id_list
