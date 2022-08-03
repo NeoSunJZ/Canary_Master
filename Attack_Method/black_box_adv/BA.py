@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from foolbox.attacks import L2DeepFoolAttack
+from foolbox.attacks import BoundaryAttack
 import foolbox as fb
 from foolbox.criteria import TargetedMisclassification
 import eagerpy as ep
@@ -10,23 +10,26 @@ from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 
 sefi_component = SEFIComponent()
 
-
-@sefi_component.attacker_class(attack_name="DeepFool", perturbation_budget_var_name="epsilon")
-class DeepFool():
-    def __init__(self, model, epsilon=0.03, attacktype='untargeted', tlabel=1, steps=50, candidates=10,
-                 overshoot=0.02, loss='logits'):
+@sefi_component.attacker_class(attack_name="BA", perturbation_budget_var_name="epsilon")
+class BA():
+    def __init__(self, model, epsilon=0.03, attacktype='untargeted', tlabel=1, init_attack=None, steps=50,
+                 spherical_step=0.01, source_step=0.01, source_step_convergance=1e-07, step_adaptation=1.5,
+                 tensorboard=False, update_stats_every_k=10):
         self.model = model  # 待攻击的白盒模型
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.attacktype = attacktype  # 攻击类型：靶向 or 非靶向
         self.tlabel = tlabel
-        self.label = -1
+        self.init_attack = init_attack  # 攻击用来寻找起点 仅当starting_points为None时才使用
+        self.steps = steps  # 要运行的最大步骤数，可能会在此之前收敛并停止 整型
+        self.spherical_step = spherical_step  # 正交（球形）补偿的初始步长
+        self.source_step = source_step  # 迈向目标的步骤的初始步长 浮点型
+        self.source_step_convergance = source_step_convergance  # 设置停止条件的阈值：如果在攻击期间source_step小于此值，则攻击已收敛并将停止
+        self.step_adaptation = step_adaptation  # 步长乘以或除以的因子 浮点型
+        self.tensorboard = tensorboard  # TensorBoard摘要的日志目录。如果为False，则TensorBoard摘要将要被禁用；如果为None,则将运行/CURRENT_DATETIME_HOSTNAME
+        self.update_stats_every_k =update_stats_every_k  # 整型
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.steps = steps  # 要执行的最大步骤数
-        self.candidates = candidates  # 限制应考虑的最可能类的数量
-        self.overshoot = overshoot  # 超出边界的量 浮点型
-        self.loss = loss  # (Union[typing_extensions.Literal['logits'], typing_extensions.Literal['crossentropy']]) –
 
-    @sefi_component.attack(name="DeepFool", is_inclass=True, support_model=["vision_transformer"])
+    @sefi_component.attack(name="BA", is_inclass=True, support_model=["vision_transformer"])
     def attack(self, img, ori_label):
         # 模型预处理
         preprocessing = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], axis=-3)
@@ -44,7 +47,9 @@ class DeepFool():
         fb.utils.accuracy(fmodel, inputs=img, labels=ori_label)
 
         # 实例化攻击类
-        attack = L2DeepFoolAttack(steps=self.steps, candidates=self.candidates, overshoot=self.overshoot, loss=self.loss)
+        attack = BoundaryAttack(init_attack=self.init_attack, steps=self.steps, spherical_step=self.spherical_step,
+                                source_step=self.source_step, source_step_convergance=self.source_step_convergance,
+                                step_adaptation=self.step_adaptation, tensorboard=self.tensorboard, update_stats_every_k=self.update_stats_every_k)
         self.epsilons = np.linspace(0.0, 0.005, num=20)
         if self.attacktype == 'untargeted':
             raw, clipped, is_adv = attack(fmodel, img, ori_label, epsilons=self.epsilon)  # 模型、图像、真标签
