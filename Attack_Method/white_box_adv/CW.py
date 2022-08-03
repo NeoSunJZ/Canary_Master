@@ -27,7 +27,7 @@ class CW():
 
     @sefi_component.attack(name="CW", is_inclass=True, support_model=["vision_transformer"])
     def attack(self, img, ori_label):
-        img = torch.from_numpy(img).to(self.device).float()  # 输入img为temsor形式
+        img = torch.from_numpy(img).to(self.device).float()  # 输入img为tensor形式
         y = torch.tensor([self.tlabel],device=self.device)  # 具有真实标签的张量 默认为None
 
         if self.attacktype == 'untargeted':
