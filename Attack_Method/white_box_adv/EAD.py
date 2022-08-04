@@ -7,11 +7,25 @@ from foolbox.criteria import TargetedMisclassification
 import eagerpy as ep
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
+from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
 
 sefi_component = SEFIComponent()
 
 
 @sefi_component.attacker_class(attack_name="EAD", perturbation_budget_var_name="epsilon")
+@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="EAD",
+                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      params={
+                                          "attack_type": {"desc": "攻击类型(靶向(TARGETED) / 非靶向(UNTARGETED))", "type": "INT"},
+                                          "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
+                                          "binary_search_steps": {"desc": "对const c进行二进制搜索时要执行的步骤数", "type": "INT", "df_v": "9"},
+                                          "steps": {"desc": "每个二进制搜索步骤中的优化步骤数", "type": "INT", "df_v": "10000"},
+                                          "initial_stepsize": {"desc": "初始步骤大小已更新示例", "type": "FLOAT", "df_v": "0.01"},
+                                          "confidence": {"desc": "将示例标记为对抗性所需的置信度", "type": "FLOAT", "df_v": "0.0"},
+                                          "initial_const": {"desc": "开始二进制搜索的const c的初始值", "type": "FLOAT", "df_v": "0.001"},
+                                          "regularization": {"desc": "控制L1正则化", "type": "FLOAT", "df_v": "0.01"},
+                                          "decision_rule": {"desc": "选择最佳对抗示例的规则", "type": "STR", "df_v": "'EN'"},
+                                          "abort_early": {"desc": "一旦找到对抗性示例，请立即停止内部搜索", "type": "BOOL", "df_v": "True"}})
 class EAD():
     def __init__(self, model, epsilon=0.03, attacktype='untargeted', tlabel=1, binary_search_steps=9, steps=10000,
                  initial_stepsize=0.01, confidence=0.0, initial_const=0.001, regularization=0.01,decision_rule='EN',
@@ -22,7 +36,7 @@ class EAD():
         self.tlabel = tlabel
         self.label = -1
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.binary_search_steps = binary_search_steps  # 在对const c进行二进制搜索时要执行的步骤数 整型
+        self.binary_search_steps = binary_search_steps  # 对const c进行二进制搜索时要执行的步骤数 整型
         self.steps = steps  # 每个二进制搜索步骤中的优化步骤数 整型
         self.initial_stepsize = initial_stepsize  # 初始步骤大小已更新示例 浮点型
         self.confidence = confidence  # 将示例标记为对抗性所需的置信度 浮点型
