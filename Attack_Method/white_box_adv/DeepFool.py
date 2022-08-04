@@ -7,11 +7,21 @@ from foolbox.criteria import TargetedMisclassification
 import eagerpy as ep
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
+from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
 
 sefi_component = SEFIComponent()
 
 
 @sefi_component.attacker_class(attack_name="DeepFool", perturbation_budget_var_name="epsilon")
+@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="DeepFool",
+                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      params={
+                                          "attack_type": {"desc": "攻击类型(靶向(TARGETED) / 非靶向(UNTARGETED))", "type": "INT"},
+                                          "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
+                                          "steps": {"desc": "要执行的最大步骤数", "type": "INT", "df_v": "50"},
+                                          "candidates": {"desc": "限制应考虑的最可能类的数量", "type": "INT", "df_v": "10"},
+                                          "overshoot": {"desc": "超出边界的量", "type": "FLOAT", "df_v": "0.02"},
+                                          "loss": {"desc": "Union[typing_extensions.Literal['logits'], typing_extensions.Literal['crossentropy']]", "df_v": "'logits'"}})
 class DeepFool():
     def __init__(self, model, epsilon=0.03, attacktype='untargeted', tlabel=1, steps=50, candidates=10,
                  overshoot=0.02, loss='logits'):
