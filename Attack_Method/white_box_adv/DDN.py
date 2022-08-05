@@ -22,7 +22,7 @@ sefi_component = SEFIComponent()
                                           "gamma": {"desc": "修改范数的因素(new_norm = norm * (1 + or - gamma))", "type": "FLOAT", "df_v": "0.05"}})
 
 class DDN():
-    def __init__(self, model, epsilon=0.03, attacktype='untargeted', tlabel=1, init_epsilon=1.0, steps=50, gamma=6/25):
+    def __init__(self, model, epsilon=0.03, attacktype='UNTARGETED', tlabel=1, init_epsilon=1.0, steps=100, gamma=0.05):
         self.model = model  # 待攻击的白盒模型
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.attacktype = attacktype  # 攻击类型(靶向(TARGETED) / 非靶向(UNTARGETED)
@@ -33,7 +33,7 @@ class DDN():
         self.steps = steps  # 优化步骤数
         self.gamma = gamma  # 修改范数的因素(new_norm = norm * (1 + or - gamma))
 
-    @sefi_component.attack(name="DDN", is_inclass=True, support_model=["vision_transformer"])
+    @sefi_component.attack(name="DDN", is_inclass=True, support_model=["vision_transformer"], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
         # 模型预处理
         preprocessing = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], axis=-3)
@@ -53,7 +53,7 @@ class DDN():
         # 实例化攻击类
         attack = DDNAttack(init_epsilon=self.init_epsilon, steps=self.steps, gamma=self.gamma)
         self.epsilons = np.linspace(0.0, 0.005, num=20)
-        if self.attacktype == 'untargeted':
+        if self.attacktype == 'UNTARGETED':
             raw, clipped, is_adv = attack(fmodel, img, ori_label, epsilons=self.epsilon)  # 模型、图像、真标签
             # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的布尔值
         else:
