@@ -23,7 +23,7 @@ sefi_component = SEFIComponent()
                                           "overshoot": {"desc": "超出边界的量", "type": "FLOAT", "df_v": "0.02"},
                                           "loss": {"desc": "Union[typing_extensions.Literal['logits'], typing_extensions.Literal['crossentropy']]", "df_v": "'logits'"}})
 class DeepFool():
-    def __init__(self, model, epsilon=0.03, attacktype='untargeted', tlabel=1, steps=50, candidates=10,
+    def __init__(self, model, epsilon=0.03, attacktype='UNTARGETED', tlabel=1, steps=50, candidates=10,
                  overshoot=0.02, loss='logits'):
         self.model = model  # 待攻击的白盒模型
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
@@ -36,7 +36,7 @@ class DeepFool():
         self.overshoot = overshoot  # 超出边界的量 浮点型
         self.loss = loss  # (Union[typing_extensions.Literal['logits'], typing_extensions.Literal['crossentropy']]) –
 
-    @sefi_component.attack(name="DeepFool", is_inclass=True, support_model=["vision_transformer"])
+    @sefi_component.attack(name="DeepFool", is_inclass=True, support_model=["vision_transformer"], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
         # 模型预处理
         preprocessing = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], axis=-3)
@@ -56,7 +56,7 @@ class DeepFool():
         # 实例化攻击类
         attack = L2DeepFoolAttack(steps=self.steps, candidates=self.candidates, overshoot=self.overshoot, loss=self.loss)
         self.epsilons = np.linspace(0.0, 0.005, num=20)
-        if self.attacktype == 'untargeted':
+        if self.attacktype == 'UNTARGETED':
             raw, clipped, is_adv = attack(fmodel, img, ori_label, epsilons=self.epsilon)  # 模型、图像、真标签
             # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的布尔值
         else:
