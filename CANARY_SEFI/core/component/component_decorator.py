@@ -1,4 +1,8 @@
+from enum import Enum
+
 import torch
+
+from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
 
 
 class SEFIComponent:
@@ -39,21 +43,24 @@ class SEFIComponent:
             return inner
 
         return wrapper
-    
-    def args_handler(self, handler_target, name, args_type, params=None):
+
+    def config_params_handler(self, handler_target, name, args_type, use_default_handler=False, params=None):
         target = None
-        if handler_target == "model":
+        if handler_target == ComponentType.MODEL:
             target = self.get_models(name)
             if args_type not in ('model_args', 'target_args'):
                 raise Exception("[baispBoot] Illegal Model Args Handler Type")
-        elif handler_target == "attack":
+        elif handler_target == ComponentType.ATTACK:
             target = self.get_attack_methods(name)
-            if args_type not in ('attack_args', 'target_args'):
+            if args_type not in (ComponentConfigHandlerType.ATTACK_PARAMS, 'target_args'):
                 raise Exception("[baispBoot] Illegal Attack Args Handler Type")
 
-        target[args_type + "_handler_params"] = params
+        target[args_type.value + "_handler_params"] = params
 
         def wrapper(decorated):
+            if use_default_handler:
+                return decorated
+
             def inner(*args, **kwargs):
                 args_dict = decorated(*args, **kwargs)
                 if not isinstance(args_dict, dict):
@@ -143,3 +150,9 @@ class SEFIComponent:
             self.datasets[name] = {}
             target_datasets = self.datasets.get(name)
         return target_datasets
+
+    def attack_param(self):
+        def wrapper(decorated):
+            print(decorated)
+            return decorated
+        return wrapper

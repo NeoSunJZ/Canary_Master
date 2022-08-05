@@ -3,6 +3,7 @@ import os
 
 from flask import Blueprint, Response
 
+from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.handler.helper.self_check import model_implemented_component_self_check, \
@@ -82,9 +83,9 @@ def get_attack_method_list(config):
             'attackNoModel': config.get("attackConfig", {}).get(attack_method, {}).get("no_model", False),
 
             # 是否自定义了攻击参数处理器
-            'hasAttackMethodArgsHandler': atk_component.get("attack_args_handler") is not None,
+            'hasAttackMethodArgsHandler': atk_component.get(ComponentConfigHandlerType.ATTACK_PARAMS.value + "_handler") is not None,
             # 攻击参数声明
-            'attackMethodArgsHandlerParamsDesc': atk_component.get("attack_args_handler_params"),
+            'attackMethodArgsHandlerParamsDesc': atk_component.get(ComponentConfigHandlerType.ATTACK_PARAMS.value + "_handler_params"),
 
             # 攻击需预先初始化类（非方法级）
             'attackerClassNeedInit': atk_component.get("is_inclass", True),

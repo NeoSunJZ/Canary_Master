@@ -1,3 +1,6 @@
+from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType
+
+
 def model_implemented_component_self_check(model_component):
     check_conclusion = []
     inference_function = "READY"
@@ -51,10 +54,7 @@ def attack_implemented_component_self_check(atk_component):
             attacker = "ERROR"
 
     # 参数处理器检查
-    if atk_component.get("attack_args_handler") is None:
-        check_conclusion.append("[NOTICE] No Args Handler Defined: Model Args Handler NOT FOUND")
-
-    if atk_component.get("is_inclass", True):
-        check_conclusion.append("[NOTICE] No Args Handler Defined: Model Args Handler NOT FOUND")
+    if atk_component.get(ComponentConfigHandlerType.ATTACK_PARAMS.value + "_handler") is None:
+        check_conclusion.append("[NOTICE] No Params Handler Defined: ATTACK Params Handler NOT FOUND, Will use Default")
 
     return check_conclusion, {attacker: attacker}

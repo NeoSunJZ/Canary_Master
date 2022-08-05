@@ -34,8 +34,9 @@ class InferenceDetector:
         if self.img_preprocessor is not None:
             img = self.img_preprocessor(ori_img, self.img_proc_args_dict)
 
-        # 预测
-        result = inference_detector_func(self.model, img)
+        # 预测(关闭预测时torch的梯度，因为预测无需反向传播)
+        with torch.no_grad():
+            result = inference_detector_func(self.model, img)
 
         if self.result_postprocessor is not None:
             result = self.result_postprocessor(result, self.img_proc_args_dict)
