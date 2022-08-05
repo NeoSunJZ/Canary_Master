@@ -7,14 +7,24 @@ from foolbox.criteria import TargetedMisclassification
 import eagerpy as ep
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
+from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
 
 sefi_component = SEFIComponent()
 
 
 @sefi_component.attacker_class(attack_name="I_FGSM", perturbation_budget_var_name="epsilon")
+@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="I_FGSM",
+                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      params={
+                                          "attack_type": {"desc": "攻击类型(靶向(TARGETED) / 非靶向(UNTARGETED))", "type": "INT"},
+                                          "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
+                                          "rel_stepsize": {"desc": "相对于epsilon的步长", "type": "FLOAT", "df_v": "0.2"},
+                                          "abs_stepsize": {"desc": "如果给定，优先于rel_stepsize", "type": "FLOAT", "df_v": "None"},
+                                          "steps": {"desc": "更新步骤数", "type": "INT", "df_v": "10"},
+                                          "random_start": {"desc": "控制是否在允许的epsilon ball中随机启动", "type": "BOOL", "df_v": "False"}})
 class I_FGSM():
-    def __init__(self, model, epsilon=0.03, attacktype='untargeted', tlabel=1, rel_stepsize=6/25, abs_stepsize=None,
-                 steps=50, random_start=False):
+    def __init__(self, model, epsilon=0.03, attacktype='UNTARGETED', tlabel=1, rel_stepsize=0.2, abs_stepsize=None,
+                 steps=10, random_start=False):
         self.model = model  # 待攻击的白盒模型
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.attacktype = attacktype  # 攻击类型：靶向 or 非靶向
@@ -27,7 +37,7 @@ class I_FGSM():
         self.random_start = random_start  # 控制是否在允许的epsilon ball中随机启动 布尔型
 
 
-    @sefi_component.attack(name="I_FGSM", is_inclass=True, support_model=["vision_transformer"])
+    @sefi_component.attack(name="I_FGSM", is_inclass=True, support_model=["vision_transformer"], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
         # 模型预处理
         preprocessing = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], axis=-3)
@@ -47,7 +57,7 @@ class I_FGSM():
         # 实例化攻击类
         attack = L2BasicIterativeAttack( rel_stepsize=self.rel_stepsize, abs_stepsize=self.abs_stepsize, steps=self.steps, random_start=self.random_start)
         self.epsilons = np.linspace(0.0, 0.005, num=20)
-        if self.attacktype == 'untargeted':
+        if self.attacktype == 'UNTARGETED':
             raw, clipped, is_adv = attack(fmodel, img, ori_label, epsilons=self.epsilon)  # 模型、图像、真标签
             # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的布尔值
         else:
