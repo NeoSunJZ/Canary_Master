@@ -27,7 +27,7 @@ sefi_component = SEFIComponent()
                                           "decision_rule": {"desc": "选择最佳对抗示例的规则", "type": "STR", "df_v": "'EN'"},
                                           "abort_early": {"desc": "一旦找到对抗性示例，请立即停止内部搜索", "type": "BOOL", "df_v": "True"}})
 class EAD():
-    def __init__(self, model, epsilon=0.03, attacktype='untargeted', tlabel=1, binary_search_steps=9, steps=10000,
+    def __init__(self, model, epsilon=0.03, attacktype='UNTARGETED', tlabel=1, binary_search_steps=9, steps=10000,
                  initial_stepsize=0.01, confidence=0.0, initial_const=0.001, regularization=0.01,decision_rule='EN',
                  abort_early=True):
         self.model = model  # 待攻击的白盒模型
@@ -46,7 +46,7 @@ class EAD():
         self.abort_early = abort_early  # 一旦找到对抗性示例，请立即停止内部搜索 布尔型
 
 
-    @sefi_component.attack(name="EAD", is_inclass=True, support_model=["vision_transformer"])
+    @sefi_component.attack(name="EAD", is_inclass=True, support_model=["vision_transformer"], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
         # 模型预处理
         preprocessing = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], axis=-3)
@@ -66,7 +66,7 @@ class EAD():
         # 实例化攻击类
         attack = EADAttack(binary_search_steps=self.binary_search_steps, steps=self.steps, initial_stepsize=self.initial_stepsize, confidence=self.confidence, initial_const=self.initial_const, regularization=self.regularization, decision_rule=self.decision_rule, abort_early=self.abort_early)
         self.epsilons = np.linspace(0.0, 0.005, num=20)
-        if self.attacktype == 'untargeted':
+        if self.attacktype == 'UNTARGETED':
             raw, clipped, is_adv = attack(fmodel, img, ori_label, epsilons=self.epsilon)  # 模型、图像、真标签
             # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的布尔值
         else:
