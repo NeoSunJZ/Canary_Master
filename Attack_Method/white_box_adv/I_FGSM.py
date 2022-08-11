@@ -16,12 +16,12 @@ sefi_component = SEFIComponent()
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="I_FGSM",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "attack_type": {"desc": "攻击类型(靶向(TARGETED) / 非靶向(UNTARGETED))", "type": "INT"},
+                                          "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"}, {"value": "UNTARGETED", "name": "非靶向"}], "def": "TARGETED"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
-                                          "rel_stepsize": {"desc": "相对于epsilon的步长", "type": "FLOAT", "df_v": "0.2"},
-                                          "abs_stepsize": {"desc": "如果给定，优先于rel_stepsize", "type": "FLOAT", "df_v": "None"},
-                                          "steps": {"desc": "更新步骤数", "type": "INT", "df_v": "10"},
-                                          "random_start": {"desc": "控制是否在允许的epsilon ball中随机启动", "type": "BOOL", "df_v": "False"}})
+                                          "rel_stepsize": {"desc": "相对于epsilon的步长", "type": "FLOAT", "def": "0.2"},
+                                          "abs_stepsize": {"desc": "如果给定，优先于rel_stepsize", "type": "FLOAT", "def": "None"},
+                                          "steps": {"desc": "迭代攻击轮数", "type": "INT", "def": "10"},
+                                          "random_start": {"desc": "控制是否在允许的epsilon ball中随机启动", "type": "BOOL", "def": "False"}})
 class I_FGSM():
     def __init__(self, model, epsilon=0.03, attacktype='UNTARGETED', tlabel=1, rel_stepsize=0.2, abs_stepsize=None,
                  steps=10, random_start=False):
@@ -33,7 +33,7 @@ class I_FGSM():
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.rel_stepsize = rel_stepsize  # 相对于epsilon的步长 浮点型
         self.abs_stepsize = abs_stepsize  # 如果给定，优先于rel_stepsize 浮点型
-        self.steps = steps  # 更新步骤数 整型
+        self.steps = steps  # 迭代攻击轮数
         self.random_start = random_start  # 控制是否在允许的epsilon ball中随机启动 布尔型
 
 
