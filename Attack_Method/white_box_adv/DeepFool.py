@@ -16,25 +16,25 @@ sefi_component = SEFIComponent()
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="DeepFool",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "attack_type": {"desc": "攻击类型(靶向(TARGETED) / 非靶向(UNTARGETED))", "type": "INT"},
+                                          "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"}, {"value": "UNTARGETED", "name": "非靶向"}], "def": "TARGETED"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
-                                          "steps": {"desc": "要执行的最大步骤数", "type": "INT", "df_v": "50"},
-                                          "candidates": {"desc": "限制应考虑的最可能类的数量", "type": "INT", "df_v": "10"},
-                                          "overshoot": {"desc": "超出边界的量", "type": "FLOAT", "df_v": "0.02"},
-                                          "loss": {"desc": "Union[typing_extensions.Literal['logits'], typing_extensions.Literal['crossentropy']]", "df_v": "'logits'"}})
+                                          "steps": {"desc": "迭代攻击轮数", "type": "INT", "def": "50"},
+                                          "candidates": {"desc": "限制应考虑的最可能类的数量", "type": "INT", "def": "10"},
+                                          "overshoot": {"desc": "超出边界的量", "type": "FLOAT", "def": "0.02"},
+                                          "loss": {"desc": "损失", "type": "SELECT", "selector": [{"value": "logits", "name": "logits"}, {"value": "crossentropy", "name": "交叉熵"}], "def": "logits"}})
+                                          #Union[typing_extensions.Literal['logits'], typing_extensions.Literal['crossentropy']]
 class DeepFool():
-    def __init__(self, model, epsilon=0.03, attacktype='UNTARGETED', tlabel=1, steps=50, candidates=10,
-                 overshoot=0.02, loss='logits'):
+    def __init__(self, model, epsilon=0.03, attacktype='UNTARGETED', tlabel=1, steps=50, candidates=10, overshoot=0.02, loss='logits'):
         self.model = model  # 待攻击的白盒模型
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.attacktype = attacktype  # 攻击类型：靶向 or 非靶向
         self.tlabel = tlabel
         self.label = -1
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.steps = steps  # 要执行的最大步骤数
+        self.steps = steps  # 迭代攻击轮数
         self.candidates = candidates  # 限制应考虑的最可能类的数量
         self.overshoot = overshoot  # 超出边界的量 浮点型
-        self.loss = loss  # (Union[typing_extensions.Literal['logits'], typing_extensions.Literal['crossentropy']]) –
+        self.loss = loss  # 损失
 
     @sefi_component.attack(name="DeepFool", is_inclass=True, support_model=["vision_transformer"], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
