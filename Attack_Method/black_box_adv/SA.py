@@ -15,14 +15,14 @@ sefi_component = SEFIComponent()
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="SA",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "attack_type": {"desc": "攻击类型(靶向(TARGETED) / 非靶向(UNTARGETED))", "type": "INT"},
+                                          "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"}, {"value": "UNTARGETED", "name": "非靶向"}], "def": "TARGETED"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
-                                          "max_translation": {"type": "FLOAT", "df_v": "3"},
-                                          "max_rotation": {"type": "FLOAT", "df_v": "30"},
-                                          "num_translations": {"type": "INT", "df_v": "5"},
-                                          "num_rotations": {"type": "INT", "df_v": "5"},
-                                          "grid_search": {"type": "BOOL", "df_v": "True"},
-                                          "random_steps": {"type": "INT", "df_v": "100"}})
+                                          "max_translation": {"type": "FLOAT", "def": "3"},
+                                          "max_rotation": {"type": "FLOAT", "def": "30"},
+                                          "num_translations": {"type": "INT", "def": "5"},
+                                          "num_rotations": {"type": "INT", "def": "5"},
+                                          "grid_search": {"type": "BOOL", "def": "True"},
+                                          "random_steps": {"type": "INT", "def": "100"}})
 class SA():
     def __init__(self, model, epsilon=0.03, attacktype='UNTARGETED', tlabel=1, max_translation=3, max_rotation=30,
                  num_translations=5, num_rotations=5, grid_search=True, random_steps=100):
