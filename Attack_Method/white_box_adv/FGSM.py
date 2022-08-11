@@ -16,9 +16,9 @@ sefi_component = SEFIComponent()
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="FGSM",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "attack_type": {"desc": "攻击类型(靶向(TARGETED) / 非靶向(UNTARGETED))", "type": "INT"},
+                                          "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"}, {"value": "UNTARGETED", "name": "非靶向"}], "def": "TARGETED"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
-                                          "random_start": {"desc": "控制是否在允许的epsilon ball内随机启动", "type": "BOOL", "df_v": "False"}})
+                                          "random_start": {"desc": "控制是否在允许的epsilon ball内随机启动", "type": "BOOL", "def": "False"}})
 class FGSM():
     def __init__(self, model, epsilon=0.03, attacktype='UNTARGETED', tlabel=1, random_start=False):
         self.model = model  # 待攻击的白盒模型
@@ -53,8 +53,7 @@ class FGSM():
             raw, clipped, is_adv = attack(fmodel, img, ori_label, epsilons=self.epsilon)  # 模型、图像、真标签
             # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的布尔值
         else:
-            criterion = TargetedMisclassification(target_classes=torch.tensor([self.tlabel]),
-                                                  device=self.device)  # 参数为具有目标类的张量
+            criterion = TargetedMisclassification(target_classes=torch.tensor([self.tlabel]))  # 参数为具有目标类的张量
             raw, clipped, is_adv = attack(fmodel, img, ori_label, epsilons=self.epsilon, criterion=criterion)
 
         adv_img = raw.raw
