@@ -12,18 +12,21 @@ sefi_component = SEFIComponent()
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="FGM",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "clip_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "df_v": "None"},
-                                          "clip_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "df_v": "None"},
-                                          "sanity_checks": {"desc": "若为真则包含断言；关闭以使用较少的运行时/内存，或用于故意传递奇怪输入的单元测试", "type": "BOOL", "df_v": "False"},
-                                          "attack_type": {"desc": "攻击类型(靶向(TARGETED) / 非靶向(UNTARGETED))", "type": "STR", "df_v": "'UNTARGETED'"},
+                                          "eps": {"desc": "epsilon(输入变化参数)", "required": "true"},
+                                          "norm": {"desc": "范数顺序(模仿Numpy)", "type": "SELECT", "selector": [{"value": "np.inf"}, {"value": "1"}, {"value": "2"}], "def": "np.inf", "required": "true"},
+                                          "clip_min": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "def": "None", "required": "true"},
+                                          "clip_max": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "def": "None", "required": "true"},
+                                          "sanity_checks": {"desc": "若为真则包含断言；关闭以使用较少的运行时/内存，或用于故意传递奇怪输入的单元测试", "type": "BOOL", "def": "False"},
+                                          "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"}, {"value": "UNTARGETED", "name": "非靶向"}], "def": "TARGETED"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"}})
 class FGM():
-    def __init__(self, model, clip_min=-3, clip_max=3, sanity_checks=False, epsilon=0.2, attacktype='UNTARGETED', tlabel=-1):
+    def __init__(self, model, eps=0.2, norm=np.inf, clip_min=-3, clip_max=3, sanity_checks=False, attacktype='UNTARGETED', tlabel=-1):
         self.model = model  # 待攻击的白盒模型
-        self.clip_min = clip_min  # 对抗性示例组件的最小浮点值
-        self.clip_max = clip_max  # 对抗性示例组件的最大浮点值
+        self.eps = eps  # epsilon(输入变化参数)
+        self.norm = norm  # 范数顺序(模仿Numpy)
+        self.clip_min = clip_min  # 对抗样本像素下界(与模型有关)
+        self.clip_max = clip_max  # 对抗样本像素上界(与模型有关)
         self.sanity_checks = sanity_checks  # 如果为True，包含断言；关闭以使用较少的运行时/内存，或用于故意传递奇怪输入的单元测试
-        self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.attacktype = attacktype  # 攻击类型：靶向 or 非靶向
         self.tlabel = tlabel
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -36,8 +39,8 @@ class FGM():
         if self.attacktype == 'UNTARGETED':
             img = fast_gradient_method(model_fn=self.model,
                                        x=img,
-                                       eps=self.epsilon,
-                                       norm=np.inf,
+                                       eps=self.eps,
+                                       norm=self.norm,
                                        clip_min=self.clip_min,
                                        clip_max=self.clip_max,
                                        y=None,
@@ -46,8 +49,8 @@ class FGM():
         else:
             img = fast_gradient_method(model_fn=self.model,
                                        x=img,
-                                       eps=self.epsilon,
-                                       norm=np.inf,
+                                       eps=self.eps,
+                                       norm=self.norm,
                                        clip_min=self.clip_min,
                                        clip_max=self.clip_max,
                                        y=y,
