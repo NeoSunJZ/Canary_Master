@@ -15,11 +15,11 @@ sefi_component = SEFIComponent()
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="DDN",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "attack_type": {"desc": "攻击类型(靶向(TARGETED) / 非靶向(UNTARGETED))", "type": "INT"},
+                                          "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"},{"value": "UNTARGETED", "name": "非靶向"}], "def": "TARGETED"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
-                                          "init_epsilon": {"desc": "范数(epsilon ball)初始值", "type": "FLOAT", "df_v": "1.0"},
-                                          "steps": {"desc": "优化步骤数", "type": "INT", "df_v": "100"},
-                                          "gamma": {"desc": "修改范数的因素(new_norm = norm * (1 + or - gamma))", "type": "FLOAT", "df_v": "0.05"}})
+                                          "init_epsilon": {"desc": "范数(epsilon ball)初始值", "type": "FLOAT", "def": "1.0"},
+                                          "steps": {"desc": "迭代攻击轮数", "type": "INT", "def": "100"},
+                                          "gamma": {"desc": "修改范数的因素(new_norm = norm * (1 + or - gamma))", "type": "FLOAT", "def": "0.05"}})
 
 class DDN():
     def __init__(self, model, epsilon=0.03, attacktype='UNTARGETED', tlabel=1, init_epsilon=1.0, steps=100, gamma=0.05):
@@ -30,7 +30,7 @@ class DDN():
         self.label = -1
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.init_epsilon = init_epsilon  # 范数(epsilon ball)初始值
-        self.steps = steps  # 优化步骤数
+        self.steps = steps  # 迭代攻击轮数
         self.gamma = gamma  # 修改范数的因素(new_norm = norm * (1 + or - gamma))
 
     @sefi_component.attack(name="DDN", is_inclass=True, support_model=["vision_transformer"], attack_type="WHITE_BOX")
