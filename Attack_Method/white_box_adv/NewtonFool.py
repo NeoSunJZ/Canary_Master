@@ -16,10 +16,10 @@ sefi_component = SEFIComponent()
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="NewtonFool",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "attack_type": {"desc": "攻击类型(靶向(TARGETED) / 非靶向(UNTARGETED))", "type": "INT"},
+                                          "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"}, {"value": "UNTARGETED", "name": "非靶向"}], "def": "TARGETED"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
-                                          "steps": {"desc": "更新步骤数", "type": "INT", "df_v": "100"},
-                                          "stepsize": {"desc": "每个更新步骤的大小", "type": "FLOAT", "df_v": "0.01"}})
+                                          "steps": {"desc": "迭代攻击轮数", "type": "INT", "def": "100"},
+                                          "stepsize": {"desc": "每一轮迭代攻击步长", "type": "FLOAT", "def": "0.01"}})
 class NewtonFool():
     def __init__(self, model, epsilon=0.03, attacktype='UNTARGETED', tlabel=1, steps=100, stepsize=0.01):
         self.model = model  # 待攻击的白盒模型
@@ -28,8 +28,8 @@ class NewtonFool():
         self.tlabel = tlabel
         self.label = -1
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.steps = steps  # 要执行的更新步骤数 整型
-        self.stepsize = stepsize  # 每个更新步骤的大小 浮点型
+        self.steps = steps  # 迭代攻击轮数
+        self.stepsize = stepsize  # 每一轮迭代攻击步长
 
     @sefi_component.attack(name="NewtonFool", is_inclass=True, support_model=["vision_transformer"], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
