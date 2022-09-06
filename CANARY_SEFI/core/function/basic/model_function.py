@@ -1,7 +1,8 @@
 import torch
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
-from CANARY_SEFI.core.function.dataset_function import dataset_image_reader
+from CANARY_SEFI.core.function.helper.system_log import global_system_log
+from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
 from CANARY_SEFI.evaluator.logger.inference_logger import add_inference_log
 
 
@@ -46,6 +47,11 @@ class InferenceDetector:
 
 
 def inference_detector_4_img_batch(model_name, model_args, img_proc_args, dataset_info, each_img_finish_callback=None):
+
+    is_skip, completed_num = global_system_log.check_skip(model_name)
+    if is_skip:
+        return None
+
     img_log_id_list = []
     inference_detector = InferenceDetector(model_name, model_args, img_proc_args)
 
@@ -59,6 +65,8 @@ def inference_detector_4_img_batch(model_name, model_args, img_proc_args, datase
         # 写入必要日志
         add_inference_log(img_log_id, dataset_info.dataset_type.value, model_name, label, conf_array)
 
-    dataset_image_reader(inference_iterator, dataset_info)
+    dataset_image_reader(inference_iterator, dataset_info, completed_num)
+    global_system_log.update_finish_status(True)
+
     torch.cuda.empty_cache()
     return img_log_id_list

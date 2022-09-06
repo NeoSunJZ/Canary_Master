@@ -1,17 +1,25 @@
 from flask_cors import CORS
 from CANARY_SEFI.core.exec_network import create_app
-from CANARY_SEFI.handler.socket.socket import get_socket
+from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 
 app = create_app()
 CORS(app, resources=r'/*')
 
-websocket = get_socket(app)
+websocket = reporter.get_socket(app)
 
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
-from Model.Vision_Transformer import sefi_component as vision_transformer_model
 
-SEFI_component_manager.add(vision_transformer_model)
+# Alexnet
+from Model.Alexnet import sefi_component as alexnet_model
+SEFI_component_manager.add(alexnet_model)
+# VGG16
+from Model.VGG16 import sefi_component as vgg_16_model
+SEFI_component_manager.add(vgg_16_model)
 
+# 数据集
+# IMAGENET2012
+from Dataset.ImageNet2012.dataset_loader import sefi_component as imgnet2012_dataset
+SEFI_component_manager.add(imgnet2012_dataset)
 
 # 攻击方案
 # CW

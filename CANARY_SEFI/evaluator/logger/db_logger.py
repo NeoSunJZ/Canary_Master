@@ -2,7 +2,7 @@ import sqlite3
 
 class Logger:
     def __init__(self):
-        self.conn = sqlite3.connect('logger.db')
+        self.conn = sqlite3.connect('evaluator_logger.db', check_same_thread=False)
         self.debug_log = True
         self.init()
 
@@ -107,6 +107,5 @@ class Logger:
 
     def finish(self):
         self.conn.commit()
-        self.conn.close()
 
 log = Logger()

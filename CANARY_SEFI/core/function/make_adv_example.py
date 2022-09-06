@@ -1,11 +1,8 @@
-import random
-import string
-
 import torch
 from tqdm import tqdm
 
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
-from CANARY_SEFI.core.function.attacker_function import adv_attack_4_img_batch
+from CANARY_SEFI.core.function.basic.attacker_function import adv_attack_4_img_batch
 
 
 def build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args):

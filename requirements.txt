@@ -13,3 +13,5 @@ pillow~=7.1.2
 scikit-learn~=1.1.1
 cleverhans
 foolbox
+flask_cors
+flask_socketio

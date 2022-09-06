@@ -1,6 +1,6 @@
 import json
 from flask import Blueprint, request
-from CANARY_SEFI.core.function.model_function import inference_detector_4_img, inference_detector_4_img_batch
+from CANARY_SEFI.core.function.core.model_function import inference_detector_4_img, inference_detector_4_img_batch
 from CANARY_SEFI.entity.msg_entity import MsgEntity
 from CANARY_SEFI.handler.image_handler.img_io_handler import get_nparray_from_file_input
 

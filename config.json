@@ -10,7 +10,7 @@
   "dataset":{
     "ILSVRC-2012": {
       "name": "ImageNet Large Scale Visual Recognition Challenge_2012数据集(VAL)",
-      "path": "J:\\ImageNet\\data\\ImageNet2012\\ILSVRC2012_img_val"
+      "path": "/home/sunjiazheng/canary_dataset/ILSVRC2012_img_val/"
     }
   },
   "temp": "Dataset_Temp/",

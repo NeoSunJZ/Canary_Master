@@ -2,6 +2,8 @@ import cv2
 
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
+from CANARY_SEFI.core.function.helper.system_log import global_system_log
+from CANARY_SEFI.core.function.helper.task_thread import task_thread
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 from CANARY_SEFI.evaluator.logger.adv_logger import find_adv_log
 from CANARY_SEFI.evaluator.logger.dataset_logger import add_img_log
@@ -22,7 +24,8 @@ def default_image_getter(img_name, dataset_path, dataset_seed, dataset_size=None
 # 传入传入img_list，则根据img_list读入指定图片
 # 如果没有自行指定image getter，则默认的image getter只支持第二种，且传入的img_list必须是图片文件名
 
-def dataset_image_reader(iterator, dataset_info):
+def dataset_image_reader(iterator, dataset_info, completed_num=0):
+
     # 对抗样本数据集读入
     if dataset_info.dataset_type == DatasetType.ADVERSARIAL_EXAMPLE:
         adv_dataset_image_reader(iterator, dataset_info)
@@ -43,7 +46,7 @@ def dataset_image_reader(iterator, dataset_info):
 
     if dataset_info.dataset_size is not None:
         if not is_default_image_getter:
-            for img_cursor in range(dataset_info.dataset_size):
+            for img_cursor in range(completed_num, dataset_info.dataset_size):
                 img, img_label = image_getter(img_cursor, dataset_path, dataset_info.dataset_seed, dataset_info.dataset_size,
                                               with_label=True)
 
@@ -54,10 +57,11 @@ def dataset_image_reader(iterator, dataset_info):
                 img_log_id = add_img_log(dataset_info.dataset_log_id, img_label, img_cursor)
 
                 iterator(img, img_log_id, img_label)
+                global_system_log.update_completed_num(1)
         else:
             raise Exception("The default dataset image getter only supports reading by specifying the item list")
     if dataset_info.img_cursor_list is not None:
-        for img_cursor in dataset_info.img_name_list:
+        for img_cursor in dataset_info.img_name_list[completed_num:]:
             img, img_label = image_getter(img_cursor, dataset_path, dataset_seed=None, dataset_size=None, with_label=True)
 
             # 检查尺寸
@@ -67,6 +71,7 @@ def dataset_image_reader(iterator, dataset_info):
             img_log_id = add_img_log(dataset_info.dataset_log_id, img_label, img_cursor)
 
             iterator(img, img_log_id, img_label)
+            global_system_log.update_completed_num(1)
 
 
 def limit_img_size(img):
@@ -101,3 +106,5 @@ def adv_dataset_image_reader(iterator, dataset_info):
 
         img = default_image_getter(adv_filename, adv_file_path, None, None, False)
         iterator(img, adv_img_id, None)
+        global_system_log.update_completed_num(1)
+

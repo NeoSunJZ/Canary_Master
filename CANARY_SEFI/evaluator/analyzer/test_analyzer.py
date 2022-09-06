@@ -1,7 +1,10 @@
 import json
 
 import numpy as np
+from colorama import Fore
 
+from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
+from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 from CANARY_SEFI.evaluator.logger.analyze_result_loggeer import add_model_test_result_log, add_attack_test_result_log, \
     add_adv_da_test_result_log
@@ -14,6 +17,12 @@ from sklearn.metrics import f1_score, accuracy_score
 
 
 def model_capability_evaluation(batch_id):
+    # 标记当前步骤
+    global_system_log.set_step("MODEL_CAPABILITY_EVALUATION")
+
+    msg = "统计已测试模型的测试结果"
+    reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
+
     analyzer_log = {}
     all_inference_log = find_all_inference_log(DatasetType.NORMAL.value, batch_id)
 
@@ -36,6 +45,10 @@ def model_capability_evaluation(batch_id):
         analyzer_log[model_name]["inference_confs"].append(inference_conf_array[ori_label])
 
     for model_name in analyzer_log:
+
+        msg = "计算模型 {} 的能力测试结果".format(model_name)
+        reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
+
         clear_acc = accuracy_score(analyzer_log[model_name]["ori_labels"], analyzer_log[model_name]["inference_labels"])
         clear_f1 = f1_score(analyzer_log[model_name]["ori_labels"], analyzer_log[model_name]["inference_labels"],
                             average='macro')
@@ -44,6 +57,12 @@ def model_capability_evaluation(batch_id):
 
 
 def attack_capability_evaluation(batch_id):
+    # 标记当前步骤
+    global_system_log.set_step("ATTACK_CAPABILITY_EVALUATION")
+
+    msg = "统计已生成全部对抗样本的测试结果"
+    reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
+
     analyzer_log = {}
 
     all_adv_example_log = find_batch_adv_log(batch_id)
@@ -118,6 +137,9 @@ def attack_capability_evaluation(batch_id):
         atk_name = attack_log[2]
         base_model = attack_log[3]
 
+        msg = "计算对抗方法 {} 在模型 {} 上生成的对抗样本的质量测评结果".format(atk_name, base_model)
+        reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
+
         record = analyzer_log[attack_id]
         average_maximum_disturbance = sum(record["maximum_disturbance"]) / len(record["maximum_disturbance"])
         average_euclidean_distortion = sum(record["euclidean_distortion"]) / len(record["euclidean_distortion"])
@@ -131,6 +153,9 @@ def attack_capability_evaluation(batch_id):
                                    average_deep_metrics_similarity, average_low_level_metrics_similarity)
 
         average_cost_time = sum(record["cost_time"]) / len(record["cost_time"])
+
+        msg = "计算对抗方法 {} 在模型 {} 上生成的对抗样本的攻击能力测评结果".format(atk_name, base_model)
+        reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
 
         attack_test_result = analyzer_log[attack_id]["attack_test_result"]
 

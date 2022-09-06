@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="logger" uuid="2ceb710c-a045-4e99-95da-9fdfbd4e5654">
+    <data-source source="LOCAL" name="system_log" uuid="fcee4337-ea00-4292-be14-b744bd1f93ec">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:C:\Users\NeoSunJz\PycharmProjects\CANARY_MASTER\logger.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:\Users\neosunjz\Desktop\project\CANARY_MASTER\system_log.db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+      <libraries>
+        <library>
+          <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/Xerial SQLiteJDBC/3.36.0.3/sqlite-jdbc-3.36.0.3.jar</url>
+        </library>
+      </libraries>
+    </data-source>
+    <data-source source="LOCAL" name="evaluator_logger" uuid="7633eacd-ef62-4aa6-a6d3-a7fda088060a">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\neosunjz\Desktop\project\CANARY_MASTER\evaluator_logger.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
       <libraries>
         <library>

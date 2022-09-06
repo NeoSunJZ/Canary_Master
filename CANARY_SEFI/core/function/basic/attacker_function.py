@@ -4,7 +4,8 @@ from CANARY_SEFI.core.batch_flag import batch_flag
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
-from CANARY_SEFI.core.function.dataset_function import dataset_image_reader
+from CANARY_SEFI.core.function.helper.system_log import global_system_log
+from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
 from CANARY_SEFI.evaluator.logger.adv_logger import add_adv_build_log, add_adv_base_log, add_adv_da_log
 from CANARY_SEFI.evaluator.logger.attack_logger import add_attack_log
 from CANARY_SEFI.evaluator.monitor.attack_effect import time_cost_statistics
@@ -73,12 +74,18 @@ class AdvAttacker:
 
 def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info,
                            each_img_finish_callback=None):
+
+    is_skip, completed_num = global_system_log.check_skip(atk_name+":"+model_name)
+    if is_skip:
+        return None
+
     adv_img_id_list = []
     adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args)
 
     # 写入日志
-    attack_id = add_attack_log(atk_name, model_name,
-                               atk_perturbation_budget=atk_args[adv_attacker.perturbation_budget_var_name])
+    atk_perturbation_budget = atk_args[adv_attacker.perturbation_budget_var_name] \
+        if adv_attacker.perturbation_budget_var_name is not None else None
+    attack_id = add_attack_log(atk_name, model_name, atk_perturbation_budget=atk_perturbation_budget)
 
     def attack_iterator(img, img_log_id, img_label):
         # 执行攻击
@@ -103,7 +110,8 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
         # 写入日志
         add_adv_da_log(adv_img_id, adv_da_test_result)
 
-    dataset_image_reader(attack_iterator, dataset_info)
+    dataset_image_reader(attack_iterator, dataset_info, completed_num)
+    global_system_log.update_finish_status(True)
 
     adv_attacker.destroy()
     del adv_attacker

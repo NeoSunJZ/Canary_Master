@@ -2,6 +2,7 @@ from colorama import Fore, Style
 from tqdm import tqdm
 
 from CANARY_SEFI.core.batch_flag import batch_flag
+from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.evaluator.logger.db_logger import log
 
 
@@ -11,8 +12,8 @@ def add_dataset_log(dataset_name, dataset_seed, dataset_size):
               .format(str(batch_flag.batch_id), str(dataset_name), str(dataset_seed), str(dataset_size))
     dataset_id = log.insert_log(sql)
     if log.debug_log:
-        tqdm.write(Fore.CYAN + "[LOGGER] 已写入日志 本次测试Dataset_id为{}".format(dataset_id))
-        tqdm.write(Style.RESET_ALL)
+        msg = "[ LOGGER ] 已写入日志 本次测试Dataset_id为{}".format(dataset_id)
+        reporter.console_log(msg, Fore.CYAN, type="DEBUG")
     return dataset_id
 
 
@@ -34,14 +35,14 @@ def add_img_log(dataset_id, ori_img_label, ori_img_cursor):
     if len(result) != 0:
         img_id = result[0][0]
         if log.debug_log:
-            tqdm.write(Fore.CYAN + "[LOGGER] 日志存在 本次选定的图片img_id为{}".format(img_id))
-            tqdm.write(Style.RESET_ALL)
+            msg = "[ LOGGER ] 日志存在 本次选定的图片img_id为{}".format(img_id)
+            reporter.console_log(msg, Fore.CYAN, type="DEBUG")
         return img_id
     else:
         img_id = log.insert_log(sql_insert)
         if log.debug_log:
-            tqdm.write(Fore.CYAN + "[LOGGER] 已写入日志 本次选定的图片img_id为{}".format(img_id))
-            tqdm.write(Style.RESET_ALL)
+            msg = "[ LOGGER ] 已写入日志 本次选定的图片img_id为{}".format(img_id)
+            reporter.console_log(msg, Fore.CYAN, type="DEBUG")
         return img_id
 
 def find_img_log(ori_img_id):

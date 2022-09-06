@@ -142,7 +142,7 @@ def get_declaration():
     attack_method_list = get_attack_method_list(config)
     dataset_list = get_dataset_list(config)
     declaration = {
-        "version": "v1.1",
+        "version": "v2.1.0",
         "appName": config.get("appName", 'Default Project Name'),
         "appDesc": config.get("appDesc", 'Default Project Description'),
         "model": {
