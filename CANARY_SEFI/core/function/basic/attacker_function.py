@@ -11,6 +11,7 @@ from CANARY_SEFI.evaluator.logger.attack_logger import add_attack_log
 from CANARY_SEFI.evaluator.monitor.attack_effect import time_cost_statistics
 from CANARY_SEFI.evaluator.tester.adv_disturbance_aware import AdvDisturbanceAwareTester
 from CANARY_SEFI.handler.image_handler.img_io_handler import save_pic_to_temp
+from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
 
 
 class AdvAttacker:
@@ -64,20 +65,16 @@ class AdvAttacker:
             adv_result = self.img_reverse_processor(adv_result, self.atk_args_dict)
 
         # 不存在结果处理器则直接返回
-        torch.cuda.empty_cache()
+        check_cuda_memory_alloc_status(empty_cache=True)
         return adv_result
 
     def destroy(self):
         del self.attacker_class
-        torch.cuda.empty_cache()
+        check_cuda_memory_alloc_status(empty_cache=True)
 
 
 def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info,
-                           each_img_finish_callback=None):
-
-    is_skip, completed_num = global_system_log.check_skip(atk_name+":"+model_name)
-    if is_skip:
-        return None
+                           each_img_finish_callback=None, completed_num=0):
 
     adv_img_id_list = []
     adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args)
@@ -104,8 +101,9 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
             each_img_finish_callback(img, adv_result)
 
         # 对抗样本综合测试
-        adv_da_tester = AdvDisturbanceAwareTester(img_name)
+        adv_da_tester = AdvDisturbanceAwareTester()
         adv_da_test_result = adv_da_tester.test_all(img, adv_result)
+        print(adv_da_test_result)
 
         # 写入日志
         add_adv_da_log(adv_img_id, adv_da_test_result)

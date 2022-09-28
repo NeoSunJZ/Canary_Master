@@ -4,9 +4,8 @@ import torch
 
 
 class AdvDisturbanceAwareTester:
-    def __init__(self, img_name, max_pixel=255.0, min_pixel=0.0):
+    def __init__(self, max_pixel=255.0, min_pixel=0.0):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.img_name = img_name
         self.max_pixel = max_pixel
         self.min_pixel = min_pixel
 
@@ -21,7 +20,8 @@ class AdvDisturbanceAwareTester:
 
     def calculate_maximum_disturbance(self, ori_img, img):
         # L-inf
-        result = torch.norm(self.img_handler(img) - self.img_handler(ori_img), float("inf")).cpu().detach().numpy()
+        # print(self.img_handler(img) - self.img_handler(ori_img))
+        result = torch.norm(torch.abs(self.img_handler(img) - self.img_handler(ori_img)), float("inf")).cpu().detach().numpy()
         return result
 
     def calculate_euclidean_distortion(self, ori_img, img):
@@ -40,7 +40,6 @@ class AdvDisturbanceAwareTester:
 
     def calculate_deep_metrics_similarity(self, ori_img, img):
         # LPIPS
-        # print("计算样本 {} 的 DMS(LPIPS) ".format(self.img_name))
         # lpips_vgg = lpips.LPIPS(net='vgg').to(self.device)
         # result = lpips_vgg(self.img_handler(img), self.img_handler(ori_img)).sum().cpu().detach().numpy()
 
@@ -53,8 +52,7 @@ class AdvDisturbanceAwareTester:
     def calculate_low_level_metrics_similarity(self, ori_img, img):
         x = self.img_handler(ori_img).unsqueeze(dim=0)
         y = self.img_handler(img).unsqueeze(dim=0)
-        result = piq.MultiScaleGMSDLoss(
-            chromatic=True, data_range=1., reduction='none')(x, y).cpu().detach().numpy()
+        result = piq.MultiScaleGMSDLoss(chromatic=True, data_range=1., reduction='none')(x, y).cpu().detach().numpy()
         return result[0]
 
     def img_handler(self, img):

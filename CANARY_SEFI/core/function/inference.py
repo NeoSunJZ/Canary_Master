@@ -1,6 +1,11 @@
 from tqdm import tqdm
 
 from CANARY_SEFI.core.function.basic.model_function import inference_detector_4_img_batch
+from CANARY_SEFI.core.function.helper.recovery import global_recovery
+from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo, DatasetType
+from CANARY_SEFI.evaluator.logger.adv_logger import find_adv_log_by_attack_id
+from CANARY_SEFI.evaluator.logger.attack_logger import find_attack_log_by_name, find_attack_log, \
+    find_attack_log_by_name_and_base_model
 
 
 def inference(dataset_info, model_name, model_args, img_proc_args):
@@ -8,4 +13,33 @@ def inference(dataset_info, model_name, model_args, img_proc_args):
         def each_img_finish_callback(img, result):
             bar.update(1)
 
-        inference_detector_4_img_batch(model_name, model_args, img_proc_args, dataset_info, each_img_finish_callback)
+        is_skip, completed_num = global_recovery.check_skip(model_name)
+        if is_skip:
+            return None
+        inference_detector_4_img_batch(model_name, model_args, img_proc_args, dataset_info,
+                                       each_img_finish_callback=each_img_finish_callback, completed_num=completed_num)
+
+
+def adv_inference(batch_id, atk_log, test_model, model_args, img_proc_args):
+    all_adv_log = find_adv_log_by_attack_id(batch_id, atk_log['attack_id'])
+
+    adv_img_cursor_list = []
+    for adv_log in all_adv_log:
+        adv_img_cursor_list.append(adv_log["adv_img_id"])
+
+    adv_dataset_info = DatasetInfo(None, None, None, adv_img_cursor_list)
+    adv_dataset_info.dataset_type = DatasetType.ADVERSARIAL_EXAMPLE
+
+    with tqdm(total=adv_dataset_info.dataset_size, desc="推理进度", ncols=80) as bar:
+        def each_img_finish_callback(img, result):
+            bar.update(1)
+
+        participant = "{}({}):{}".format(atk_log['atk_name'], atk_log['base_model'], test_model)
+        if atk_log['atk_perturbation_budget'] is not None:
+            participant = "{}({})(e-{}):{}".format(atk_log['atk_name'], atk_log['base_model'],
+                                                   str(round(float(atk_log['atk_perturbation_budget']), 5)), test_model)
+        is_skip, completed_num = global_recovery.check_skip(participant)
+        if is_skip:
+            return None
+        inference_detector_4_img_batch(test_model, model_args, img_proc_args, adv_dataset_info,
+                                       each_img_finish_callback=each_img_finish_callback, completed_num=completed_num)

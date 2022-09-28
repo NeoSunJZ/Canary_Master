@@ -5,9 +5,8 @@ from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.core.function.helper.task_thread import task_thread
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
-from CANARY_SEFI.evaluator.logger.adv_logger import find_adv_log
+from CANARY_SEFI.evaluator.logger.adv_logger import find_adv_log_by_img_id
 from CANARY_SEFI.evaluator.logger.dataset_logger import add_img_log
-from CANARY_SEFI.handler.csv_handler.csv_io_handler import get_log_data_to_file
 from CANARY_SEFI.handler.image_handler.img_io_handler import get_pic_nparray_from_dataset
 
 
@@ -19,17 +18,7 @@ def default_image_getter(img_name, dataset_path, dataset_seed, dataset_size=None
         return get_pic_nparray_from_dataset(dataset_path, img_name)
 
 
-# 两种读入方式任选其一:
-# 传入dataset_size，则根据dataset_size划分数据集子集，并读入全部的子集（特别的，全部读入则传入数据集原始大小即可）
-# 传入传入img_list，则根据img_list读入指定图片
-# 如果没有自行指定image getter，则默认的image getter只支持第二种，且传入的img_list必须是图片文件名
-
-def dataset_image_reader(iterator, dataset_info, completed_num=0):
-
-    # 对抗样本数据集读入
-    if dataset_info.dataset_type == DatasetType.ADVERSARIAL_EXAMPLE:
-        adv_dataset_image_reader(iterator, dataset_info)
-        return
+def init_dataset_image_reader(dataset_info):
     # 若数据集自行指定了getter，则不使用我们自己的getter
     # 默认getter仅支持全文件名读取
     dataset_component = SEFI_component_manager.dataset_list.get(dataset_info.dataset_name)
@@ -43,6 +32,21 @@ def dataset_image_reader(iterator, dataset_info, completed_num=0):
             is_default_image_getter = False
 
     dataset_path = config_manager.config.get("dataset", {}).get(dataset_info.dataset_name, {}).get("path", None)
+    return image_getter, is_default_image_getter, dataset_path
+
+# 两种读入方式任选其一:
+# 传入dataset_size，则根据dataset_size划分数据集子集，并读入全部的子集（特别的，全部读入则传入数据集原始大小即可）
+# 传入传入img_list，则根据img_list读入指定图片
+# 如果没有自行指定image getter，则默认的image getter只支持第二种，且传入的img_list必须是图片文件名
+
+def dataset_image_reader(iterator, dataset_info, completed_num=0):
+
+    # 对抗样本数据集读入
+    if dataset_info.dataset_type == DatasetType.ADVERSARIAL_EXAMPLE:
+        adv_dataset_image_reader(iterator, dataset_info)
+        return
+
+    image_getter, is_default_image_getter, dataset_path = init_dataset_image_reader(dataset_info)
 
     if dataset_info.dataset_size is not None:
         if not is_default_image_getter:
@@ -74,6 +78,19 @@ def dataset_image_reader(iterator, dataset_info, completed_num=0):
             global_system_log.update_completed_num(1)
 
 
+def dataset_single_image_reader(dataset_info, ori_img_cursor=0):
+    image_getter, is_default_image_getter, dataset_path = init_dataset_image_reader(dataset_info)
+    if dataset_info.dataset_size is not None:
+        if not is_default_image_getter:
+            img, img_label = image_getter(ori_img_cursor, dataset_path, dataset_info.dataset_seed, dataset_info.dataset_size,
+                                            with_label=True)
+            # 检查尺寸
+            img = limit_img_size(img)
+            return img
+        else:
+            raise Exception("The default dataset image getter only supports reading by specifying the item list")
+
+
 def limit_img_size(img):
     # 检查尺寸
     limited_img_size = config_manager.config.get("system", {}).get("limited_read_img_size", None)
@@ -97,14 +114,21 @@ def adv_dataset_image_reader(iterator, dataset_info):
     # 读入数据集位置
     adv_dataset_temp_path = config_manager.config.get("temp", "Dataset_Temp/")
     for i in range(len(adv_img_cursor_list)):
-        adv_log = find_adv_log(adv_img_cursor_list[i])[0]
-        adv_img_id = adv_log[0]
-        adv_batch = adv_log[1]
-        adv_filename = adv_log[5]
+        adv_log = find_adv_log_by_img_id(adv_img_cursor_list[i])
 
-        adv_file_path = adv_dataset_temp_path + adv_batch + "/"
+        adv_file_path = adv_dataset_temp_path + adv_log["batch_id"] + "/"
 
-        img = default_image_getter(adv_filename, adv_file_path, None, None, False)
-        iterator(img, adv_img_id, None)
+        img = default_image_getter(adv_log["adv_img_filename"], adv_file_path, None, None, False)
+        iterator(img, adv_log["adv_img_id"], None)
         global_system_log.update_completed_num(1)
 
+
+def adv_dataset_single_image_reader(adv_img_id):
+    # 读入数据集位置
+    adv_dataset_temp_path = config_manager.config.get("temp", "Dataset_Temp/")
+    adv_log = find_adv_log_by_img_id(adv_img_id)
+
+    adv_file_path = adv_dataset_temp_path + adv_log["batch_id"] + "/"
+
+    img = default_image_getter(adv_log["adv_img_filename"], adv_file_path, None, None, False)
+    return img

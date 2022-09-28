@@ -1,9 +1,11 @@
 import torch
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
+from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
 from CANARY_SEFI.evaluator.logger.inference_logger import add_inference_log
+from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
 
 
 class InferenceDetector:
@@ -42,15 +44,11 @@ class InferenceDetector:
         if self.result_postprocessor is not None:
             result = self.result_postprocessor(result, self.img_proc_args_dict)
 
-        torch.cuda.empty_cache()
+        check_cuda_memory_alloc_status(empty_cache=True)
         return result
 
 
-def inference_detector_4_img_batch(model_name, model_args, img_proc_args, dataset_info, each_img_finish_callback=None):
-
-    is_skip, completed_num = global_system_log.check_skip(model_name)
-    if is_skip:
-        return None
+def inference_detector_4_img_batch(model_name, model_args, img_proc_args, dataset_info, each_img_finish_callback=None, completed_num=0):
 
     img_log_id_list = []
     inference_detector = InferenceDetector(model_name, model_args, img_proc_args)
@@ -68,5 +66,5 @@ def inference_detector_4_img_batch(model_name, model_args, img_proc_args, datase
     dataset_image_reader(inference_iterator, dataset_info, completed_num)
     global_system_log.update_finish_status(True)
 
-    torch.cuda.empty_cache()
+    check_cuda_memory_alloc_status(empty_cache=True)
     return img_log_id_list

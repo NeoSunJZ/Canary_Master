@@ -7,14 +7,14 @@ class SingleTaskThread:
         self.execute_task_list = {}
         self.stop_flag = False
 
-    def execute_task(self, task_id, *args, **kwargs):
-        for task_id in self.execute_task_list:
-            if not self.execute_task_list[task_id].done():
+    def execute_task(self, batch_id, *args, **kwargs):
+        for index in self.execute_task_list:
+            if not self.execute_task_list[index].done():
                 raise RuntimeError("Other tasks running")
-        self.execute_task_list[task_id] = self.executor.submit(*args, **kwargs)
+        self.execute_task_list[batch_id] = self.executor.submit(*args, **kwargs)
 
-    def stop_task(self, task_id):
-        task = self.execute_task_list.get(task_id, None)
+    def stop_task(self, batch_id):
+        task = self.execute_task_list.get(batch_id, None)
         if task is not None and not task.done():
             self.stop_flag = True
 

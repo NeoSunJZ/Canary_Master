@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="On explicit save action" serverName="1042-GPU-Sever" deleteMissingItems="true" createEmptyFolders="true" autoUploadExternalChanges="true" compareModeInSync="TIMESTAMP" showDifferentInSync="false" showNewOnSourceInSync="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="1042-GPU-Sever" deleteMissingItems="true" createEmptyFolders="true" autoUploadExternalChanges="true" compareModeInSync="TIMESTAMP" showDifferentInSync="false" showNewOnSourceInSync="false">
     <serverData>
       <paths name="1042-GPU-Sever">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/canary" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath path="/canary/Dataset_Temp" />
+            <excludedPath path="/canary/evaluator_logger.db" />
+            <excludedPath path="/canary/system_log.db" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="928-GPU-Server-1">
         <serverdata>
           <mappings>
             <mapping deploy="/canary" local="$PROJECT_DIR$" web="/" />
@@ -10,6 +22,6 @@
         </serverdata>
       </paths>
     </serverData>
-    <option name="myAutoUpload" value="ON_EXPLICIT_SAVE" />
+    <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>

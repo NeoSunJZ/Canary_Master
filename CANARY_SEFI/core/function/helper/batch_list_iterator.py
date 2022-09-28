@@ -2,6 +2,7 @@ import torch.cuda
 from tqdm import tqdm
 
 from CANARY_SEFI.core.batch_flag import batch_flag
+from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
 
 
 class BatchListIterator:
@@ -14,10 +15,7 @@ class BatchListIterator:
 
             function(model_name, model_args, img_proc_args)
 
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-                tqdm.write(" [ BATCH {} ] [CUDA-REPORT] 已清理CUDA缓存，当前CUDA显存使用量:\n{}"
-                           .format(batch_flag.batch_id, torch.cuda.memory_summary()))
+            check_cuda_memory_alloc_status(empty_cache=True)
 
     @staticmethod
     def attack_list_iterator(attacker_list, attacker_config, model_config, img_proc_config, function):

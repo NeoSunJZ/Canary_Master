@@ -22,10 +22,10 @@ def img_pre_handler(img, args):
     img = img.copy().astype(np.float32)
     mean = [0.485, 0.456, 0.406],
     std = [0.229, 0.224, 0.225],
+
     img /= 255.0
     img = (img - mean) / std
     img = img.transpose(2, 0, 1)
-
     img = np.expand_dims(img, axis=0)
     return img
 
@@ -35,12 +35,12 @@ def img_post_handler(adv, args):
     mean = [0.485, 0.456, 0.406],
     std = [0.229, 0.224, 0.225],
 
-    adv = adv.data.cpu().numpy()[0]
+    adv = np.squeeze(adv, axis=0)
     adv = adv.transpose(1, 2, 0)
     adv = (adv * std) + mean
-
     adv = adv * 255.0
-    adv = np.clip(adv, 0, 255).astype(np.uint8)
+
+    adv = np.clip(adv, 0, 255).astype(np.float32)
     return adv
 
 

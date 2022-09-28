@@ -2,9 +2,8 @@ import sqlite3
 
 class Logger:
     def __init__(self):
-        self.conn = sqlite3.connect('evaluator_logger.db', check_same_thread=False)
+        self.conn = sqlite3.connect('Benchmark/Benchmark_main.db', check_same_thread=False)
         self.conn.row_factory = self.dict_factory
-        self.debug_log = True
         self.init()
 
     @staticmethod
@@ -16,42 +15,27 @@ class Logger:
 
     def init(self):
         cursor = self.conn.cursor()
-        cursor.execute('create table if not exists adv_example_log '
-                       '(adv_img_id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                       'batch_id varchar(20), '
-                       'attack_id integer(8), '
-                       'cost_time float, '
-                       
-                       'ori_img_id integer(8), '
-                       'adv_img_filename varchar(40), '
-                       
-                       'adv_img_maximum_disturbance varchar, '
-                       'adv_img_euclidean_distortion varchar, '
-                       'adv_img_pixel_change_ratio varchar, '
-                       'adv_img_deep_metrics_similarity varchar, '
-                       'adv_img_low_level_metrics_similarity varchar)')
 
-        cursor.execute('create table if not exists dataset_log '
-                       '(dataset_id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                       'batch_id varchar(20), '
+        cursor.execute('create table if not exists benchmark_info_log '
+                       '(benchmark_id INTEGER PRIMARY KEY AUTOINCREMENT, '
                        'dataset_name varchar(20), '
-                       'dataset_seed varchar(20), '
-                       'dataset_size varchar(20))')
+                       'dataset_seed varchar(20))')
 
-        cursor.execute('create table if not exists attack_log '
-                       '(attack_id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                       'batch_id varchar(20), '
-                       'atk_name  varchar(20), '
+        cursor.execute('create table if not exists benchmark_adv_total_log '
+                       '(benchmark_id INTEGER PRIMARY KEY AUTOINCREMENT, '
+                       'dateset_size integer(8), '
+                       'atk_name varchar(20), '
                        'base_model varchar(20), '
-                       'atk_type varchar(20),'
-                       'atk_perturbation_budget float)')
+                       'test_model varchar(20))')
 
-        cursor.execute('create table if not exists ori_img_log '
-                       '(ori_img_id INTEGER PRIMARY KEY AUTOINCREMENT, '
+        cursor.execute('create table if not exists benchmark_adv_batch_log '
+                       '(benchmark_id INTEGER PRIMARY KEY AUTOINCREMENT, '
                        'batch_id varchar(20), '
-                       'dataset_id integer(8), '
-                       'ori_img_label integer(8), '
-                       'ori_img_cursor varchar(20))')
+                       'dateset_start_cursor integer(8), '
+                       'dateset_size integer(8), '
+                       'atk_name varchar(20), '
+                       'base_model varchar(20), '
+                       'test_model varchar(20))')
 
         cursor.execute('create table if not exists inference_result '
                        '(inference_result_id INTEGER PRIMARY KEY AUTOINCREMENT, '

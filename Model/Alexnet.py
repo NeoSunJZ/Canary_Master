@@ -20,26 +20,26 @@ def create_model():
 @sefi_component.util(util_type="img_preprocessor", util_target="model", name="Alexnet")
 def img_pre_handler(img, args):
     img = img.copy().astype(np.float32)
-    mean = [0.485, 0.456, 0.406],
-    std = [0.229, 0.224, 0.225],
+    mean = [0.485, 0.456, 0.406]
+    std = [0.229, 0.224, 0.225]
+
     img /= 255.0
     img = (img - mean) / std
     img = img.transpose(2, 0, 1)
-
     img = np.expand_dims(img, axis=0)
     return img
 
 
 @sefi_component.util(util_type="img_reverse_processor", util_target="model", name="Alexnet")
 def img_post_handler(adv, args):
-    mean = [0.485, 0.456, 0.406],
-    std = [0.229, 0.224, 0.225],
+    mean = [0.485, 0.456, 0.406]
+    std = [0.229, 0.224, 0.225]
 
-    adv = adv.data.cpu().numpy()[0]
+    adv = np.squeeze(adv, axis=0)
     adv = adv.transpose(1, 2, 0)
     adv = (adv * std) + mean
-
     adv = adv * 255.0
+
     adv = np.clip(adv, 0, 255).astype(np.uint8)
     return adv
 
@@ -55,4 +55,5 @@ def result_post_handler(result, args):
                                    return_type="label_string")
 def inference_detector(model, img):
     img_temp = Variable(torch.from_numpy(img).to(device).float())
+    model.eval()
     return model(img_temp)

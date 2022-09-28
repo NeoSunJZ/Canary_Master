@@ -25,6 +25,9 @@ SEFI_component_manager.add(imgnet2012_dataset)
 # CW
 from Attack_Method.white_box_adv.CW import sefi_component as cw_attacker
 SEFI_component_manager.add(cw_attacker)
+# MI-FGSM
+from Attack_Method.white_box_adv.MI_FGSM import sefi_component as mi_fgsm_attacker
+SEFI_component_manager.add(mi_fgsm_attacker)
 
 if __name__ == "__main__":
     websocket.run(app, host="0.0.0.0")

@@ -10,6 +10,13 @@
             </list>
           </settings>
         </remote-mappings>
+        <remote-mappings server-id="python@sftp://sunjiazheng@10.1.1.46:22/home/sunjiazheng/.conda/envs/canary-3090/bin/python">
+          <settings>
+            <list>
+              <mapping local-root="$PROJECT_DIR$/CANARY_SEFI" remote-root="/home/sunjiazheng/canary" />
+            </list>
+          </settings>
+        </remote-mappings>
       </list>
     </list>
   </component>

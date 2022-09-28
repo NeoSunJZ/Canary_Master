@@ -153,6 +153,5 @@ class SEFIComponent:
 
     def attack_param(self):
         def wrapper(decorated):
-            print(decorated)
             return decorated
         return wrapper
