@@ -8,7 +8,7 @@ from CANARY_SEFI.core.function.helper.excepthook import excepthook
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.core.function.helper.task_thread import task_thread
-from CANARY_SEFI.core.service.security_evaluation import SecurityEvaluation
+from CANARY_SEFI.service.security_evaluation import SecurityEvaluation
 from CANARY_SEFI.entity.msg_entity import MsgEntity
 from CANARY_SEFI.evaluator.logger.test_data_logger import log
 

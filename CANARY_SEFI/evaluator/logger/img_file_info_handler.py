@@ -5,13 +5,11 @@ from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 logger = batch_manager.test_data_logger
 
 
-def add_img_log(dataset_id, ori_img_label, ori_img_cursor):
-    sql_insert = " INSERT INTO ori_img_log (ori_img_id, ori_img_label, ori_img_cursor) " + \
-                 " VALUES (NULL,?,?,?)"
-    sql_query = " SELECT ori_img_id FROM ori_img_log " \
-                " WHERE dataset_id = ? AND ori_img_label = ? AND ori_img_cursor = ?"
+def add_img_log(ori_img_label, ori_img_cursor):
+    sql_insert = " INSERT INTO ori_img_log (ori_img_id, ori_img_label, ori_img_cursor) VALUES (NULL,?,?,?)"
+    sql_query = " SELECT ori_img_id FROM ori_img_log WHERE ori_img_label = ? AND ori_img_cursor = ?"
 
-    args = (dataset_id, str(ori_img_label), str(ori_img_cursor))
+    args = (str(ori_img_label), str(ori_img_cursor))
     result = logger.query_log(sql_query, args)
     if result is not None:
         img_id = result["ori_img_id"]

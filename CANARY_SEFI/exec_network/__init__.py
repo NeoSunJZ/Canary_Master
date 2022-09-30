@@ -5,10 +5,10 @@ from flask import Flask
 # from attacker_controller import api as attacker_api
 # from dataset_controller import api as dataset_api
 # from model_controller import api as model_api
-from CANARY_SEFI.core.exec_network.security_evaluation_controller import api as security_evaluation_api
-from CANARY_SEFI.core.exec_network.task_controller import api as task_api
-from CANARY_SEFI.core.exec_network.analyzer_controller import api as analyzer_api
-from CANARY_SEFI.core.exec_network.client_declaration import client_declaration
+from CANARY_SEFI.exec_network.security_evaluation_controller import api as security_evaluation_api
+from CANARY_SEFI.exec_network.task_controller import api as task_api
+from CANARY_SEFI.exec_network.analyzer_controller import api as analyzer_api
+from CANARY_SEFI.exec_network.client_declaration import client_declaration
 
 
 # 创建app

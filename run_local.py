@@ -2,7 +2,7 @@ from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 
 # 模型
 # VTI
-from CANARY_SEFI.core.service.security_evaluation import SecurityEvaluation
+from CANARY_SEFI.service.security_evaluation import SecurityEvaluation
 from Model.Vision_Transformer import sefi_component as vision_transformer_model
 
 SEFI_component_manager.add(vision_transformer_model)

@@ -16,7 +16,7 @@ class BatchManager(object):
     def init_batch(self):
         print_logo()
         self.batch_token = ''.join(random.sample(string.ascii_letters + string.digits, 8))
-        self.test_data_logger = TestDataLogger(batch_token)
+        self.test_data_logger = TestDataLogger(self.batch_token)
 
 
 batch_manager = BatchManager()

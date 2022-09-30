@@ -76,7 +76,7 @@ class TestDataLogger:
                        'inference_img_label varchar, '
                        'inference_img_conf_array varchar)')
 
-        cursor.execute('create table if not exists model_capability_indicator_data '
+        cursor.execute('create table if not exists model_inference_capability_indicator_data '
                        '(model_name varchar PRIMARY KEY, '
                        'clear_acc float, '
                        'clear_f1 float, '
@@ -86,8 +86,7 @@ class TestDataLogger:
         # MR: misclassification ratio
         # AIAC: average increase adversarial-class confidence
         # ARTC: average reduction true-class confidence
-        # ACT: average cost time
-        cursor.execute('create table if not exists attack_capability_indicator_data '
+        cursor.execute('create table if not exists attack_deflection_capability_indicator_data '
                        '(atk_name varchar, '
                        'base_model varchar, '
                        'atk_perturbation_budget float,'
@@ -96,10 +95,10 @@ class TestDataLogger:
                        'UNIQUE (atk_name, base_model, atk_perturbation_budget, inference_model, adv_example_file_type), '  # 
                        'MR float, '
                        'AIAC float, '
-                       'ARTC float, '
-                       'ACT float)')
+                       'ARTC float)')
 
         # 缩写释义:
+        # ACT: average cost time
         # AMD: average maximum disturbance
         # AED: average euclidean distortion
         # APCR: average pixel change ratio
@@ -111,6 +110,7 @@ class TestDataLogger:
                        'atk_perturbation_budget float,'
                        'adv_example_file_type varchar,'  # 对抗样本文件类型 IMG文件可能导致真实误差，NP文件不会转换类型因而没有误差，但并不真实
                        'UNIQUE (atk_name, base_model, atk_perturbation_budget, adv_example_file_type), '  # 
+                       'ACT float, '
                        'AMD float, '
                        'AED float, '
                        'APCR float, '

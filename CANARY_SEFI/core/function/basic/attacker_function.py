@@ -1,10 +1,10 @@
-from CANARY_SEFI.batch_manager import batch_flag
+from CANARY_SEFI.batch_manager import batch_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
 from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
-from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import add_adv_build_log, add_adv_base_log
+from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import add_adv_example_file_log, set_adv_example_file_cost_time
 from CANARY_SEFI.evaluator.logger.attack_info_handler import add_attack_log
 from CANARY_SEFI.evaluator.monitor.attack_effect import time_cost_statistics
 from CANARY_SEFI.handler.image_handler.img_io_handler import save_pic_to_temp
@@ -90,16 +90,16 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
 
         # 保存至临时文件夹
         # 因为直接转储为PNG会导致精度丢失，产生很多奇怪的结论
-        img_file_name = "adv_{}_{}_{}.png".format(str(batch_flag.batch_id), str(attack_id), str(img_log_id))
-        save_pic_to_temp(batch_flag.batch_id, img_file_name, adv_result)
+        img_file_name = "adv_{}_{}_{}.png".format(batch_manager.batch_token, attack_id, img_log_id)
+        save_pic_to_temp(batch_manager.batch_token, img_file_name, adv_result)
 
         if save_raw_data:
-            raw_file_name = "adv_raw_{}_{}_{}.txt".format(str(batch_flag.batch_id), str(attack_id), str(img_log_id))
-            save_pic_to_temp(batch_flag.batch_id, raw_file_name, adv_result, save_as_numpy_array=True)
+            raw_file_name = "adv_raw_{}_{}_{}.txt".format(batch_manager.batch_token, attack_id, img_log_id)
+            save_pic_to_temp(batch_manager.batch_token, raw_file_name, adv_result, save_as_numpy_array=True)
 
         # 写入日志
-        adv_img_id = add_adv_base_log(attack_id, img_log_id, img_file_name, raw_file_name)
-        add_adv_build_log(adv_img_id, adv_attacker.cost_time)
+        adv_img_id = add_adv_example_file_log(attack_id, img_log_id, img_file_name, raw_file_name)
+        set_adv_example_file_cost_time(adv_img_id, adv_attacker.cost_time)
 
         adv_img_id_list.append(adv_img_id)
 

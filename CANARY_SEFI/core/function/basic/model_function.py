@@ -4,19 +4,19 @@ from CANARY_SEFI.core.component.component_builder import build_dict_with_json_ar
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
-from CANARY_SEFI.evaluator.logger.inference_test_data_handler import add_inference_log
+from CANARY_SEFI.evaluator.logger.inference_test_data_handler import save_inference_test_data
 from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
 
 
 class InferenceDetector:
-    def __init__(self, model_name, model_args, img_proc_args):
+    def __init__(self, inference_model_name, model_args, img_proc_args):
         # 测评日志
 
-        self.model = get_model(model_name, model_args)
+        self.model = get_model(inference_model_name, model_args)
         if self.model is None:
             # 未找到指定的Model
             raise RuntimeError("No model find, please check MODEL NAME")
-        model_component = SEFI_component_manager.model_list.get(model_name)
+        model_component = SEFI_component_manager.model_list.get(inference_model_name)
         # 预测器
         self.inference_detector = model_component.get("inference_detector")
         if self.inference_detector is None:
@@ -48,20 +48,20 @@ class InferenceDetector:
         return result
 
 
-def inference_detector_4_img_batch(model_name, model_args, img_proc_args, dataset_info, each_img_finish_callback=None, completed_num=0):
+def inference_detector_4_img_batch(inference_model_name, model_args, img_proc_args, dataset_info, each_img_finish_callback=None, completed_num=0):
 
     img_log_id_list = []
-    inference_detector = InferenceDetector(model_name, model_args, img_proc_args)
+    inference_detector = InferenceDetector(inference_model_name, model_args, img_proc_args)
 
-    def inference_iterator(img, img_log_id, img_label):
+    def inference_iterator(img, img_id, img_label):
         # 执行预测
         label, conf_array = inference_detector.inference_detector_4_img(img)
-        img_log_id_list.append(img_log_id)
+        img_log_id_list.append(img_id)
         if each_img_finish_callback is not None:
             each_img_finish_callback(img, label)
 
         # 写入必要日志
-        add_inference_log(img_log_id, dataset_info.dataset_type.value, model_name, label, conf_array)
+        save_inference_test_data(img_id, dataset_info.dataset_type.value, inference_model_name, label, conf_array)
 
     dataset_image_reader(inference_iterator, dataset_info, completed_num)
     global_system_log.update_finish_status(True)

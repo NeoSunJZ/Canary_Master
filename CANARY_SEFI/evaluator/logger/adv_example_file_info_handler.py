@@ -31,6 +31,11 @@ def find_all_adv_example_file_logs():
     return logger.query_logs(sql, ())
 
 
+def find_adv_example_file_logs_by_ori_img_id(ori_img_id):
+    sql = "SELECT * FROM adv_img_file_log WHERE ori_img_id = ?"
+    return logger.query_logs(sql, (ori_img_id,))
+
+
 def find_adv_example_file_logs_by_attack_id(attack_id):
     sql = "SELECT * FROM adv_img_file_log WHERE attack_id = ?"
     return logger.query_logs(sql, (attack_id,))
