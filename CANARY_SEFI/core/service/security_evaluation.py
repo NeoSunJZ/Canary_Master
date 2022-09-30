@@ -1,8 +1,6 @@
 import sys
-from colorama import Fore
-from tqdm import tqdm
 from CANARY_SEFI.copyright import print_logo
-from CANARY_SEFI.core.batch_flag import batch_flag
+from CANARY_SEFI.batch_manager import batch_flag
 from CANARY_SEFI.core.function.helper.batch_list_iterator import BatchListIterator
 from CANARY_SEFI.core.function.helper.excepthook import excepthook
 from CANARY_SEFI.core.function.init_dataset import init_dataset
@@ -10,7 +8,7 @@ from CANARY_SEFI.core.function.security_evaluation import model_capability_test,
     attack_capability_test, explore_attack_perturbation, model_capability_evaluation, attack_capability_evaluation, \
     model_security_synthetical_capability_evaluation, explore_perturbation_attack_capability_test, \
     explore_perturbation_attack_capability_evaluation
-from CANARY_SEFI.evaluator.logger.db_logger import log
+from CANARY_SEFI.evaluator.logger.test_data_logger import log
 
 
 class SecurityEvaluation:

@@ -14,6 +14,7 @@ def print_logo():
     tqdm.write(" ╚══════╝ ╚══════╝ ╚═╝      ╚═╝")
     tqdm.write("\n")
     tqdm.write(" Security Evaluation Fast Integration Framework")
-    tqdm.write(" V20220630.beta C.2  \n")
+    tqdm.write(" V20220929.beta E.9  \n")
     tqdm.write(" Design By Jiazheng Sun [BIT] \n")
+    tqdm.write(" Contributor: Li Chen \ Rong Huang \ DongLi Tan \ Zhi Qu \ Chenxiao Xia \n")
     tqdm.write(Style.RESET_ALL)

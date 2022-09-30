@@ -2,7 +2,7 @@ from colorama import Fore
 
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
-from CANARY_SEFI.evaluator.logger.analyze_result_loggeer import get_model_test_result_log, \
+from CANARY_SEFI.evaluator.logger.indicator_data_handler import get_model_test_result_log, \
     get_attack_test_result_log_by_base_model, get_adv_da_test_result_log_by_base_model, \
     add_model_security_synthetical_capability_log
 from CANARY_SEFI.handler.tools.analyzer_tools import calc_average

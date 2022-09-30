@@ -4,11 +4,11 @@ from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 from CANARY_SEFI.evaluator.analyzer.test_analyzer import attack_test_analyzer_and_evaluation_handler
-from CANARY_SEFI.evaluator.logger.adv_logger import find_adv_log_by_attack_id
-from CANARY_SEFI.evaluator.logger.analyze_result_loggeer import add_attack_test_result_log, add_adv_da_test_result_log
-from CANARY_SEFI.evaluator.logger.attack_logger import find_attack_log_by_name_and_base_model
-from CANARY_SEFI.evaluator.logger.dataset_logger import find_img_log
-from CANARY_SEFI.evaluator.logger.inference_logger import find_inference_log_by_img_id
+from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_log_by_attack_id
+from CANARY_SEFI.evaluator.logger.indicator_data_handler import add_attack_test_result_log, add_adv_da_test_result_log
+from CANARY_SEFI.evaluator.logger.attack_info_handler import find_attack_log_by_name_and_base_model
+from CANARY_SEFI.evaluator.logger.img_file_info_handler import find_img_log
+from CANARY_SEFI.evaluator.logger.inference_test_data_handler import find_inference_log_by_img_id
 from CANARY_SEFI.handler.tools.analyzer_tools import calc_average
 
 

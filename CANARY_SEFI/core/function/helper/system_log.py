@@ -2,7 +2,7 @@ import datetime
 import sqlite3
 import time
 
-from CANARY_SEFI.core.batch_flag import batch_flag
+from CANARY_SEFI.batch_manager import batch_flag
 from CANARY_SEFI.core.function.enum.step_enum import Step
 from CANARY_SEFI.core.function.helper.task_thread import task_thread
 

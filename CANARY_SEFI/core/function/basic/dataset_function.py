@@ -5,8 +5,8 @@ from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.core.function.helper.task_thread import task_thread
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
-from CANARY_SEFI.evaluator.logger.adv_logger import find_adv_log_by_img_id
-from CANARY_SEFI.evaluator.logger.dataset_logger import add_img_log
+from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_log_by_img_id
+from CANARY_SEFI.evaluator.logger.img_file_info_handler import add_img_log
 from CANARY_SEFI.handler.image_handler.img_io_handler import get_pic_nparray_from_dataset
 
 

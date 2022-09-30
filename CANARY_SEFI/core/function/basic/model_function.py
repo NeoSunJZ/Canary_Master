@@ -4,7 +4,7 @@ from CANARY_SEFI.core.component.component_builder import build_dict_with_json_ar
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
-from CANARY_SEFI.evaluator.logger.inference_logger import add_inference_log
+from CANARY_SEFI.evaluator.logger.inference_test_data_handler import add_inference_log
 from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
 
 

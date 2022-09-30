@@ -1,10 +1,10 @@
 import random
 
 from colorama import Fore, Style
-from flask_socketio import SocketIO, join_room, send, leave_room, emit
+from flask_socketio import SocketIO, join_room, emit
 from tqdm import tqdm
 
-from CANARY_SEFI.core.batch_flag import batch_flag
+from CANARY_SEFI.batch_manager import batch_flag
 from CANARY_SEFI.core.function.helper.system_log import global_system_log
 
 

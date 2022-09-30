@@ -1,6 +1,6 @@
 from colorama import Fore
 
-from CANARY_SEFI.core.batch_flag import batch_flag
+from CANARY_SEFI.batch_manager import batch_flag
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.system_log import global_system_log
 

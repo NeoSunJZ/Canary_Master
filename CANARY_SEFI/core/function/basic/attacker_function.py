@@ -1,15 +1,12 @@
-import torch
-
-from CANARY_SEFI.core.batch_flag import batch_flag
+from CANARY_SEFI.batch_manager import batch_flag
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
 from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
-from CANARY_SEFI.evaluator.logger.adv_logger import add_adv_build_log, add_adv_base_log, add_adv_da_log
-from CANARY_SEFI.evaluator.logger.attack_logger import add_attack_log
+from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import add_adv_build_log, add_adv_base_log
+from CANARY_SEFI.evaluator.logger.attack_info_handler import add_attack_log
 from CANARY_SEFI.evaluator.monitor.attack_effect import time_cost_statistics
-from CANARY_SEFI.evaluator.tester.adv_disturbance_aware import AdvDisturbanceAwareTester
 from CANARY_SEFI.handler.image_handler.img_io_handler import save_pic_to_temp
 from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
 
@@ -77,36 +74,45 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
                            each_img_finish_callback=None, completed_num=0):
 
     adv_img_id_list = []
+    # 构建攻击者
     adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args)
 
     # 写入日志
     atk_perturbation_budget = atk_args[adv_attacker.perturbation_budget_var_name] \
         if adv_attacker.perturbation_budget_var_name is not None else None
+
     attack_id = add_attack_log(atk_name, model_name, atk_perturbation_budget=atk_perturbation_budget)
 
-    def attack_iterator(img, img_log_id, img_label):
+    # 攻击单图片迭代函数
+    def attack_iterator(img, img_log_id, img_label, save_raw_data = False):
         # 执行攻击
         adv_result = adv_attacker.adv_attack_4_img(img, img_label)
 
         # 保存至临时文件夹
-        img_name = "adv_{}_{}_{}.png".format(str(batch_flag.batch_id), str(attack_id), str(img_log_id))
-        save_pic_to_temp(batch_flag.batch_id, img_name, adv_result)
+        # 因为直接转储为PNG会导致精度丢失，产生很多奇怪的结论
+        img_file_name = "adv_{}_{}_{}.png".format(str(batch_flag.batch_id), str(attack_id), str(img_log_id))
+        save_pic_to_temp(batch_flag.batch_id, img_file_name, adv_result)
+
+        if save_raw_data:
+            raw_file_name = "adv_raw_{}_{}_{}.txt".format(str(batch_flag.batch_id), str(attack_id), str(img_log_id))
+            save_pic_to_temp(batch_flag.batch_id, raw_file_name, adv_result, save_as_numpy_array=True)
 
         # 写入日志
-        adv_img_id = add_adv_base_log(attack_id, img_log_id, img_name)
-        adv_img_id_list.append(adv_img_id)
+        adv_img_id = add_adv_base_log(attack_id, img_log_id, img_file_name, raw_file_name)
         add_adv_build_log(adv_img_id, adv_attacker.cost_time)
+
+        adv_img_id_list.append(adv_img_id)
 
         if each_img_finish_callback is not None:
             each_img_finish_callback(img, adv_result)
 
-        # 对抗样本综合测试
-        adv_da_tester = AdvDisturbanceAwareTester()
-        adv_da_test_result = adv_da_tester.test_all(img, adv_result)
-        print(adv_da_test_result)
-
-        # 写入日志
-        add_adv_da_log(adv_img_id, adv_da_test_result)
+        # # 对抗样本综合测试
+        # adv_da_tester = AdvDisturbanceAwareTester()
+        # adv_da_test_result = adv_da_tester.test_all(img, adv_result)
+        # print(adv_da_test_result)
+        #
+        # # 写入日志
+        # add_adv_da_log(adv_img_id, adv_da_test_result)
 
     dataset_image_reader(attack_iterator, dataset_info, completed_num)
     global_system_log.update_finish_status(True)

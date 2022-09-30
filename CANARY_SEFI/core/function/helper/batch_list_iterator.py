@@ -1,7 +1,3 @@
-import torch.cuda
-from tqdm import tqdm
-
-from CANARY_SEFI.core.batch_flag import batch_flag
 from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
 
 

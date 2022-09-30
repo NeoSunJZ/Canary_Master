@@ -2,6 +2,7 @@ import base64
 import os
 from io import BytesIO
 import cv2
+import numpy
 import numpy as np
 from PIL import Image
 
@@ -27,27 +28,30 @@ def get_pic_base64_from_nparray(file_output):
     return "data:image/jpg;base64," + new_image_string
 
 
-def get_pic_nparray_from_dataset(dataset_path, pic_name):
-    pic_name = img_file_name_handler(pic_name)
+def get_pic_nparray_from_dataset(dataset_path, file_name, is_numpy_array_file=False):
+    file_name = img_file_name_handler(file_name, is_numpy_array_file)
     if dataset_path is None:
         raise TypeError("[baispBoot] The dataset path is NOT FOUND, please check your config")
-    img = cv2.imread(dataset_path + pic_name)
-    return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    if not is_numpy_array_file:
+        img = cv2.imread(dataset_path + file_name)
+        return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    else:
+        return np.loadtxt(dataset_path + file_name)
 
 
-def get_pic_nparray_from_temp(temp_token, pic_name):
-    temp_path = config_manager.config.get("temp", "Dataset_Temp/")
-    img = cv2.imread(temp_path + temp_token + "/" + pic_name)
-    return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-
-def save_pic_to_temp(temp_token, pic_name, result):
-    pic_name = img_file_name_handler(pic_name)
-    temp_path = config_manager.config.get("temp", "Dataset_Temp/")
+def save_pic_to_temp(temp_token, file_name, pic_numpy_array, save_as_numpy_array=False):
+    file_name = img_file_name_handler(file_name, save_as_numpy_array)
+    temp_path = config_manager.config.get("datasetTemp", "Dataset_Temp/")
     if not os.path.exists(temp_path + temp_token):
         os.makedirs(temp_path + temp_token)
-    full_path = temp_path + temp_token + "/" + pic_name
-    cv2.imwrite(full_path, cv2.cvtColor(np.asarray(result), cv2.COLOR_RGB2BGR))
+    full_path = temp_path + temp_token + "/" + file_name
+    # 判断是否要存储为图片文件(存为图片文件可能存在精度截断)
+    if not save_as_numpy_array:
+        # 确保存储的是0-255的uint8数据以避免错误
+        pic_numpy_array = np.clip(pic_numpy_array, 0, 255).astype(np.uint8)
+        cv2.imwrite(full_path, cv2.cvtColor(np.asarray(pic_numpy_array), cv2.COLOR_RGB2BGR))
+    else:
+        numpy.savetxt(full_path, pic_numpy_array)
     return
 
 
@@ -55,9 +59,12 @@ def get_temp_download_url(temp_token):
     return temp_token
 
 
-def img_file_name_handler(pic_name):
-    pic_name = str(pic_name)
-    if pic_name.find(".") != -1:
-        return pic_name
+def img_file_name_handler(file_name, is_numpy_array_file=False):
+    file_name = str(file_name)
+    if file_name.find(".") != -1:
+        return file_name
     else:
-        return pic_name + ".png"
+        if is_numpy_array_file:
+            return file_name + ".txt"
+        else:
+            return file_name + ".png"

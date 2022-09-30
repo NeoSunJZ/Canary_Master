@@ -1,18 +1,8 @@
-import random
-
-from CANARY_SEFI.core.batch_flag import batch_flag
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 
 # 模型
 # VTI
-from CANARY_SEFI.core.function.basic.dataset_function import dataset_single_image_reader, adv_dataset_image_reader, \
-    adv_dataset_single_image_reader
-from CANARY_SEFI.core.function.helper.recovery import global_recovery
-from CANARY_SEFI.core.function.init_dataset import init_dataset
-from CANARY_SEFI.core.function.security_evaluation import model_security_synthetical_capability_evaluation
 from CANARY_SEFI.core.service.security_evaluation import SecurityEvaluation
-from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo
-from CANARY_SEFI.evaluator.tester.adv_disturbance_aware import AdvDisturbanceAwareTester
 from Model.Vision_Transformer import sefi_component as vision_transformer_model
 
 SEFI_component_manager.add(vision_transformer_model)
@@ -42,6 +32,24 @@ from Dataset.ImageNet2012.dataset_loader import sefi_component as imgnet2012_dat
 SEFI_component_manager.add(imgnet2012_dataset)
 
 if __name__ == "__main__":
+
+    # config = {
+    #     "dataset_size": 1000,
+    #     "dataset": "ILSVRC-2012",
+    #     "attacker_list": {
+    #         "CW": ["Alexnet", "VGG-16"],
+    #         "MI-FGSM": ["Alexnet", "VGG-16"],
+    #     },
+    #     "transfer_attack_test_mode":"SELF_CROSS",
+    #     "attacker_config": {
+    #         "MI-FGSM": {"alpha": 0.005, "epsilon": 0.2, "pixel_min": -3, "pixel_max": 3, "T": 1000,
+    #                           "attack_type": "UNTARGETED", "tlabel": None}
+    #         "CW": {"classes": 1000, "lr": 0.005, "confidence": 0, "clip_min": -3, "clip_max": 3,
+    #                "initial_const": 0.01,
+    #                "binary_search_steps": 5, "max_iterations": 1000, "attack_type": "UNTARGETED", "tlabel": None},
+    #     }
+    # }
+
     config = {"dataset_size": 5, "model_list": ["Alexnet", "VGG-16"], "dataset": "ILSVRC-2012",
               "model_config": {"Alexnet": {}, "VGG-16": {}}, "img_proc_config": {"Alexnet": {}, "VGG-16": {}},
               "attacker_list": {"MI-FGSM": ["Alexnet"]},
@@ -55,6 +63,13 @@ if __name__ == "__main__":
                   "MI-FGSM": {"alpha": 0.005, "epsilon": 0.2, "pixel_min": -3, "pixel_max": 3, "T": 1000,
                               "attack_type": "UNTARGETED", "tlabel": None}}
               }
+    security_evaluation = SecurityEvaluation(config.get('dataset'), config.get('dataset_size'),
+                                             config.get('dataset_seed', None))
+    security_evaluation.attack_full_test(config.get('attacker_list'), config.get('attacker_config'),
+                                         config.get('model_list'), config.get('model_config'),
+                                         config.get('img_proc_config'),
+                                         config.get('transfer_attack_test_mode'),
+                                         config.get('transfer_attack_test_on_model_list', None))
     # config_explore_perturbation = {"dataset_size": 150, "model_list": ["Alexnet", "VGG-16"], "dataset": "ILSVRC-2012",
     #                                "model_config": {"Alexnet": {}, "VGG-16": {}},
     #                                "img_proc_config": {"Alexnet": {}, "VGG-16": {}},

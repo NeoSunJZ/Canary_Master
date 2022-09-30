@@ -12,8 +12,8 @@ from CANARY_SEFI.evaluator.analyzer.synthetical_analyzer import \
     model_security_synthetical_capability_analyzer_and_evaluation
 from CANARY_SEFI.evaluator.analyzer.test_analyzer import model_capability_analyzer_and_evaluation, \
     attack_capability_analyzer_and_evaluation
-from CANARY_SEFI.evaluator.logger.adv_logger import find_all_adv_log
-from CANARY_SEFI.evaluator.logger.attack_logger import find_attack_log, find_attack_log_by_name_and_base_model
+from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_all_adv_log
+from CANARY_SEFI.evaluator.logger.attack_info_handler import find_attack_log, find_attack_log_by_name_and_base_model
 
 
 def model_capability_test(dataset_info, model_list, model_config, img_proc_config):

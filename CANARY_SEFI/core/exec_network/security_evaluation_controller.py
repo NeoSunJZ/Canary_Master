@@ -1,19 +1,16 @@
-import random
 import sys
-import traceback
 
 from colorama import Fore
 from flask import Blueprint, request, current_app
 
-from CANARY_SEFI.core.batch_flag import batch_flag
+from CANARY_SEFI.batch_manager import batch_flag
 from CANARY_SEFI.core.function.helper.excepthook import excepthook
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
-from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.core.function.helper.task_thread import task_thread
 from CANARY_SEFI.core.service.security_evaluation import SecurityEvaluation
 from CANARY_SEFI.entity.msg_entity import MsgEntity
-from CANARY_SEFI.evaluator.logger.db_logger import log
+from CANARY_SEFI.evaluator.logger.test_data_logger import log
 
 api = Blueprint('test_api', __name__)
 

@@ -3,8 +3,8 @@ from tqdm import tqdm
 from CANARY_SEFI.core.function.basic.model_function import inference_detector_4_img_batch
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo, DatasetType
-from CANARY_SEFI.evaluator.logger.adv_logger import find_adv_log_by_attack_id
-from CANARY_SEFI.evaluator.logger.attack_logger import find_attack_log_by_name, find_attack_log, \
+from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_log_by_attack_id
+from CANARY_SEFI.evaluator.logger.attack_info_handler import find_attack_log_by_name, find_attack_log, \
     find_attack_log_by_name_and_base_model
 
 
