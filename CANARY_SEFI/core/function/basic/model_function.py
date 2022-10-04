@@ -1,8 +1,6 @@
 import torch
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
-from CANARY_SEFI.core.function.helper.recovery import global_recovery
-from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
 from CANARY_SEFI.evaluator.logger.inference_test_data_handler import save_inference_test_data
 from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
@@ -64,7 +62,7 @@ def inference_detector_4_img_batch(inference_model_name, model_args, img_proc_ar
         save_inference_test_data(img_id, dataset_info.dataset_type.value, inference_model_name, label, conf_array)
 
     dataset_image_reader(inference_iterator, dataset_info, completed_num)
-    global_system_log.update_finish_status(True)
+    batch_manager.sys_log_logger.update_finish_status(True)
 
     check_cuda_memory_alloc_status(empty_cache=True)
     return img_log_id_list

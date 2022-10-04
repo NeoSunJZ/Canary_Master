@@ -1,8 +1,10 @@
 import datetime
+import os
 import sqlite3
 import time
 
-from CANARY_SEFI.batch_manager import batch_flag
+from CANARY_SEFI.batch_manager import batch_manager
+from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.function.enum.step_enum import Step
 from CANARY_SEFI.core.function.helper.task_thread import task_thread
 
@@ -10,12 +12,22 @@ from CANARY_SEFI.core.function.helper.task_thread import task_thread
 class SystemLog:
 
     def __init__(self):
-        self.conn = sqlite3.connect('system_log.db', check_same_thread=False)
+        # 检查是否存在数据库文件
+        if not os.path.exists(batch_manager.base_temp_path + "database/"):
+            os.makedirs(batch_manager.base_temp_path + "database/")
+        full_path = batch_manager.base_temp_path + "database/evaluator_logger.db"
+
+        if not os.path.exists(full_path):
+            self.conn = sqlite3.connect(full_path, check_same_thread=False)
+            self.init_database()
+        else:
+            self.conn = sqlite3.connect(full_path, check_same_thread=False)
+
         self.conn.row_factory = self.dict_factory
+
         self.system_log_id = None
         self.step = None
         self.step_sequence = 0
-        self.init()
 
     @staticmethod
     def dict_factory(cursor, row):
@@ -24,11 +36,10 @@ class SystemLog:
             data[col[0]] = row[idx]
         return data
 
-    def init(self):
+    def init_database(self):
         cursor = self.conn.cursor()
         cursor.execute('create table if not exists system_log '
                        '(id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                       'batch_id varchar(20), '
                        'step varchar(40),'
                        'participant varchar(40),'
                        'completed_num integer,'
@@ -38,7 +49,6 @@ class SystemLog:
 
         cursor.execute('create table if not exists system_console_msg '
                        '(id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                       'batch_id varchar(20), '
                        'msg varchar(40),'
                        'type varchar(40),'
                        'record_time datetime)')
@@ -53,9 +63,9 @@ class SystemLog:
 
     def new_record(self, participant):
         cursor = self.conn.cursor()
-        sql_insert = " INSERT INTO system_log (id, batch_id, step, participant, completed_num, is_finish, stop_reason, stop_time) " + \
+        sql_insert = " INSERT INTO system_log (id, step, participant, completed_num, is_finish, stop_reason, stop_time) " + \
                      " VALUES (NULL, ?, ?, ?, 0, ?, NULL, NULL)"
-        cursor.execute(sql_insert, (str(batch_flag.batch_id), str(self.step), str(participant), False))
+        cursor.execute(sql_insert, (str(self.step), str(participant), False))
         self.system_log_id = int(cursor.lastrowid)
         cursor.close()
         self.conn.commit()
@@ -85,16 +95,16 @@ class SystemLog:
 
     def get_current_step_progress_log(self, participant):
         cursor = self.conn.cursor()
-        sql_query = " SELECT * FROM system_log WHERE batch_id = ? AND step = ? AND participant = ?"
-        cursor.execute(sql_query, (str(batch_flag.batch_id), str(self.step), str(participant)))
+        sql_query = " SELECT * FROM system_log WHERE step = ? AND participant = ?"
+        cursor.execute(sql_query, (str(self.step), str(participant)))
         value = cursor.fetchone()
         cursor.close()
         return value
 
-    def get_all_task_progress_log(self, batch_id):
+    def get_all_task_progress_log(self):
         cursor = self.conn.cursor()
-        sql_query = " SELECT * FROM system_log WHERE batch_id = ? "
-        cursor.execute(sql_query, (str(batch_id),))
+        sql_query = " SELECT * FROM system_log "
+        cursor.execute(sql_query, ())
         values = cursor.fetchall()
         for value in values:
             value["step_name"] = Step[value["step"]].step_name()
@@ -103,22 +113,19 @@ class SystemLog:
 
     def new_console_record(self, msg, type):
         cursor = self.conn.cursor()
-        sql_insert = " INSERT INTO system_console_msg (id, batch_id, msg , type, record_time) VALUES (NULL, ?, ?, ?, ?)"
-        cursor.execute(sql_insert, (str(batch_flag.batch_id), str(msg), str(type), datetime.datetime.now()))
+        sql_insert = " INSERT INTO system_console_msg (id, msg, type, record_time) VALUES (NULL, ?, ?, ?)"
+        cursor.execute(sql_insert, (str(msg), str(type), datetime.datetime.now()))
         cursor.close()
         self.conn.commit()
 
-    def get_all_console_msg(self, batch_id, before_time):
+    def get_all_console_msg(self, before_time):
         cursor = self.conn.cursor()
         if before_time is None:
             before_time = datetime.datetime.now()
         else:
             before_time = time.strftime("%Y-%m-%d %H:%M:%S.%s", time.localtime(int(before_time) / 1000))
-        sql_query = " SELECT * FROM system_console_msg WHERE batch_id = ? AND record_time < Datetime(?) "
-        cursor.execute(sql_query, (str(batch_id), str(before_time)))
+        sql_query = " SELECT * FROM system_console_msg WHERE record_time < Datetime(?) "
+        cursor.execute(sql_query, (str(before_time)))
         values = cursor.fetchall()
         cursor.close()
         return values
-
-
-global_system_log = SystemLog()

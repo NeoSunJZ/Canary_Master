@@ -1,10 +1,10 @@
 from colorama import Fore
 
+from CANARY_SEFI.batch_manager import batch_manager
 from CANARY_SEFI.core.function.check_adv_example import adv_example_da_check
 from CANARY_SEFI.core.function.enum.step_enum import Step
 from CANARY_SEFI.core.function.enum.transfer_attack_type_enum import TransferAttackType
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
-from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.core.function.inference import inference, adv_inference
 from CANARY_SEFI.core.function.generate_adv_example import build_AEs, explore_perturbation
 from CANARY_SEFI.core.function.helper.batch_list_iterator import BatchListIterator
@@ -19,7 +19,7 @@ from CANARY_SEFI.evaluator.logger.attack_info_handler import find_attack_log_by_
 
 def adv_example_generate(dataset_info, attacker_list, attacker_config, model_config, img_proc_config):
     # 标记当前步骤
-    global_system_log.set_step(Step.ADV_EXAMPLE_GENERATE)
+    batch_manager.sys_log_logger.set_step(Step.ADV_EXAMPLE_GENERATE)
 
     def function(atk_name, atk_args, model_name, model_args, img_proc_args):
         msg = "Generating Adv Example By Attack Method {} on(base) Model {}.".format(atk_name, model_name)
@@ -32,7 +32,7 @@ def adv_example_generate(dataset_info, attacker_list, attacker_config, model_con
 # 攻击对抗样本质量测试
 def attack_adv_example_da_test(attacker_list, dataset_info, use_raw_nparray_data=False):
     # 标记当前步骤
-    global_system_log.set_step(Step.ATTACK_ADV_EXAMPLE_DA_TEST)
+    batch_manager.sys_log_logger.set_step(Step.ATTACK_ADV_EXAMPLE_DA_TEST)
     for atk_name in attacker_list:
         attack_logs = find_attack_log_by_name(atk_name)
         for attack_log in attack_logs:
@@ -42,7 +42,7 @@ def attack_adv_example_da_test(attacker_list, dataset_info, use_raw_nparray_data
 # 攻击对抗样本质量评估
 def attack_adv_example_da_evaluation(attacker_list, use_raw_nparray_data=False):
     # 标记当前步骤
-    global_system_log.set_step(Step.ATTACK_ADV_EXAMPLE_DA_EVALUATION)
+    batch_manager.sys_log_logger.set_step(Step.ATTACK_ADV_EXAMPLE_DA_EVALUATION)
     for atk_name in attacker_list:
         for base_model in attacker_list[atk_name]:
             attack_adv_example_da_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data)
@@ -53,7 +53,7 @@ def attack_deflection_capability_test(attacker_list, model_config, img_proc_conf
                                       transfer_attack_test=TransferAttackType.NOT,
                                       transfer_attack_test_on_model_list=None, use_raw_nparray_data=False):
     # 标记当前步骤
-    global_system_log.set_step(Step.ATTACK_DEFLECTION_CAPABILITY_TEST)
+    batch_manager.sys_log_logger.set_step(Step.ATTACK_DEFLECTION_CAPABILITY_TEST)
 
     for atk_name in attacker_list:
         for base_model in attacker_list[atk_name]:
@@ -82,7 +82,7 @@ def attack_deflection_capability_test(attacker_list, model_config, img_proc_conf
 # 攻击偏转能力评估
 def attack_deflection_capability_evaluation(attacker_list, use_raw_nparray_data=False):
     # 标记当前步骤
-    global_system_log.set_step(Step.ATTACK_DEFLECTION_CAPABILITY_EVALUATION)
+    batch_manager.sys_log_logger.set_step(Step.ATTACK_DEFLECTION_CAPABILITY_EVALUATION)
     for atk_name in attacker_list:
         for base_model in attacker_list[atk_name]:
             attack_deflection_capability_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data)
@@ -91,7 +91,7 @@ def attack_deflection_capability_evaluation(attacker_list, use_raw_nparray_data=
 # 模型推理能力测试
 def model_inference_capability_test(dataset_info, model_list, model_config, img_proc_config):
     # 标记当前步骤
-    global_system_log.set_step(Step.MODEL_INFERENCE_CAPABILITY_TEST)
+    batch_manager.sys_log_logger.set_step(Step.MODEL_INFERENCE_CAPABILITY_TEST)
 
     def function(model_name, model_args, img_proc_args):
         # 模型基线测试
@@ -105,14 +105,14 @@ def model_inference_capability_test(dataset_info, model_list, model_config, img_
 # 模型推理能力评估
 def model_inference_capability_evaluation(model_list):
     # 标记当前步骤
-    global_system_log.set_step(Step.MODEL_INFERENCE_CAPABILITY_EVALUATION)
+    batch_manager.sys_log_logger.set_step(Step.MODEL_INFERENCE_CAPABILITY_EVALUATION)
     for model_name in model_list:
         model_inference_capability_analyzer_and_evaluation(model_name)
 
 
 def model_security_synthetical_capability_evaluation(model_list, use_raw_nparray_data=False):
     # 标记当前步骤
-    global_system_log.set_step(Step.MODEL_SECURITY_SYNTHETICAL_CAPABILITY_EVALUATION)
+    batch_manager.sys_log_logger.set_step(Step.MODEL_SECURITY_SYNTHETICAL_CAPABILITY_EVALUATION)
     for model_name in model_list:
         model_security_synthetical_capability_analyzer_and_evaluation(model_name, use_raw_nparray_data)
 
@@ -120,7 +120,7 @@ def model_security_synthetical_capability_evaluation(model_list, use_raw_nparray
 def explore_attack_perturbation(dataset_info, attacker_list, attacker_config, model_config, img_proc_config,
                                 explore_perturbation_config):
     # 标记当前步骤
-    global_system_log.set_step(Step.EXPLORE_ATTACK_PERTURBATION)
+    batch_manager.sys_log_logger.set_step(Step.EXPLORE_ATTACK_PERTURBATION)
 
     def function(atk_name, atk_args, model_name, model_args, img_proc_args):
         msg = "攻击方法 {} 在模型 {} 上 依据扰动上下限分步生成上述样本的对抗样本并运行扰动测评"\
@@ -136,7 +136,7 @@ def explore_attack_perturbation(dataset_info, attacker_list, attacker_config, mo
 
 def explore_perturbation_attack_deflection_capability_test(attacker_list, model_config, img_proc_config, use_raw_nparray_data=False):
     # 标记当前步骤
-    global_system_log.set_step(Step.EXPLORE_ATTACK_PERTURBATION_ATTACK_DEFLECTION_TEST)
+    batch_manager.sys_log_logger.set_step(Step.EXPLORE_ATTACK_PERTURBATION_ATTACK_DEFLECTION_TEST)
 
     for atk_name in attacker_list:
         for base_model in attacker_list[atk_name]:
@@ -156,7 +156,7 @@ def explore_perturbation_attack_deflection_capability_test(attacker_list, model_
 # 攻击对抗样本质量测试
 def explore_perturbation_attack_adv_example_da_test(attacker_list, dataset_info, use_raw_nparray_data=False):
     # 标记当前步骤
-    global_system_log.set_step(Step.EXPLORE_ATTACK_PERTURBATION_ATTACK_ADV_EXAMPLE_DA_TEST)
+    batch_manager.sys_log_logger.set_step(Step.EXPLORE_ATTACK_PERTURBATION_ATTACK_ADV_EXAMPLE_DA_TEST)
     for atk_name in attacker_list:
         attack_logs = find_attack_log_by_name(atk_name)
         for attack_log in attack_logs:
@@ -165,7 +165,7 @@ def explore_perturbation_attack_adv_example_da_test(attacker_list, dataset_info,
 
 def explore_perturbation_attack_capability_evaluation(attacker_list, use_raw_nparray_data=False):
     # 标记当前步骤
-    global_system_log.set_step(Step.EXPLORE_ATTACK_PERTURBATION_ATTACK_EVALUATION)
+    batch_manager.sys_log_logger.set_step(Step.EXPLORE_ATTACK_PERTURBATION_ATTACK_EVALUATION)
     for atk_name in attacker_list:
         for base_model in attacker_list[atk_name]:
             perturbation_explore_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data)

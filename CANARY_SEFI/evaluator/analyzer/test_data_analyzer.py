@@ -1,14 +1,15 @@
 from colorama import Fore
+
+from CANARY_SEFI.batch_manager import batch_manager
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
-from CANARY_SEFI.core.function.helper.system_log import global_system_log
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 from CANARY_SEFI.evaluator.logger.adv_example_da_test_data_handler import find_adv_example_da_test_data_by_id_and_type
 from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id
+from CANARY_SEFI.evaluator.logger.img_file_info_handler import find_img_log_by_id
 from CANARY_SEFI.evaluator.logger.indicator_data_handler import save_attack_deflection_capability_indicator_data, \
     save_attack_adv_example_da_indicator_data, save_model_capability_indicator_data
 from CANARY_SEFI.evaluator.logger.attack_info_handler import find_attack_log_by_name_and_base_model
-from CANARY_SEFI.evaluator.logger.img_file_info_handler import find_img_log
 from sklearn.metrics import f1_score, accuracy_score
 
 from CANARY_SEFI.evaluator.logger.inference_test_data_handler import get_inference_test_data_by_model_name, \
@@ -32,7 +33,7 @@ def model_inference_capability_analyzer_and_evaluation(model_name):
         # 获取预测标签
         analyzer_log["inference_labels"].append(inference_log["inference_img_label"])
         # 获取真实标签
-        ori_img_log = find_img_log(inference_log["img_id"])
+        ori_img_log = find_img_log_by_id(inference_log["img_id"])
         ori_label = ori_img_log["ori_img_label"]
         analyzer_log["ori_labels"].append(ori_label)
         # 获取真实标签置信度
@@ -44,8 +45,8 @@ def model_inference_capability_analyzer_and_evaluation(model_name):
     clear_conf = calc_average(analyzer_log["inference_confs"])
     save_model_capability_indicator_data(model_name, clear_acc, clear_f1, clear_conf)
     # 增加计数
-    global_system_log.update_completed_num(1)
-    global_system_log.update_finish_status(True)
+    batch_manager.sys_log_logger.update_completed_num(1)
+    batch_manager.sys_log_logger.update_finish_status(True)
 
 
 def attack_deflection_capability_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data):
@@ -75,7 +76,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, us
         # 原始图片的预测记录
         ori_img_inference_log_list = get_inference_test_data_by_img_id(ori_img_id, DatasetType.NORMAL.value)
 
-        ori_img_log = find_img_log(ori_img_id)
+        ori_img_log = find_img_log_by_id(ori_img_id)
         ori_label = ori_img_log["ori_img_label"] # 原始图片的标签
 
         # 确定对抗样本有效性(生成模型必须是预测准确的)
@@ -123,8 +124,8 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, us
         save_attack_deflection_capability_indicator_data(attack_info['atk_name'], attack_info['base_model'], inference_model, adv_example_file_type,
                                    MR, AIAC, ARTC, atk_perturbation_budget=attack_info['atk_perturbation_budget'])
     # 增加计数
-    global_system_log.update_completed_num(1)
-    global_system_log.update_finish_status(True)
+    batch_manager.sys_log_logger.update_completed_num(1)
+    batch_manager.sys_log_logger.update_finish_status(True)
 
 
 def attack_adv_example_da_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data):
@@ -166,8 +167,8 @@ def attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, adv_examp
                                               ACT, AMD, AED, APCR, ADMS, ALMS,
                                               atk_perturbation_budget=attack_info['atk_perturbation_budget'])
     # 增加计数
-    global_system_log.update_completed_num(1)
-    global_system_log.update_finish_status(True)
+    batch_manager.sys_log_logger.update_completed_num(1)
+    batch_manager.sys_log_logger.update_finish_status(True)
 
 
 def perturbation_explore_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data=False):

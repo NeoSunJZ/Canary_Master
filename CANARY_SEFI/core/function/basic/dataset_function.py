@@ -1,9 +1,8 @@
 import cv2
 
+from CANARY_SEFI.batch_manager import batch_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
-from CANARY_SEFI.core.function.helper.system_log import global_system_log
-from CANARY_SEFI.core.function.helper.task_thread import task_thread
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_log_by_id
 from CANARY_SEFI.evaluator.logger.img_file_info_handler import add_img_log
@@ -56,7 +55,7 @@ def dataset_image_reader(iterator, dataset_info, completed_num=0):
         # 调用迭代器,传入图片
         iterator(_img, img_log_id, _img_label)
         # 完成数量增加
-        global_system_log.update_completed_num(1)
+        batch_manager.sys_log_logger.update_completed_num(1)
 
     if dataset_info.dataset_size is not None:
         if not is_default_image_getter:
@@ -112,12 +111,11 @@ def adv_dataset_image_reader(iterator, dataset_info):
 
         img = adv_dataset_single_image_reader(adv_file_log, adv_img_type)
         iterator(img, adv_img_cursor_list[i], None)
-        global_system_log.update_completed_num(1)
+        batch_manager.sys_log_logger.update_completed_num(1)
 
 
 def adv_dataset_single_image_reader(adv_file_log, adv_img_type):
-    adv_dataset_temp_path = config_manager.config.get("temp", "Dataset_Temp/")
-    adv_file_path = adv_dataset_temp_path + adv_file_log["batch_id"] + "/"
+    adv_file_path = batch_manager.base_temp_path + "pic/"
     if adv_img_type == DatasetType.ADVERSARIAL_EXAMPLE_IMG:
         img = get_pic_nparray_from_dataset(adv_file_path, adv_file_log["adv_img_filename"], is_numpy_array_file=False)
     elif adv_img_type == DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA:

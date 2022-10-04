@@ -13,8 +13,7 @@
       "path": "/home/sunjiazheng/canary_dataset/ILSVRC2012_img_val/"
     }
   },
-  "datasetTemp": "Dataset_Temp/",
-  "databaseTemp": "Database_Temp/",
+  "baseTemp": "temp/",
   "attackConfig":{
     "MI-FGSM": {
       "no_model": false

@@ -21,7 +21,7 @@ def add_img_log(ori_img_label, ori_img_cursor):
     return img_id
 
 
-def find_img_log(ori_img_id):
+def find_img_log_by_id(ori_img_id):
     sql = "SELECT * FROM ori_img_log WHERE ori_img_id = ?"
     return logger.query_log(sql, (ori_img_id,))
 

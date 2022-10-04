@@ -118,7 +118,6 @@ if __name__ == "__main__":
     #                                    config.get('model_config'), config.get('img_proc_config'))
     # global_recovery.start_recovery_mode("yfjnmocE")
 
-    # batch_flag.batch_id = "aT6hOoV5"
     # ori_info = init_dataset(config_explore_perturbation.get('dataset'), config_explore_perturbation.get('dataset_size'),
     #                                          config_explore_perturbation.get('dataset_seed', None))
     # img_ori = dataset_single_image_reader(ori_info, 0)

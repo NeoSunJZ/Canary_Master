@@ -2,7 +2,7 @@ from distutils.util import strtobool
 
 from flask import Blueprint, request
 
-from CANARY_SEFI.core.function.helper.system_log import global_system_log
+from CANARY_SEFI.batch_manager import batch_manager
 from CANARY_SEFI.core.function.helper.task_thread import task_thread
 from CANARY_SEFI.entity.msg_entity import MsgEntity
 
@@ -24,8 +24,12 @@ def running_status():
             return MsgEntity("SUCCESS", "3", "stopping").msg2json()
         return MsgEntity("SUCCESS", "2", "running").msg2json()
 
+
 def check_abnormal_termination(batch_token):
-    progress_log = global_system_log.get_all_task_progress_log(batch_token)
+    # 初始化批次
+    batch_manager.init_batch(batch_token)
+
+    progress_log = batch_manager.sys_log_logger.get_all_task_progress_log()
     for log in progress_log:
         if not strtobool(log.get("is_finish")):
             return False
@@ -42,14 +46,18 @@ def stop_task():
 
 @api.route('/task/getTaskStepLog', methods=['GET'])
 def get_task_progress_log():
-    batch_token = request.args.get("batchToken")
-    log = global_system_log.get_all_task_progress_log(batch_token)
+    # 初始化批次
+    batch_manager.init_batch(request.args.get("batchToken"))
+
+    log = batch_manager.sys_log_logger.get_all_task_progress_log()
     return MsgEntity("SUCCESS", "1", log).msg2json()
 
 
 @api.route('/task/getTaskConsoleLog', methods=['GET'])
 def get_task_console_log():
-    batch_token = request.args.get("batchToken")
+    # 初始化批次
+    batch_manager.init_batch(request.args.get("batchToken"))
+
     before_time = request.args.get("beforeTime", None)
-    log = global_system_log.get_all_console_msg(batch_token, before_time)
+    log = batch_manager.sys_log_logger.get_all_console_msg(before_time)
     return MsgEntity("SUCCESS", "1", log).msg2json()

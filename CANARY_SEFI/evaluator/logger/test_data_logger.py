@@ -1,16 +1,17 @@
 import os
 import sqlite3
 
+from CANARY_SEFI.batch_manager import batch_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 
 
 class TestDataLogger:
-    def __init__(self, batch_token):
+    def __init__(self):
         # 检查是否存在数据库文件
-        temp_path = config_manager.config.get("databaseTemp", "Database_Temp/")
-        if not os.path.exists(temp_path + batch_token):
-            os.makedirs(temp_path + batch_token)
-        full_path = temp_path + batch_token + "/evaluator_logger.db"
+        if not os.path.exists(batch_manager.base_temp_path + "database/"):
+            os.makedirs(batch_manager.base_temp_path + "database/")
+        full_path = batch_manager.base_temp_path + "database/evaluator_logger.db"
+
         if not os.path.exists(full_path):
             self.conn = sqlite3.connect(full_path, check_same_thread=False)
             self.init_database()
@@ -39,7 +40,7 @@ class TestDataLogger:
                        '(ori_img_id INTEGER PRIMARY KEY AUTOINCREMENT, '
                        'ori_img_label integer, '
                        'ori_img_cursor varchar,'
-                       'UNIQUE (ori_img_cursor)')
+                       'UNIQUE (ori_img_cursor))')
 
         cursor.execute('create table if not exists attack_info_log '
                        '(attack_id INTEGER PRIMARY KEY AUTOINCREMENT, '
@@ -53,20 +54,19 @@ class TestDataLogger:
                        '(adv_img_file_id INTEGER PRIMARY KEY AUTOINCREMENT, '
                        'attack_id integer, '
                        'cost_time float, '
-                       
                        'ori_img_id integer, '
                        'adv_img_filename varchar, '
                        'adv_raw_nparray_filename varchar)')
 
         cursor.execute('create table if not exists adv_example_da_test_data '
-                       '(adv_img_file_id integer '
+                       '(adv_img_file_id integer, '
                        'adv_example_file_type varchar, '
-                       'UNIQUE (adv_img_file_id,adv_example_file_type), '  # 每个对抗样本（不同转储文件类型）最多有一条记录，会覆盖
                        'maximum_disturbance float, '
                        'euclidean_distortion float, '
                        'pixel_change_ratio float, '
                        'deep_metrics_similarity float, '
-                       'low_level_metrics_similarity float)')
+                       'low_level_metrics_similarity float, '
+                       'UNIQUE (adv_img_file_id,adv_example_file_type))')  # 每个对抗样本（不同转储文件类型）最多有一条记录，会覆盖
 
         cursor.execute('create table if not exists inference_test_data '
                        '(inference_test_data_id INTEGER PRIMARY KEY AUTOINCREMENT, '
@@ -89,13 +89,13 @@ class TestDataLogger:
         cursor.execute('create table if not exists attack_deflection_capability_indicator_data '
                        '(atk_name varchar, '
                        'base_model varchar, '
-                       'atk_perturbation_budget float,'
+                       'atk_perturbation_budget float, '
                        'inference_model varchar, '
-                       'adv_example_file_type varchar,'  # 对抗样本文件类型 IMG文件可能导致真实误差，NP文件不会转换类型因而没有误差，但并不真实
-                       'UNIQUE (atk_name, base_model, atk_perturbation_budget, inference_model, adv_example_file_type), '  # 
+                       'adv_example_file_type varchar, '  # 对抗样本文件类型 IMG文件可能导致真实误差，NP文件不会转换类型因而没有误差，但并不真实
                        'MR float, '
                        'AIAC float, '
-                       'ARTC float)')
+                       'ARTC float, '
+                       'UNIQUE (atk_name, base_model, atk_perturbation_budget, inference_model, adv_example_file_type))')
 
         # 缩写释义:
         # ACT: average cost time
@@ -107,15 +107,15 @@ class TestDataLogger:
         cursor.execute('create table if not exists attack_adv_example_da_indicator_data '
                        '(atk_name varchar, '
                        'base_model varchar, '
-                       'atk_perturbation_budget float,'
-                       'adv_example_file_type varchar,'  # 对抗样本文件类型 IMG文件可能导致真实误差，NP文件不会转换类型因而没有误差，但并不真实
-                       'UNIQUE (atk_name, base_model, atk_perturbation_budget, adv_example_file_type), '  # 
+                       'atk_perturbation_budget float, '
+                       'adv_example_file_type varchar, '  # 对抗样本文件类型 IMG文件可能导致真实误差，NP文件不会转换类型因而没有误差，但并不真实
                        'ACT float, '
                        'AMD float, '
                        'AED float, '
                        'APCR float, '
                        'ADMS float, '
-                       'ALMS float)')
+                       'ALMS float, '
+                       'UNIQUE (atk_name, base_model, atk_perturbation_budget, adv_example_file_type))')  #
 
         cursor.execute('create table if not exists model_dimension_summary '
                        '(model_name varchar, '

@@ -6,7 +6,7 @@ import numpy
 import numpy as np
 from PIL import Image
 
-from CANARY_SEFI.core.config.config_manager import config_manager
+from CANARY_SEFI.batch_manager import batch_manager
 
 
 def get_nparray_from_file_input(file_input):
@@ -39,12 +39,13 @@ def get_pic_nparray_from_dataset(dataset_path, file_name, is_numpy_array_file=Fa
         return np.loadtxt(dataset_path + file_name)
 
 
-def save_pic_to_temp(temp_token, file_name, pic_numpy_array, save_as_numpy_array=False):
+def save_pic_to_temp(file_name, pic_numpy_array, save_as_numpy_array=False):
     file_name = img_file_name_handler(file_name, save_as_numpy_array)
-    temp_path = config_manager.config.get("datasetTemp", "Dataset_Temp/")
-    if not os.path.exists(temp_path + temp_token):
-        os.makedirs(temp_path + temp_token)
-    full_path = temp_path + temp_token + "/" + file_name
+
+    if not os.path.exists(batch_manager.base_temp_path + "pic/"):
+        os.makedirs(batch_manager.base_temp_path + "pic/")
+
+    full_path = batch_manager.base_temp_path + "pic/" + file_name
     # 判断是否要存储为图片文件(存为图片文件可能存在精度截断)
     if not save_as_numpy_array:
         # 确保存储的是0-255的uint8数据以避免错误
@@ -53,10 +54,6 @@ def save_pic_to_temp(temp_token, file_name, pic_numpy_array, save_as_numpy_array
     else:
         numpy.savetxt(full_path, pic_numpy_array)
     return
-
-
-def get_temp_download_url(temp_token):
-    return temp_token
 
 
 def img_file_name_handler(file_name, is_numpy_array_file=False):
