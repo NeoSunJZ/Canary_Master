@@ -36,7 +36,8 @@ def get_pic_nparray_from_dataset(dataset_path, file_name, is_numpy_array_file=Fa
         img = cv2.imread(dataset_path + file_name)
         return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     else:
-        return np.loadtxt(dataset_path + file_name)
+        return np.fromfile(dataset_path + file_name, dtype=np.float)
+        # return np.loadtxt(dataset_path + file_name, delimiter=',')
 
 
 def save_pic_to_temp(file_name, pic_numpy_array, save_as_numpy_array=False):
@@ -52,7 +53,8 @@ def save_pic_to_temp(file_name, pic_numpy_array, save_as_numpy_array=False):
         pic_numpy_array = np.clip(pic_numpy_array, 0, 255).astype(np.uint8)
         cv2.imwrite(full_path, cv2.cvtColor(np.asarray(pic_numpy_array), cv2.COLOR_RGB2BGR))
     else:
-        numpy.savetxt(full_path, pic_numpy_array)
+        # np.savetxt(full_path, pic_numpy_array, delimiter=',')
+        pic_numpy_array.tofile(full_path)
     return
 
 
@@ -62,6 +64,6 @@ def img_file_name_handler(file_name, is_numpy_array_file=False):
         return file_name
     else:
         if is_numpy_array_file:
-            return file_name + ".txt"
+            return file_name + ".bin"
         else:
             return file_name + ".png"

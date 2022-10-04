@@ -83,7 +83,7 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
     attack_id = add_attack_log(atk_name, model_name, atk_perturbation_budget=atk_perturbation_budget)
 
     # 攻击单图片迭代函数
-    def attack_iterator(img, img_log_id, img_label, save_raw_data = False):
+    def attack_iterator(img, img_log_id, img_label, save_raw_data=True):
         # 执行攻击
         adv_result = adv_attacker.adv_attack_4_img(img, img_label)
 
@@ -92,8 +92,9 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
         img_file_name = "adv_{}_{}_{}.png".format(batch_manager.batch_token, attack_id, img_log_id)
         save_pic_to_temp(img_file_name, adv_result)
 
+        raw_file_name = None
         if save_raw_data:
-            raw_file_name = "adv_raw_{}_{}_{}.txt".format(batch_manager.batch_token, attack_id, img_log_id)
+            raw_file_name = "adv_raw_{}_{}_{}.bin".format(batch_manager.batch_token, attack_id, img_log_id)
             save_pic_to_temp(raw_file_name, adv_result, save_as_numpy_array=True)
 
         # 写入日志
@@ -104,14 +105,6 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
 
         if each_img_finish_callback is not None:
             each_img_finish_callback(img, adv_result)
-
-        # # 对抗样本综合测试
-        # adv_da_tester = AdvDisturbanceAwareTester()
-        # adv_da_test_result = adv_da_tester.test_all(img, adv_result)
-        # print(adv_da_test_result)
-        #
-        # # 写入日志
-        # add_adv_da_log(adv_img_id, adv_da_test_result)
 
     dataset_image_reader(attack_iterator, dataset_info, completed_num)
     batch_manager.sys_log_logger.update_finish_status(True)

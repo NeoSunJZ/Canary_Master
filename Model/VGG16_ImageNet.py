@@ -11,7 +11,7 @@ sefi_component = SEFIComponent()
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
-@sefi_component.model(name="VGG-16")
+@sefi_component.model(name="VGG-16(ImageNet)")
 def create_model():
     alexnet = models.vgg16(weights=VGG16_Weights.IMAGENET1K_V1).to(device).eval()
     return alexnet

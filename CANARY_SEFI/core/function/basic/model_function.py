@@ -1,4 +1,6 @@
 import torch
+
+from CANARY_SEFI.batch_manager import batch_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
 from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader

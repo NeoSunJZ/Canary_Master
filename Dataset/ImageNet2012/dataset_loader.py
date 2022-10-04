@@ -29,9 +29,9 @@ def get_dataset_img(img_index, dataset_path, dataset_seed, dataset_size=None, wi
             lengths=[dataset_size, len(dataset)-dataset_size],
             generator=torch.Generator().manual_seed(long(seed)))
 
-    img_np_array = np.array(dataset[img_index][0], dtype=np.uint8)
+    img_np_array = np.array(dataset[int(img_index)][0], dtype=np.uint8)
 
     if with_label:
-        return img_np_array, dataset[img_index][1]
+        return img_np_array, dataset[int(img_index)][1]
     else:
         return img_np_array

@@ -1,16 +1,12 @@
 import os
 import sqlite3
 
-from CANARY_SEFI.batch_manager import batch_manager
-from CANARY_SEFI.core.config.config_manager import config_manager
-
-
 class TestDataLogger:
-    def __init__(self):
+    def __init__(self, base_temp_path):
         # 检查是否存在数据库文件
-        if not os.path.exists(batch_manager.base_temp_path + "database/"):
-            os.makedirs(batch_manager.base_temp_path + "database/")
-        full_path = batch_manager.base_temp_path + "database/evaluator_logger.db"
+        if not os.path.exists(base_temp_path + "database/"):
+            os.makedirs(base_temp_path + "database/")
+        full_path = base_temp_path + "database/evaluator_logger.db"
 
         if not os.path.exists(full_path):
             self.conn = sqlite3.connect(full_path, check_same_thread=False)
@@ -73,7 +69,7 @@ class TestDataLogger:
                        'img_id integer, '
                        'img_type varchar, '
                        'inference_model varchar, '
-                       'inference_img_label varchar, '
+                       'inference_img_label integer, '
                        'inference_img_conf_array varchar)')
 
         cursor.execute('create table if not exists model_inference_capability_indicator_data '

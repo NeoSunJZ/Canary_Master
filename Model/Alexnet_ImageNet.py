@@ -11,7 +11,7 @@ sefi_component = SEFIComponent()
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
-@sefi_component.model(name="Alexnet")
+@sefi_component.model(name="Alexnet(ImageNet)")
 def create_model():
     alexnet = models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V1).to(device).eval()
     return alexnet

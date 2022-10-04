@@ -24,7 +24,7 @@ def read_conf_array(inference_img_conf_array):
 
 def handle_result(inference_logs):
     for inference_log in inference_logs:
-        inference_log["inference_img_conf_array"] = np.array(read_conf_array(inference_log["inference_img_conf_array"].split())).tolist()
+        inference_log["inference_img_conf_array"] = read_conf_array(inference_log["inference_img_conf_array"]).tolist()
     return inference_logs
 
 

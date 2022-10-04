@@ -19,7 +19,7 @@ def init_dataset(dataset_name, dataset_size, dataset_seed=None):
     # 构建数据集对象
     dataset_info = DatasetInfo(dataset_name, dataset_seed, dataset_size)
 
-    msg = "From Dataset {} (based seed{}) selected {} sample(s)".format(dataset_name, dataset_seed, dataset_size)
+    msg = "From Dataset {} (based seed {}) selected {} sample(s)".format(dataset_name, dataset_seed, dataset_size)
     reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
 
     return dataset_info

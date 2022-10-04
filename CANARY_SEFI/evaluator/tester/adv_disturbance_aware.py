@@ -11,16 +11,15 @@ class AdvDisturbanceAwareTester:
 
     def test_all(self, ori_img, img):
         return {
-            "maximum_disturbance": self.calculate_maximum_disturbance(ori_img, img),
-            "euclidean_distortion": self.calculate_euclidean_distortion(ori_img, img),
-            "pixel_change_ratio": self.calculate_pixel_change_ratio(ori_img, img),
-            "deep_metrics_similarity": self.calculate_deep_metrics_similarity(ori_img, img),
-            "low_level_metrics_similarity": self.calculate_low_level_metrics_similarity(ori_img, img),
+            "maximum_disturbance": float(self.calculate_maximum_disturbance(ori_img, img)),
+            "euclidean_distortion": float(self.calculate_euclidean_distortion(ori_img, img)),
+            "pixel_change_ratio": float(self.calculate_pixel_change_ratio(ori_img, img)),
+            "deep_metrics_similarity": float(self.calculate_deep_metrics_similarity(ori_img, img)),
+            "low_level_metrics_similarity": float(self.calculate_low_level_metrics_similarity(ori_img, img)),
         }
 
     def calculate_maximum_disturbance(self, ori_img, img):
         # L-inf
-        # print(self.img_handler(img) - self.img_handler(ori_img))
         result = torch.norm(torch.abs(self.img_handler(img) - self.img_handler(ori_img)), float("inf")).cpu().detach().numpy()
         return result
 

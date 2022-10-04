@@ -28,7 +28,7 @@ def adv_inference(atk_log, test_model, model_args, img_proc_args, use_raw_nparra
         adv_img_cursor_list.append(adv_log["adv_img_file_id"])
 
     adv_dataset_info = DatasetInfo(None, None, None, adv_img_cursor_list)
-    adv_dataset_info.dataset_type = DatasetType.ADVERSARIAL_EXAMPLE if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA
+    adv_dataset_info.dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG
 
     with tqdm(total=adv_dataset_info.dataset_size, desc="推理进度", ncols=80) as bar:
         def each_img_finish_callback(img, result):

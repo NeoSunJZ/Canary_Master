@@ -6,7 +6,7 @@ logger = batch_manager.test_data_logger
 
 
 def add_img_log(ori_img_label, ori_img_cursor):
-    sql_insert = " INSERT INTO ori_img_log (ori_img_id, ori_img_label, ori_img_cursor) VALUES (NULL,?,?,?)"
+    sql_insert = " INSERT INTO ori_img_log (ori_img_id, ori_img_label, ori_img_cursor) VALUES (NULL,?,?)"
     sql_query = " SELECT ori_img_id FROM ori_img_log WHERE ori_img_label = ? AND ori_img_cursor = ?"
 
     args = (str(ori_img_label), str(ori_img_cursor))

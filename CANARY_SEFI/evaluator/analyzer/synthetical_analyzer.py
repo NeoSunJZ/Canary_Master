@@ -25,7 +25,7 @@ def model_security_synthetical_capability_analyzer_and_evaluation(model_name, us
 
     for log in attack_deflection_capability_indicator_data:
         # 排除转移测试
-        if log["base_model"] == log["test_model_name"]:
+        if log["base_model"] == log["inference_model"]:
             adversarial_example_analyzer_log['MR'].append(float(log["MR"]))
             adversarial_example_analyzer_log['AIAC'].append(float(log["AIAC"]))
             adversarial_example_analyzer_log['ARTC'].append(float(log["ARTC"]))
@@ -51,9 +51,9 @@ def model_security_synthetical_capability_analyzer_and_evaluation(model_name, us
     model_ADMS = calc_average(adversarial_example_analyzer_log["ADMS"])
     model_ALMS = calc_average(adversarial_example_analyzer_log["ALMS"])
 
-    test_adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA
+    test_adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG.value
 
-    add_model_security_synthetical_capability_log(model_name,test_adv_example_file_type,
+    add_model_security_synthetical_capability_log(model_name, test_adv_example_file_type,
                                                   model_ACC, model_F1, model_Conf,
                                                   model_MR, model_AIAC, model_ARTC, model_ACT,
                                                   model_AMD, model_AED, model_APCR, model_ADMS, model_ALMS)

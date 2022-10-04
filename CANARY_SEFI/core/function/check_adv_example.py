@@ -21,7 +21,7 @@ def adv_example_da_check(atk_log, dataset_info, use_raw_nparray_data=False):
         adv_img_ori_dict[adv_log["adv_img_file_id"]] = adv_log["ori_img_id"]
 
     adv_dataset_info = DatasetInfo(None, None, None, adv_img_cursor_list)
-    adv_dataset_info.dataset_type = DatasetType.ADVERSARIAL_EXAMPLE if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA
+    adv_dataset_info.dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG
 
     with tqdm(total=adv_dataset_info.dataset_size, desc="扰动测评进度", ncols=80) as bar:
         participant = "{}({})".format(atk_log['atk_name'], atk_log['base_model'])

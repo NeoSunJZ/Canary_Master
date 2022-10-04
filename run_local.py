@@ -7,11 +7,11 @@ from Model.Vision_Transformer import sefi_component as vision_transformer_model
 
 SEFI_component_manager.add(vision_transformer_model)
 # Alexnet
-from Model.Alexnet import sefi_component as alexnet_model
+from Model.Alexnet_ImageNet import sefi_component as alexnet_model
 
 SEFI_component_manager.add(alexnet_model)
 # VGG16
-from Model.VGG16 import sefi_component as vgg_16_model
+from Model.VGG16_ImageNet import sefi_component as vgg_16_model
 
 SEFI_component_manager.add(vgg_16_model)
 
@@ -33,29 +33,12 @@ SEFI_component_manager.add(imgnet2012_dataset)
 
 if __name__ == "__main__":
 
-    # config = {
-    #     "dataset_size": 1000,
-    #     "dataset": "ILSVRC-2012",
-    #     "attacker_list": {
-    #         "CW": ["Alexnet", "VGG-16"],
-    #         "MI-FGSM": ["Alexnet", "VGG-16"],
-    #     },
-    #     "transfer_attack_test_mode":"SELF_CROSS",
-    #     "attacker_config": {
-    #         "MI-FGSM": {"alpha": 0.005, "epsilon": 0.2, "pixel_min": -3, "pixel_max": 3, "T": 1000,
-    #                           "attack_type": "UNTARGETED", "tlabel": None}
-    #         "CW": {"classes": 1000, "lr": 0.005, "confidence": 0, "clip_min": -3, "clip_max": 3,
-    #                "initial_const": 0.01,
-    #                "binary_search_steps": 5, "max_iterations": 1000, "attack_type": "UNTARGETED", "tlabel": None},
-    #     }
-    # }
-
-    config = {"dataset_size": 5, "model_list": ["Alexnet", "VGG-16"], "dataset": "ILSVRC-2012",
-              "model_config": {"Alexnet": {}, "VGG-16": {}}, "img_proc_config": {"Alexnet": {}, "VGG-16": {}},
-              "attacker_list": {"MI-FGSM": ["Alexnet"]},
+    config = {"dataset_size": 1, "model_list": ["Alexnet(ImageNet)", "VGG-16(ImageNet)"], "dataset": "ILSVRC-2012",
+              "model_config": {"Alexnet(ImageNet)": {}, "VGG-16(ImageNet)": {}}, "img_proc_config": {"Alexnet(ImageNet)": {}, "VGG-16(ImageNet)": {}},
+              "attacker_list": {"MI-FGSM": ["Alexnet(ImageNet)", "VGG-16(ImageNet)"]},
               # "attacker_list": {"CW": ["Alexnet", "VGG-16"], "MI-FGSM": ["Alexnet", "VGG-16"]},
               "transfer_attack_test_mode": "SELF_CROSS",
-              "transfer_attack_test_on_model_list": {"CW": {}, "MI-FGSM": {}},
+              "transfer_attack_test_on_model_list": {},
               "attacker_config": {
                   "CW": {"classes": 1000, "lr": 0.005, "confidence": 0, "clip_min": -3, "clip_max": 3,
                          "initial_const": 0.01,
@@ -63,13 +46,10 @@ if __name__ == "__main__":
                   "MI-FGSM": {"alpha": 0.005, "epsilon": 0.2, "pixel_min": -3, "pixel_max": 3, "T": 1000,
                               "attack_type": "UNTARGETED", "tlabel": None}}
               }
-    security_evaluation = SecurityEvaluation(config.get('dataset'), config.get('dataset_size'),
-                                             config.get('dataset_seed', None))
-    security_evaluation.attack_full_test(config.get('attacker_list'), config.get('attacker_config'),
-                                         config.get('model_list'), config.get('model_config'),
-                                         config.get('img_proc_config'),
-                                         config.get('transfer_attack_test_mode'),
-                                         config.get('transfer_attack_test_on_model_list', None))
+    security_evaluation = SecurityEvaluation(config)
+    security_evaluation.attack_full_test()
+
+
     # config_explore_perturbation = {"dataset_size": 150, "model_list": ["Alexnet", "VGG-16"], "dataset": "ILSVRC-2012",
     #                                "model_config": {"Alexnet": {}, "VGG-16": {}},
     #                                "img_proc_config": {"Alexnet": {}, "VGG-16": {}},
@@ -86,22 +66,22 @@ if __name__ == "__main__":
     #                                    }
     #                                }
     #                                }
-    config_explore_perturbation = {"dataset_size": 100, "model_list": ["Alexnet"], "dataset": "ILSVRC-2012",
-                                   "model_config": {"Alexnet": {}},
-                                   "img_proc_config": {"Alexnet": {}},
-                                   "attacker_list": {"MI-FGSM": ["Alexnet"]},
-                                   "attacker_config": {
-                                       "MI-FGSM": {"alpha": 0.002, "epsilon": 0, "pixel_min": -3, "pixel_max": 3,
-                                                   "T": 1000,
-                                                   "attack_type": "UNTARGETED", "tlabel": None}},
-                                   "explore_perturbation_config": {
-                                       "MI-FGSM": {
-                                           "upper_bound": 0.02,
-                                           "lower_bound": 0,
-                                           "step": 0.001,
-                                       }
-                                   }
-                                   }
+    # config_explore_perturbation = {"dataset_size": 100, "model_list": ["Alexnet"], "dataset": "ILSVRC-2012",
+    #                                "model_config": {"Alexnet": {}},
+    #                                "img_proc_config": {"Alexnet": {}},
+    #                                "attacker_list": {"MI-FGSM": ["Alexnet"]},
+    #                                "attacker_config": {
+    #                                    "MI-FGSM": {"alpha": 0.002, "epsilon": 0, "pixel_min": -3, "pixel_max": 3,
+    #                                                "T": 1000,
+    #                                                "attack_type": "UNTARGETED", "tlabel": None}},
+    #                                "explore_perturbation_config": {
+    #                                    "MI-FGSM": {
+    #                                        "upper_bound": 0.02,
+    #                                        "lower_bound": 0,
+    #                                        "step": 0.001,
+    #                                    }
+    #                                }
+    #                                }
 
     # model_security_synthetical_capability_evaluation("SCPzbXIq", config.get('model_list'))
 
@@ -123,16 +103,11 @@ if __name__ == "__main__":
     # img_ori = dataset_single_image_reader(ori_info, 0)
     # img_adv_1 = adv_dataset_single_image_reader(1)
     # img_adv_2 = adv_dataset_single_image_reader(2101)
-    # adv_da_tester = AdvDisturbanceAwareTester()
-    # print(adv_da_tester.test_all(img_ori, img_ori))
-    # print(adv_da_tester.test_all(img_adv_1, img_adv_2))
-    # print(adv_da_tester.test_all(img_ori, img_adv_1))
-    # print(adv_da_tester.test_all(img_ori, img_adv_2))
 
-    security_evaluation = SecurityEvaluation(config_explore_perturbation.get('dataset'), config_explore_perturbation.get('dataset_size'),
-                                             config_explore_perturbation.get('dataset_seed', None))
-    security_evaluation.explore_attack_perturbation_test(config_explore_perturbation.get('attacker_list'),
-                                                         config_explore_perturbation.get('attacker_config'),
-                                                         config_explore_perturbation.get('model_config'),
-                                                         config_explore_perturbation.get('img_proc_config'),
-                                                         config_explore_perturbation.get('explore_perturbation_config'))
+    # security_evaluation = SecurityEvaluation(config_explore_perturbation.get('dataset'), config_explore_perturbation.get('dataset_size'),
+    #                                          config_explore_perturbation.get('dataset_seed', None))
+    # security_evaluation.explore_attack_perturbation_test(config_explore_perturbation.get('attacker_list'),
+    #                                                      config_explore_perturbation.get('attacker_config'),
+    #                                                      config_explore_perturbation.get('model_config'),
+    #                                                      config_explore_perturbation.get('img_proc_config'),
+    #                                                      config_explore_perturbation.get('explore_perturbation_config'))

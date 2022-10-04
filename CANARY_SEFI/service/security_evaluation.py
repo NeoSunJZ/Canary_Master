@@ -25,7 +25,7 @@ class SecurityEvaluation:
         self.model_list = config.get("model_list", None)
         self.attacker_list = config.get("attacker_list", None)
 
-        self.transfer_attack_test_mode = config.get("transfer_attack_test_mode", TransferAttackType.NOT)
+        self.transfer_attack_test_mode = TransferAttackType(config.get("transfer_attack_test_mode", "NOT"))
         self.transfer_attack_test_on_model_list = config.get("transfer_attack_test_on_model_list", {})
 
         self.model_config = config.get("model_config", None)
@@ -43,7 +43,7 @@ class SecurityEvaluation:
         # 模型推理能力测试
         model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config)
         # 模型推理能力评估
-        model_inference_capability_evaluation(self.attacker_list)
+        model_inference_capability_evaluation(self.model_list)
         logger.finish()
 
     def attack_deflection_capability_test_and_evaluation(self, use_raw_nparray_data=False):
@@ -63,8 +63,8 @@ class SecurityEvaluation:
         logger.finish()
 
     def attack_full_test(self, use_raw_nparray_data=False):
-        self.only_build_adv()
         self.model_inference_capability_test_and_evaluation()
+        self.only_build_adv()
         self.attack_deflection_capability_test_and_evaluation(use_raw_nparray_data)
         self.attack_adv_example_da_test_and_evaluation(use_raw_nparray_data)
         # 模型综合能力测试结果分析
@@ -82,4 +82,4 @@ class SecurityEvaluation:
         logger.finish()
 
 
-sys.excepthook = excepthook
+# sys.excepthook = excepthook

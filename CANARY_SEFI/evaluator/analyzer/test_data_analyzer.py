@@ -65,7 +65,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, us
 
     attack_test_result = {}
 
-    adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE.value if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value
+    adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG.value
 
     for adv_example_log in all_adv_example_log:
         adv_img_file_id = adv_example_log["adv_img_file_id"]  # 对抗样本ID
@@ -136,7 +136,9 @@ def attack_adv_example_da_analyzer_and_evaluation(atk_name, base_model, use_raw_
     if is_skip:
         return
     attack_info = find_attack_log_by_name_and_base_model(atk_name, base_model)
-    attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, use_raw_nparray_data)
+
+    adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG.value
+    attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, adv_example_file_type)
 
 
 def attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, adv_example_file_type):
