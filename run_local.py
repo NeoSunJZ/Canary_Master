@@ -33,7 +33,7 @@ SEFI_component_manager.add(imgnet2012_dataset)
 
 if __name__ == "__main__":
 
-    config = {"dataset_size": 1, "model_list": ["Alexnet(ImageNet)", "VGG-16(ImageNet)"], "dataset": "ILSVRC-2012",
+    config = {"dataset_size": 2, "model_list": ["Alexnet(ImageNet)", "VGG-16(ImageNet)"], "dataset": "ILSVRC-2012",
               "model_config": {"Alexnet(ImageNet)": {}, "VGG-16(ImageNet)": {}}, "img_proc_config": {"Alexnet(ImageNet)": {}, "VGG-16(ImageNet)": {}},
               "attacker_list": {"MI-FGSM": ["Alexnet(ImageNet)", "VGG-16(ImageNet)"]},
               # "attacker_list": {"CW": ["Alexnet", "VGG-16"], "MI-FGSM": ["Alexnet", "VGG-16"]},
@@ -43,11 +43,11 @@ if __name__ == "__main__":
                   "CW": {"classes": 1000, "lr": 0.005, "confidence": 0, "clip_min": -3, "clip_max": 3,
                          "initial_const": 0.01,
                          "binary_search_steps": 5, "max_iterations": 1000, "attack_type": "UNTARGETED", "tlabel": None},
-                  "MI-FGSM": {"alpha": 0.005, "epsilon": 0.2, "pixel_min": -3, "pixel_max": 3, "T": 1000,
+                  "MI-FGSM": {"alpha": 0.005, "epsilon": 0.1, "pixel_min": -3, "pixel_max": 3, "T": 1000,
                               "attack_type": "UNTARGETED", "tlabel": None}}
               }
     security_evaluation = SecurityEvaluation(config)
-    security_evaluation.attack_full_test()
+    security_evaluation.attack_full_test(use_img_file=False, use_raw_nparray_data=True)
 
 
     # config_explore_perturbation = {"dataset_size": 150, "model_list": ["Alexnet", "VGG-16"], "dataset": "ILSVRC-2012",

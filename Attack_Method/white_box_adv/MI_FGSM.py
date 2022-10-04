@@ -83,7 +83,7 @@ class MI_FGSM():
             # self.label = np.argmax(self.model(img).data.to('cpu').numpy())
             self.label = ori_label
 
-        for i in tqdm(range(self.T), desc="MI-FGSM攻击迭代", ncols=80):
+        for i in range(self.T):
             img.data, sum_grad = self.attack_iter(img, ori_x, sum_grad)
 
         img = img.data.cpu().numpy()

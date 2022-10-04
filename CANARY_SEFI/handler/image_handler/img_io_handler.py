@@ -2,7 +2,6 @@ import base64
 import os
 from io import BytesIO
 import cv2
-import numpy
 import numpy as np
 from PIL import Image
 
@@ -34,10 +33,11 @@ def get_pic_nparray_from_dataset(dataset_path, file_name, is_numpy_array_file=Fa
         raise TypeError("[baispBoot] The dataset path is NOT FOUND, please check your config")
     if not is_numpy_array_file:
         img = cv2.imread(dataset_path + file_name)
-        return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        np_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        return np_img
     else:
-        return np.fromfile(dataset_path + file_name, dtype=np.float)
-        # return np.loadtxt(dataset_path + file_name, delimiter=',')
+        np_img = np.load(dataset_path + file_name)
+        return np_img
 
 
 def save_pic_to_temp(file_name, pic_numpy_array, save_as_numpy_array=False):
@@ -53,8 +53,8 @@ def save_pic_to_temp(file_name, pic_numpy_array, save_as_numpy_array=False):
         pic_numpy_array = np.clip(pic_numpy_array, 0, 255).astype(np.uint8)
         cv2.imwrite(full_path, cv2.cvtColor(np.asarray(pic_numpy_array), cv2.COLOR_RGB2BGR))
     else:
-        # np.savetxt(full_path, pic_numpy_array, delimiter=',')
-        pic_numpy_array.tofile(full_path)
+        np.clip(pic_numpy_array, 0, 255).astype(np.float32)
+        np.save(full_path, pic_numpy_array)
     return
 
 

@@ -94,7 +94,7 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
 
         raw_file_name = None
         if save_raw_data:
-            raw_file_name = "adv_raw_{}_{}_{}.bin".format(batch_manager.batch_token, attack_id, img_log_id)
+            raw_file_name = "adv_raw_{}_{}_{}.npy".format(batch_manager.batch_token, attack_id, img_log_id)
             save_pic_to_temp(raw_file_name, adv_result, save_as_numpy_array=True)
 
         # 写入日志

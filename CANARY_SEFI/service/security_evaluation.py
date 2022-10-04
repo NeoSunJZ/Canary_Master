@@ -62,13 +62,21 @@ class SecurityEvaluation:
         attack_adv_example_da_evaluation(self.attacker_list, use_raw_nparray_data)
         logger.finish()
 
-    def attack_full_test(self, use_raw_nparray_data=False):
+    def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False):
         self.model_inference_capability_test_and_evaluation()
         self.only_build_adv()
-        self.attack_deflection_capability_test_and_evaluation(use_raw_nparray_data)
-        self.attack_adv_example_da_test_and_evaluation(use_raw_nparray_data)
-        # 模型综合能力测试结果分析
-        model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data)
+        if not use_img_file and not use_raw_nparray_data:
+            raise RuntimeError("[ Logic Error ] [ INIT TEST ] At least one format of data should be selected!")
+        if use_img_file:
+            self.attack_deflection_capability_test_and_evaluation(use_raw_nparray_data=False)
+            self.attack_adv_example_da_test_and_evaluation(use_raw_nparray_data=False)
+            # 模型综合能力测试结果分析
+            model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=False)
+        if use_raw_nparray_data:
+            self.attack_deflection_capability_test_and_evaluation(use_raw_nparray_data=True)
+            self.attack_adv_example_da_test_and_evaluation(use_raw_nparray_data=True)
+            # 模型综合能力测试结果分析
+            model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=True)
 
     def explore_attack_perturbation_test(self, use_raw_nparray_data=False):
         # 生成对抗样本

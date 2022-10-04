@@ -10,7 +10,7 @@ from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_
 
 
 def build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args, atk_perturbation_budget=None):
-    with tqdm(total=dataset_info.dataset_size, desc="对抗样本生成进度", ncols=80) as bar:
+    with tqdm(total=dataset_info.dataset_size, desc="Adv-example Generating progress", ncols=120) as bar:
         def each_img_finish_callback(img, adv_result):
             check_cuda_memory_alloc_status(empty_cache=True)
             bar.update(1)
@@ -40,7 +40,7 @@ def explore_perturbation(dataset_info, atk_name, atk_args, model_name, model_arg
     upper_bound = explore_perturbation_args['upper_bound']
     step = explore_perturbation_args['step']
 
-    with tqdm(total=(upper_bound-lower_bound)/step, desc="扰动探索测试进度", ncols=80) as bar:
+    with tqdm(total=(upper_bound-lower_bound)/step, desc="扰动探索测试进度", ncols=120) as bar:
 
         now_perturbation = lower_bound
         while now_perturbation < upper_bound:
