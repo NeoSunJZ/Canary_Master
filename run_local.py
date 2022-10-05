@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # security_evaluation = SecurityEvaluation(config)
     # security_evaluation.attack_full_test(use_img_file=True, use_raw_nparray_data=True)
 
-    config = {"dataset_size": 100, "dataset": "ILSVRC-2012",
+    config = {"dataset_size": 150, "dataset": "ILSVRC-2012",
               "model_list": ["Alexnet(ImageNet)", "VGG-16(ImageNet)"],
               "model_config": {"Alexnet(ImageNet)": {}, "VGG-16(ImageNet)": {}},
               "img_proc_config": {"Alexnet(ImageNet)": {}, "VGG-16(ImageNet)": {}},
@@ -61,16 +61,15 @@ if __name__ == "__main__":
                   "MI-FGSM": {"alpha": 0.002, "epsilon": 0, "pixel_min": -3, "pixel_max": 3, "T": 1000,
                               "attack_type": "UNTARGETED", "tlabel": None}
               },
-              "explore_perturbation_config": {
+              "perturbation_increment_config": {
                   "MI-FGSM": {
-                      "upper_bound": 0.02, "lower_bound": 0, "step": 0.001,
+                      "upper_bound": 0.02, "lower_bound": 0.008, "step": 0.001,
                   }
               }
               }
-    global_recovery.start_recovery_mode("iJaIoGHR")
-    # batch_manager.init_batch(show_logo=True)
+    batch_manager.init_batch(show_logo=True)
     security_evaluation = SecurityEvaluation(config)
-    security_evaluation.explore_attack_perturbation_test(use_img_file=True, use_raw_nparray_data=True)
+    security_evaluation.attack_perturbation_increment_test(use_img_file=True, use_raw_nparray_data=True)
 
     # config_explore_perturbation = {"dataset_size": 150, "model_list": ["Alexnet", "VGG-16"], "dataset": "ILSVRC-2012",
     #                                "model_config": {"Alexnet": {}, "VGG-16": {}},

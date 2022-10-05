@@ -3,11 +3,11 @@ from CANARY_SEFI.batch_manager import batch_manager
 from CANARY_SEFI.core.function.enum.transfer_attack_type_enum import TransferAttackType
 from CANARY_SEFI.core.function.helper.excepthook import excepthook
 from CANARY_SEFI.core.function.init_dataset import init_dataset
-from CANARY_SEFI.core.function.test_and_evaluation import explore_attack_perturbation, \
-    explore_perturbation_attack_capability_evaluation, adv_example_generate, model_inference_capability_test, \
+from CANARY_SEFI.core.function.test_and_evaluation import adv_example_generate, model_inference_capability_test, \
     model_inference_capability_evaluation, attack_deflection_capability_test, attack_deflection_capability_evaluation, \
     attack_adv_example_da_test, attack_adv_example_da_evaluation, model_security_synthetical_capability_evaluation, \
-    explore_perturbation_attack_deflection_capability_test, explore_perturbation_attack_adv_example_da_test
+    adv_example_generate_with_perturbation_increment, attack_deflection_capability_test_with_perturbation_increment, \
+    attack_adv_example_da_test_with_perturbation_increment, attack_capability_evaluation_with_perturbation_increment
 from CANARY_SEFI.handler.json_handler.json_io_handler import save_info_to_json_file, get_info_from_json_file
 
 
@@ -30,9 +30,9 @@ class SecurityEvaluation:
         self.attacker_config = config.get("attacker_config", None)
         self.img_proc_config = config.get("img_proc_config", None)
 
-        self.explore_perturbation_config = config.get("explore_perturbation_config", None)
+        self.perturbation_increment_config = config.get("perturbation_increment_config", None)
 
-    def only_build_adv(self):
+    def adv_example_generate(self):
         # 生成对抗样本与对抗样本质量分析
         adv_example_generate(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config, self.img_proc_config)
         batch_manager.test_data_logger.finish()
@@ -62,7 +62,7 @@ class SecurityEvaluation:
 
     def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False):
         self.model_inference_capability_test_and_evaluation()
-        self.only_build_adv()
+        self.adv_example_generate()
         if not use_img_file and not use_raw_nparray_data:
             raise RuntimeError("[ Logic Error ] [ INIT TEST ] At least one format of data should be selected!")
         if use_img_file:
@@ -76,24 +76,25 @@ class SecurityEvaluation:
             # 模型综合能力测试结果分析
             model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=True)
 
-    def explore_attack_perturbation_test(self, use_img_file=True, use_raw_nparray_data=False):
-        # 生成对抗样本
-        explore_attack_perturbation(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config, self.img_proc_config,
-                                    self.explore_perturbation_config)
+    def attack_perturbation_increment_test(self, use_img_file=True, use_raw_nparray_data=False):
+        # 递增扰动生成对抗样本
+        adv_example_generate_with_perturbation_increment(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config, self.img_proc_config,
+                                    self.perturbation_increment_config)
         # 模型推理能力测试
         model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config)
+
         if use_img_file:
             # 测试
-            explore_perturbation_attack_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config, use_raw_nparray_data=False)
-            explore_perturbation_attack_adv_example_da_test(self.attacker_list, self.dataset_info, use_raw_nparray_data=False)
+            attack_deflection_capability_test_with_perturbation_increment(self.attacker_list, self.model_config, self.img_proc_config, use_raw_nparray_data=False)
+            attack_adv_example_da_test_with_perturbation_increment(self.attacker_list, self.dataset_info, use_raw_nparray_data=False)
             # 结果分析
-            explore_perturbation_attack_capability_evaluation(self.attacker_list, use_raw_nparray_data=False)
+            attack_capability_evaluation_with_perturbation_increment(self.attacker_list, use_raw_nparray_data=False)
         if use_raw_nparray_data:
             # 测试
-            explore_perturbation_attack_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config, use_raw_nparray_data=True)
-            explore_perturbation_attack_adv_example_da_test(self.attacker_list, self.dataset_info, use_raw_nparray_data=True)
+            attack_deflection_capability_test_with_perturbation_increment(self.attacker_list, self.model_config, self.img_proc_config, use_raw_nparray_data=True)
+            attack_adv_example_da_test_with_perturbation_increment(self.attacker_list, self.dataset_info, use_raw_nparray_data=True)
             # 结果分析
-            explore_perturbation_attack_capability_evaluation(self.attacker_list, use_raw_nparray_data=True)
+            attack_capability_evaluation_with_perturbation_increment(self.attacker_list, use_raw_nparray_data=True)
 
         batch_manager.test_data_logger.finish()
 

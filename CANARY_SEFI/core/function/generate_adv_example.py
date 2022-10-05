@@ -28,31 +28,28 @@ def build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc
         bar.update(1)
 
 
-def explore_perturbation(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args,
-                         explore_perturbation_args=None):
-    if explore_perturbation_args is None:
-        explore_perturbation_args = {"upper_bound": 0.2, "lower_bound": 0, "step": 0.01}
+def build_AEs_with_perturbation_increment(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args,
+                                          perturbation_increment_args=None):
+    if perturbation_increment_args is None:
+        perturbation_increment_args = {"upper_bound": 0.2, "lower_bound": 0, "step": 0.01}
 
     atk_component = SEFI_component_manager.attack_method_list.get(atk_name)
     perturbation_budget_var_name = atk_component.get('attacker_class').get('perturbation_budget_var_name')
 
-    lower_bound = explore_perturbation_args['lower_bound']
-    upper_bound = explore_perturbation_args['upper_bound']
-    step = explore_perturbation_args['step']
+    lower_bound = perturbation_increment_args['lower_bound']
+    upper_bound = perturbation_increment_args['upper_bound']
+    step = perturbation_increment_args['step']
 
-    with tqdm(total=(upper_bound-lower_bound)/step, desc="扰动探索测试进度", ncols=120) as bar:
+    with tqdm(total=(upper_bound-lower_bound)/step, desc="Perturbation Increasing progress", ncols=120) as bar:
 
         now_perturbation = lower_bound
         while now_perturbation < upper_bound:
             # 扰动预算前进步长
             now_perturbation += step
 
-            msg = "攻击方法 {} (基于模型 {} ) 当前探索扰动大小 {}" \
-                .format(atk_name, model_name, now_perturbation)
+            msg = "Generating Adv Example By Attack Method {} on(base) Model {}(Now perturbation:{}).".format(atk_name, model_name, now_perturbation)
             reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
 
             atk_args[perturbation_budget_var_name] = now_perturbation
-
-            build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args)
-
+            build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args, now_perturbation)
             bar.update(1)

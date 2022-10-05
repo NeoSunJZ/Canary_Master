@@ -39,6 +39,7 @@ def adv_inference(atk_log, test_model, model_args, img_proc_args, use_raw_nparra
             participant = "{}({})(e-{}):{}".format(atk_log['atk_name'], atk_log['base_model'],
                                                    str(round(float(atk_log['atk_perturbation_budget']), 5)), test_model)
         is_skip, completed_num = global_recovery.check_skip(participant)
+        participant += "(RAW)" if use_raw_nparray_data else "(IMG)"
         if is_skip:
             return None
         inference_detector_4_img_batch(test_model, model_args, img_proc_args, adv_dataset_info,

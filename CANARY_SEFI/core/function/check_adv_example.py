@@ -28,6 +28,7 @@ def adv_example_da_check(atk_log, dataset_info, use_raw_nparray_data=False):
         if atk_log['atk_perturbation_budget'] is not None:
             participant = "{}({})(e-{})".format(atk_log['atk_name'], atk_log['base_model'],
                                                    str(round(float(atk_log['atk_perturbation_budget']), 5)))
+        participant += "(RAW)" if use_raw_nparray_data else "(IMG)"
         is_skip, completed_num = global_recovery.check_skip(participant)
         if is_skip:
             return None
