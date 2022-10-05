@@ -1,5 +1,6 @@
 # SEFI
-![image](https://github.com/NeoSunJZ/Canary_Master/blob/main/logo.png?raw=true)
+<img src="https://github.com/NeoSunJZ/Canary_Master/blob/main/logo.png?raw=true" width="200">
+
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
 SEFI is a framework for evaluating the robustness of artificial intelligence. It will generate adversarial samples based on selected models using selected attack methods and use these adversarial samples to attack any model you wish. In the process it will collect data including adversarial sample quality, model result deflection and model baseline inference as a basis for evaluating the robustness of AI models and the effectiveness of attack methods, while finding the best defense solution.
