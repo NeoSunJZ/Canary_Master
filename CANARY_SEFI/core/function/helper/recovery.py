@@ -21,11 +21,11 @@ class Recovery:
             batch_manager.sys_log_logger.new_record(participant)
             return False, 0
         elif bool(int(log.get("is_finish", 0))):
-            reporter.console_log("[RECOVERY] 步骤已完成，跳过执行", Fore.GREEN, type="SUCCESS")
+            reporter.console_log("[RECOVERY] Step completed, SKIP execution", Fore.RED, type="SUCCESS")
             return True, None
         else:
             batch_manager.sys_log_logger.system_log_id = log.get('id')
-            batch_manager.sys_log_logger.update_finish_status(is_restart = True)
+            batch_manager.sys_log_logger.update_finish_status(is_restart=True)
             return False, log.get("completed_num")
 
 

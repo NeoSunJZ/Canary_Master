@@ -14,7 +14,6 @@ class BatchManager(object):
         self.test_data_logger = None
         self.sys_log_logger = None
         self.base_temp_path = None
-        self.init_batch(show_logo=True)
 
     def init_batch(self, batch_token=None, show_logo=False):
         if batch_token == self.batch_token and batch_token is not None:

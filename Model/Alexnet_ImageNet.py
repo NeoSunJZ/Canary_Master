@@ -40,7 +40,7 @@ def img_post_handler(adv, args):
     adv = (adv * std) + mean
     adv = adv * 255.0
 
-    adv = np.clip(adv, 0, 255).astype(np.uint8)
+    adv = np.clip(adv, 0, 255).astype(np.float32)
     return adv
 
 

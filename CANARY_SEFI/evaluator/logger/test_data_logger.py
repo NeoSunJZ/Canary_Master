@@ -26,11 +26,6 @@ class TestDataLogger:
 
     def init_database(self):
         cursor = self.conn.cursor()
-        # cursor.execute('create table if not exists dataset_log '
-        #                '(dataset_id INTEGER PRIMARY KEY AUTOINCREMENT, '
-        #                'dataset_name varchar(20), '
-        #                'dataset_seed varchar(20), '
-        #                'dataset_size varchar(20))')
 
         cursor.execute('create table if not exists ori_img_log '
                        '(ori_img_id INTEGER PRIMARY KEY AUTOINCREMENT, '

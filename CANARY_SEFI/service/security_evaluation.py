@@ -10,8 +10,6 @@ from CANARY_SEFI.core.function.test_and_evaluation import explore_attack_perturb
     explore_perturbation_attack_deflection_capability_test, explore_perturbation_attack_adv_example_da_test
 from CANARY_SEFI.handler.json_handler.json_io_handler import save_info_to_json_file, get_info_from_json_file
 
-logger = batch_manager.test_data_logger
-
 
 class SecurityEvaluation:
 
@@ -37,14 +35,14 @@ class SecurityEvaluation:
     def only_build_adv(self):
         # 生成对抗样本与对抗样本质量分析
         adv_example_generate(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config, self.img_proc_config)
-        logger.finish()
+        batch_manager.test_data_logger.finish()
 
     def model_inference_capability_test_and_evaluation(self):
         # 模型推理能力测试
         model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config)
         # 模型推理能力评估
         model_inference_capability_evaluation(self.model_list)
-        logger.finish()
+        batch_manager.test_data_logger.finish()
 
     def attack_deflection_capability_test_and_evaluation(self, use_raw_nparray_data=False):
         # 攻击偏转能力测试
@@ -53,14 +51,14 @@ class SecurityEvaluation:
                                           use_raw_nparray_data)
         # 攻击偏转能力评估
         attack_deflection_capability_evaluation(self.attacker_list, use_raw_nparray_data)
-        logger.finish()
+        batch_manager.test_data_logger.finish()
 
     def attack_adv_example_da_test_and_evaluation(self, use_raw_nparray_data=False):
         # 攻击偏转能力测试
         attack_adv_example_da_test(self.attacker_list, self.dataset_info, use_raw_nparray_data)
         # 攻击偏转能力评估
         attack_adv_example_da_evaluation(self.attacker_list, use_raw_nparray_data)
-        logger.finish()
+        batch_manager.test_data_logger.finish()
 
     def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False):
         self.model_inference_capability_test_and_evaluation()
@@ -78,16 +76,26 @@ class SecurityEvaluation:
             # 模型综合能力测试结果分析
             model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=True)
 
-    def explore_attack_perturbation_test(self, use_raw_nparray_data=False):
+    def explore_attack_perturbation_test(self, use_img_file=True, use_raw_nparray_data=False):
         # 生成对抗样本
         explore_attack_perturbation(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config, self.img_proc_config,
                                     self.explore_perturbation_config)
-        # 测试
-        explore_perturbation_attack_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config, use_raw_nparray_data)
-        explore_perturbation_attack_adv_example_da_test(self.attacker_list, self.dataset_info, use_raw_nparray_data)
-        # 结果分析
-        explore_perturbation_attack_capability_evaluation(self.attacker_list, use_raw_nparray_data)
-        logger.finish()
+        # 模型推理能力测试
+        model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config)
+        if use_img_file:
+            # 测试
+            explore_perturbation_attack_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config, use_raw_nparray_data=False)
+            explore_perturbation_attack_adv_example_da_test(self.attacker_list, self.dataset_info, use_raw_nparray_data=False)
+            # 结果分析
+            explore_perturbation_attack_capability_evaluation(self.attacker_list, use_raw_nparray_data=False)
+        if use_raw_nparray_data:
+            # 测试
+            explore_perturbation_attack_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config, use_raw_nparray_data=True)
+            explore_perturbation_attack_adv_example_da_test(self.attacker_list, self.dataset_info, use_raw_nparray_data=True)
+            # 结果分析
+            explore_perturbation_attack_capability_evaluation(self.attacker_list, use_raw_nparray_data=True)
+
+        batch_manager.test_data_logger.finish()
 
 
 # sys.excepthook = excepthook

@@ -49,7 +49,7 @@ def model_inference_capability_analyzer_and_evaluation(model_name):
     batch_manager.sys_log_logger.update_finish_status(True)
 
 
-def attack_deflection_capability_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data):
+def attack_deflection_capability_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data=False):
     msg = "Analyzing and Evaluating Method({} *BaseModel {}*)'s deflection capability test result".format(atk_name, base_model)
     reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
 
@@ -60,7 +60,7 @@ def attack_deflection_capability_analyzer_and_evaluation(atk_name, base_model, u
     attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, use_raw_nparray_data)
 
 
-def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, use_raw_nparray_data):
+def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, use_raw_nparray_data=False):
     all_adv_example_log = find_adv_example_file_logs_by_attack_id(attack_info['attack_id'])
 
     attack_test_result = {}
@@ -128,7 +128,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, us
     batch_manager.sys_log_logger.update_finish_status(True)
 
 
-def attack_adv_example_da_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data):
+def attack_adv_example_da_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data=False):
     msg = "Analyzing and Evaluating Method({} *BaseModel {}*)'s adv example disturbance-aware test result".format(atk_name, base_model)
     reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
 
@@ -137,12 +137,14 @@ def attack_adv_example_da_analyzer_and_evaluation(atk_name, base_model, use_raw_
         return
     attack_info = find_attack_log_by_name_and_base_model(atk_name, base_model)
 
-    adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG.value
-    attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, adv_example_file_type)
+    attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, use_raw_nparray_data)
 
 
-def attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, adv_example_file_type):
+def attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, use_raw_nparray_data=False):
     all_adv_example_log = find_adv_example_file_logs_by_attack_id(attack_info['attack_id'])
+
+    adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG.value
+
     analyzer_log = {
         "CT": [], "MD": [], "ED": [], "PCR": [], "DMS": [], "LMS": []
     }
