@@ -12,7 +12,7 @@ from CANARY_SEFI.evaluator.analyzer.synthetical_analyzer import \
     model_security_synthetical_capability_analyzer_and_evaluation
 from CANARY_SEFI.evaluator.analyzer.test_data_analyzer import model_inference_capability_analyzer_and_evaluation, \
     attack_deflection_capability_analyzer_and_evaluation, attack_adv_example_da_analyzer_and_evaluation, \
-    perturbation_explore_analyzer_and_evaluation
+    attack_capability_with_perturbation_increment_analyzer_and_evaluation
 from CANARY_SEFI.evaluator.logger.attack_info_handler import find_attack_log_by_name_and_base_model, \
     find_attack_log_by_name
 
@@ -156,7 +156,7 @@ def attack_deflection_capability_test_with_perturbation_increment(attacker_list,
                     .format(atk_name, base_model, use_raw_nparray_data, model_name)
                 reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
 
-                attack_logs = find_attack_log_by_name_and_base_model(atk_name, base_model, explore_perturbation_mode = True)
+                attack_logs = find_attack_log_by_name_and_base_model(atk_name, base_model, perturbation_increment_mode=True)
 
                 for attack_log in attack_logs:
                     adv_inference(attack_log, model_name, model_args, img_proc_args, use_raw_nparray_data)
@@ -187,4 +187,4 @@ def attack_capability_evaluation_with_perturbation_increment(attacker_list, use_
     batch_manager.sys_log_logger.set_step(Step.ATTACK_EVALUATION_WITH_PERTURBATION_INCREMENT)
     for atk_name in attacker_list:
         for base_model in attacker_list[atk_name]:
-            perturbation_explore_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data)
+            attack_capability_with_perturbation_increment_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data)

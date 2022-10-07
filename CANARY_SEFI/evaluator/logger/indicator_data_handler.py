@@ -83,7 +83,7 @@ def get_attack_adv_example_da_indicator_data_by_attack_name(atk_name):
     return batch_manager.test_data_logger.query_logs(sql, (atk_name,))
 
 
-def get_explore_perturbation_result_by_attack_name_and_base_model(atk_name, base_model):
+def get_attack_capability_with_perturbation_increment_indicator_data(atk_name, base_model):
     sql = "SELECT * FROM attack_deflection_capability_indicator_data LEFT OUTER JOIN attack_adv_example_da_indicator_data ON " \
           "attack_deflection_capability_indicator_data.atk_name = attack_adv_example_da_indicator_data.atk_name " \
           "AND attack_deflection_capability_indicator_data.base_model = attack_adv_example_da_indicator_data.base_model " \

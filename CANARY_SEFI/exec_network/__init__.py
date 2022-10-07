@@ -13,7 +13,7 @@ from CANARY_SEFI.exec_network.client_declaration import client_declaration
 
 # 创建app
 def create_app():
-    app = Flask(__name__)
+    app = Flask("Canary_SEFI")
     app.debug = True
 
     # 注册蓝图

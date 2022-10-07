@@ -67,7 +67,8 @@ if __name__ == "__main__":
                   }
               }
               }
-    batch_manager.init_batch(show_logo=True)
+    # batch_manager.init_batch(show_logo=True)
+    global_recovery.start_recovery_mode("0qzx7UpZ")
     security_evaluation = SecurityEvaluation(config)
     security_evaluation.attack_perturbation_increment_test(use_img_file=True, use_raw_nparray_data=True)
 

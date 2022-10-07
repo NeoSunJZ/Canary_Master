@@ -36,6 +36,7 @@ def img_post_handler(adv, args):
     std = [0.229, 0.224, 0.225]
 
     adv = np.squeeze(adv, axis=0)
+    print(adv.shape)
     adv = adv.transpose(1, 2, 0)
     adv = (adv * std) + mean
     adv = adv * 255.0

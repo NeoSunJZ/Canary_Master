@@ -175,15 +175,16 @@ def attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, use_raw_n
     batch_manager.sys_log_logger.update_finish_status(True)
 
 
-def perturbation_explore_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data=False):
+def attack_capability_with_perturbation_increment_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data=False):
     msg = "统计攻击方法 {} (基于 {} 模型) 生成的对抗样本扰动探索结果".format(atk_name, base_model)
     reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
-
-    is_skip, completed_num = global_recovery.check_skip(atk_name + ":" + base_model)
+    participant = atk_name + ":" + base_model
+    participant += "(RAW)" if use_raw_nparray_data else "(IMG)"
+    is_skip, completed_num = global_recovery.check_skip(participant)
     if is_skip:
         return
 
-    attack_logs = find_attack_log_by_name_and_base_model(atk_name, base_model, explore_perturbation_mode=True)
+    attack_logs = find_attack_log_by_name_and_base_model(atk_name, base_model, perturbation_increment_mode=True)
     for attack_info in attack_logs:
         attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, use_raw_nparray_data)
         attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, use_raw_nparray_data)

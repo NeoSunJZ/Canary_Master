@@ -1,15 +1,14 @@
 from flask import Blueprint, request
 
 from CANARY_SEFI.batch_manager import batch_manager
-from CANARY_SEFI.core.config.config_manager import config_manager
-from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader, dataset_single_image_reader
+from CANARY_SEFI.core.function.basic.dataset_function import dataset_single_image_reader
 from CANARY_SEFI.core.function.init_dataset import dataset_seed_handler
 from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo
 from CANARY_SEFI.entity.msg_entity import MsgEntity
 from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_log_by_id
 from CANARY_SEFI.evaluator.logger.img_file_info_handler import find_img_log_by_id
 from CANARY_SEFI.evaluator.logger.indicator_data_handler import get_model_security_synthetical_capability_log, \
-    get_explore_perturbation_result_by_attack_name_and_base_model
+    get_attack_capability_with_perturbation_increment_indicator_data
 from CANARY_SEFI.evaluator.logger.inference_test_data_handler import get_clean_inference_test_data_with_img_info, \
     get_adv_inference_test_data_with_adv_info
 from CANARY_SEFI.handler.image_handler.img_io_handler import get_pic_nparray_from_dataset, get_pic_base64_from_nparray
@@ -43,13 +42,13 @@ def get_model_security_synthetical_capability_result():
 
 
 @api.route('/result/getExplorePerturbationResult', methods=['GET'])
-def get_explore_perturbation_result():
+def get_perturbation_increment_test_result():
     # 初始化批次
     batch_manager.init_batch(request.args.get("batchToken"))
 
     atk_name = request.args.get("attackName")
     base_model = request.args.get("baseModel")
-    result = get_explore_perturbation_result_by_attack_name_and_base_model(atk_name, base_model)
+    result = get_attack_capability_with_perturbation_increment_indicator_data(atk_name, base_model)
     return MsgEntity("SUCCESS", "1", result).msg2json()
 
 

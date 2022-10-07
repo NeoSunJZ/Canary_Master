@@ -17,6 +17,7 @@ class BatchManager(object):
 
     def init_batch(self, batch_token=None, show_logo=False):
         if batch_token == self.batch_token and batch_token is not None:
+            print("跳过初始化")
             return
         if show_logo:
             print_logo()

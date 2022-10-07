@@ -72,4 +72,5 @@ class CW:
         else:
             raise Exception("未知攻击方式")
 
+        img = img.data.cpu().numpy()
         return img

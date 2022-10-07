@@ -46,6 +46,7 @@ def get_clean_inference_test_data_with_img_info(inference_model):
           "AND inference_test_data.inference_model = ? "
     return handle_result(batch_manager.test_data_logger.query_logs(sql, (str(inference_model),)))
 
+
 def get_adv_inference_test_data_with_adv_info(inference_model, adv_example_file_type='ADVERSARIAL_EXAMPLE'):
     sql = "SELECT inference_test_data.*, ori_img_log.ori_img_label, ori_img_log.ori_img_id, " \
           "attack_info_log.atk_name, attack_info_log.base_model " \

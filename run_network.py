@@ -9,11 +9,12 @@ websocket = reporter.get_socket(app)
 
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 
+# 模型
 # Alexnet
-from Model.Alexnet import sefi_component as alexnet_model
+from Model.Alexnet_ImageNet import sefi_component as alexnet_model
 SEFI_component_manager.add(alexnet_model)
 # VGG16
-from Model.VGG16 import sefi_component as vgg_16_model
+from Model.VGG16_ImageNet import sefi_component as vgg_16_model
 SEFI_component_manager.add(vgg_16_model)
 
 # 数据集

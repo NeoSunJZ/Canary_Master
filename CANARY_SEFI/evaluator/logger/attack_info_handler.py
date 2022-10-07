@@ -8,7 +8,7 @@ def add_attack_log(atk_name, base_model, atk_type=None, atk_perturbation_budget=
                  " VALUES (NULL,?,?,?,?)"
     sql_query = " SELECT attack_id FROM attack_info_log " \
                 " WHERE atk_name = ? AND base_model = ? AND atk_type = ? AND atk_perturbation_budget = ? "
-    args = (str(atk_name), str(base_model), str(atk_type), str(atk_perturbation_budget))
+    args = (str(atk_name), str(base_model), str(atk_type), atk_perturbation_budget)
     result = batch_manager.test_data_logger.query_log(sql_query, args)
     if result is not None:
         attack_id = result["attack_id"]
@@ -26,11 +26,11 @@ def find_attack_log_by_name(atk_name):
     return batch_manager.test_data_logger.query_logs(sql, (str(atk_name),))
 
 
-def find_attack_log_by_name_and_base_model(atk_name, base_model, explore_perturbation_mode=False):
+def find_attack_log_by_name_and_base_model(atk_name, base_model, perturbation_increment_mode=False):
     sql = " SELECT * FROM attack_info_log WHERE atk_name = ? AND base_model = ? "
     logs = batch_manager.test_data_logger.query_logs(sql, (str(atk_name), str(base_model)))
 
-    if not explore_perturbation_mode:
+    if not perturbation_increment_mode:
         if len(logs) > 1:
             raise RuntimeError("[ Logic Error ] More than one attack record found!")
         return logs[0]
