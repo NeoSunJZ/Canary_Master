@@ -22,13 +22,12 @@ sefi_component = SEFIComponent()
                                           })
 class FGSM():
     def __init__(self, model, clip_min=0, clip_max=1, epsilon=0.25, random_start=False):
-        self.model = model  # 待攻击的白盒模型
+        self.model = fb.PyTorchModel(model, bounds=(clip_min, clip_max))  # 待攻击的白盒模型
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.random_start = random_start  # 控制是否在允许的epsilon ball内随机启动
         self.clip_min = clip_min
         self.clip_max = clip_max
-        self.model = fb.PyTorchModel(model, bounds=(self.clip_min, self.clip_max))
 
     @sefi_component.attack(name="FGSM", is_inclass=True, support_model=["vision_transformer"], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
