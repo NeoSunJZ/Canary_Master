@@ -122,7 +122,7 @@ class SystemLog:
         else:
             before_time = time.strftime("%Y-%m-%d %H:%M:%S.%s", time.localtime(int(before_time) / 1000))
         sql_query = " SELECT * FROM system_console_msg WHERE record_time < Datetime(?) "
-        cursor.execute(sql_query, (str(before_time)))
+        cursor.execute(sql_query, (str(before_time),))
         values = cursor.fetchall()
         cursor.close()
         return values

@@ -1,6 +1,11 @@
 from functools import reduce
+
+import cv2
 import piq
 import torch
+from matplotlib import pyplot as plt
+
+from CANARY_SEFI.evaluator.tester.frequency_domain_image_processing import get_low_high_f
 
 
 class AdvDisturbanceAwareTester:
@@ -10,12 +15,17 @@ class AdvDisturbanceAwareTester:
         self.min_pixel = min_pixel
 
     def test_all(self, ori_img, img):
+        high_freq_euclidean_distortion,low_freq_euclidean_distortion = self.calculate_freq_euclidean_distortion(ori_img, img)
+        print(high_freq_euclidean_distortion,low_freq_euclidean_distortion)
         return {
             "maximum_disturbance": float(self.calculate_maximum_disturbance(ori_img, img)),
             "euclidean_distortion": float(self.calculate_euclidean_distortion(ori_img, img)),
             "pixel_change_ratio": float(self.calculate_pixel_change_ratio(ori_img, img)),
             "deep_metrics_similarity": float(self.calculate_deep_metrics_similarity(ori_img, img)),
             "low_level_metrics_similarity": float(self.calculate_low_level_metrics_similarity(ori_img, img)),
+
+            "high_freq_euclidean_distortion": high_freq_euclidean_distortion,
+            "low_freq_euclidean_distortion": low_freq_euclidean_distortion
         }
 
     def calculate_maximum_disturbance(self, ori_img, img):
@@ -54,6 +64,21 @@ class AdvDisturbanceAwareTester:
         result = piq.MultiScaleGMSDLoss(chromatic=True, data_range=1., reduction='none')(x, y).cpu().detach().numpy()
         return result[0]
 
+    def calculate_freq_euclidean_distortion(self, ori_img, img):
+        radius_ratio = 0.5  # 圆形过滤器的半径：ratio * w/2
+        D = 5  # 高斯过滤器的截止频率：2 5 10 20 50 ，越小越模糊信息越少
+        ori_img = cv2.cvtColor(ori_img, cv2.COLOR_RGB2GRAY)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
+        low_freq_part_ori_img, high_freq_part_ori_img = get_low_high_f(ori_img, radius_ratio=radius_ratio, D=D)
+        low_freq_part_img, high_freq_part_img = get_low_high_f(img, radius_ratio=radius_ratio, D=D)
+
+        result_low_freq = self.calculate_euclidean_distortion(low_freq_part_ori_img, low_freq_part_img)
+        result_high_freq = self.calculate_euclidean_distortion(high_freq_part_ori_img, high_freq_part_img)
+        return result_low_freq, result_high_freq
+
     def img_handler(self, img):
         img = img / (self.max_pixel - self.min_pixel)
-        return torch.from_numpy(img.transpose(2, 0, 1)).to(self.device).float()
+        if len(img.shape) == 3:
+            img = img.transpose(2, 0, 1)
+        return torch.from_numpy(img).to(self.device).float()

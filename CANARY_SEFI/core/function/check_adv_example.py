@@ -37,7 +37,7 @@ def adv_example_da_check(atk_log, dataset_info, use_raw_nparray_data=False):
 
         def adv_img_iterator(adv_img, adv_img_file_id, img_label):
             ori_img_log = find_img_log_by_id(adv_img_ori_dict[adv_img_file_id])
-            ori_img = dataset_single_image_reader(dataset_info, ori_img_cursor=ori_img_log['ori_img_cursor'])
+            ori_img, _ = dataset_single_image_reader(dataset_info, ori_img_cursor=ori_img_log['ori_img_cursor'])
 
             # 执行测试
             adv_da_test_result = adv_da_tester.test_all(ori_img, adv_img)

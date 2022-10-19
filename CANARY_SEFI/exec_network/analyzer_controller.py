@@ -59,6 +59,7 @@ def get_adv_info_by_adv_img_id():
 
     adv_img_file_id = request.args.get("advImgId")
     need_adv_img = request.args.get("needAdvImg", 0)
+    is_numpy_array_file = request.args.get("isNumpyArrayFile", False)
 
     adv_example_file_log = find_adv_example_file_log_by_id(adv_img_file_id)
 
@@ -69,10 +70,10 @@ def get_adv_info_by_adv_img_id():
 
         dataset_info = DatasetInfo(config.get('dataset'), int(dataset_seed_handler(config.get('dataset_seed',None))),
                                    int(config.get('dataset_size')))
-        original_img = dataset_single_image_reader(dataset_info, int(ori_img_log["ori_img_cursor"]))
+        original_img, _ = dataset_single_image_reader(dataset_info, int(ori_img_log["ori_img_cursor"]))
 
         adv_file_path = batch_manager.base_temp_path + "pic/"
-        adversarial_img = get_pic_nparray_from_dataset(adv_file_path, adv_example_file_log["adv_img_filename"])
+        adversarial_img = get_pic_nparray_from_dataset(adv_file_path, adv_example_file_log["adv_img_filename"], is_numpy_array_file)
 
         adv_example_file_log['adv_img'] = {
             "original_img": get_pic_base64_from_nparray(original_img),

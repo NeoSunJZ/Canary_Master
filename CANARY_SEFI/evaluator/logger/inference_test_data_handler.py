@@ -2,6 +2,7 @@ import numpy as np
 from colorama import Fore
 from CANARY_SEFI.batch_manager import batch_manager
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
+from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 
 
 def save_inference_test_data(img_id, img_type, inference_model, inference_img_label, inference_img_conf_array):
@@ -47,12 +48,12 @@ def get_clean_inference_test_data_with_img_info(inference_model):
     return handle_result(batch_manager.test_data_logger.query_logs(sql, (str(inference_model),)))
 
 
-def get_adv_inference_test_data_with_adv_info(inference_model, adv_example_file_type='ADVERSARIAL_EXAMPLE'):
+def get_adv_inference_test_data_with_adv_info(inference_model, adv_example_file_type=DatasetType.ADVERSARIAL_EXAMPLE_IMG.value):
     sql = "SELECT inference_test_data.*, ori_img_log.ori_img_label, ori_img_log.ori_img_id, " \
           "attack_info_log.atk_name, attack_info_log.base_model " \
           "FROM inference_test_data, adv_img_file_log, ori_img_log, attack_info_log " \
           "WHERE inference_test_data.img_type = ? " \
-          "AND inference_test_data.img_id = adv_img_file_log.adv_img_id " \
+          "AND inference_test_data.img_id = adv_img_file_log.adv_img_file_id " \
           "AND adv_img_file_log.ori_img_id = ori_img_log.ori_img_id " \
           "AND adv_img_file_log.attack_id = attack_info_log.attack_id " \
           "AND inference_test_data.inference_model = ? "

@@ -68,9 +68,8 @@ class MI_FGSM():
         x.data = self.clip_value(x, ori_x)
         return x.data, sum_grad
 
-    @sefi_component.attack(name="MI-FGSM", is_inclass=True, support_model=["vision_transformer"], attack_type="WHITE_BOX")
+    @sefi_component.attack(name="MI-FGSM", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
-        self.model.train()
         img = torch.from_numpy(img).to(self.device).float()
         # 定义图片可获取梯度，设置计算图叶子节点
         img.requires_grad = True

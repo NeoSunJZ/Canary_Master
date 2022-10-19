@@ -1,5 +1,6 @@
 from colorama import Fore
 
+from CANARY_SEFI.batch_manager import batch_manager
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
@@ -57,3 +58,6 @@ def model_security_synthetical_capability_analyzer_and_evaluation(model_name, us
                                                   model_ACC, model_F1, model_Conf,
                                                   model_MR, model_AIAC, model_ARTC, model_ACT,
                                                   model_AMD, model_AED, model_APCR, model_ADMS, model_ALMS)
+    # 增加计数
+    batch_manager.sys_log_logger.update_completed_num(1)
+    batch_manager.sys_log_logger.update_finish_status(True)
