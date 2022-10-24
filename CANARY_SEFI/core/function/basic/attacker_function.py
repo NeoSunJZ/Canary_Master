@@ -2,7 +2,7 @@ from CANARY_SEFI.batch_manager import batch_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
-from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
+from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader, get_dataset
 from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import add_adv_example_file_log, set_adv_example_file_cost_time
 from CANARY_SEFI.evaluator.logger.attack_info_handler import add_attack_log
 from CANARY_SEFI.evaluator.monitor.attack_effect import time_cost_statistics
@@ -11,7 +11,7 @@ from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_
 
 
 class AdvAttacker:
-    def __init__(self, atk_name, atk_args, model_name, model_args, img_proc_args):
+    def __init__(self, atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info=None):
         self.atk_component = SEFI_component_manager.attack_method_list.get(atk_name)
         # 攻击处理参数JSON转DICT
         self.atk_args_dict = build_dict_with_json_args(self.atk_component, "attack", atk_args)
@@ -38,10 +38,36 @@ class AdvAttacker:
             # 构造类传入
             attacker_class_builder = self.atk_component.get('attacker_class').get('class')
             self.attacker_class = attacker_class_builder(**self.atk_args_dict)
+            # 攻击类初始化方法
+            self.atk_init = self.atk_component.get('attack_init', None)
+            # 初始化类
+            if self.atk_init is not None and dataset_info is not None:
+                self.atk_init(self.attacker_class, self.init_with_dataset(dataset_info, self.img_preprocessor, self.img_proc_args_dict) )
+
             # 扰动变量名称
             self.perturbation_budget_var_name = self.atk_component.get('attacker_class').get('perturbation_budget_var_name')
         else:
             self.perturbation_budget_var_name = self.atk_component.get('perturbation_budget_var_name')
+
+    @staticmethod
+    def init_with_dataset(dataset_info, img_preprocessor, img_proc_args_dict):
+        ori_dataset = get_dataset(dataset_info)
+
+        class PreprocessDataset:
+            def __init__(self):
+                self.ori_dataset = ori_dataset
+                self.img_preprocessor = img_preprocessor
+                self.img_proc_args_dict = img_proc_args_dict
+
+            def __getitem__(self, index):
+                img, label = self.ori_dataset.__getitem__(index)
+                if self.img_preprocessor is not None:  # 图片预处理器存在
+                    img = self.img_preprocessor(img, self.img_proc_args_dict)
+                return img, label
+
+            def __len__(self):
+                return ori_dataset.__len__()
+        return PreprocessDataset()
 
     def adv_attack_4_img(self, ori_img, ori_label):
         img = ori_img
@@ -74,7 +100,7 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
 
     adv_img_id_list = []
     # 构建攻击者
-    adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args)
+    adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info)
 
     # 写入日志
     atk_perturbation_budget = atk_args[adv_attacker.perturbation_budget_var_name] \

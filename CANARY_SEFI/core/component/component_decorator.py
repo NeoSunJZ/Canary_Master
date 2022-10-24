@@ -114,6 +114,19 @@ class SEFIComponent:
 
         return wrapper
 
+    def attack_init(self, name):
+        target_attack_method = self.get_attack_methods(name)
+
+        def wrapper(decorated):
+            def inner(*args, **kwargs):
+                attack_init = decorated(*args, **kwargs)
+                return attack_init
+
+            target_attack_method['attack_init'] = inner
+            return inner
+
+        return wrapper
+
     def attacker_class(self, attack_name, attacker_class_model_var_name="model", perturbation_budget_var_name=None):
         target_attack_method = self.attack_methods.get(attack_name)
         if target_attack_method is None:
