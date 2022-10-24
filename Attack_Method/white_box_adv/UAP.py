@@ -1,14 +1,14 @@
 import numpy as np
-from torch.utils.data import DataLoader
 import torch
 from torchvision.transforms import Resize
 from tqdm import tqdm
 from torch.autograd import Variable
-import copy
 
 from Attack_Method.white_box_adv.DeepFool import DeepFool
+from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
-from Model.Alexnet_ImageNet import sefi_component
+
+sefi_component = SEFIComponent()
 
 
 @sefi_component.attacker_class(attack_name="UAP")
