@@ -19,8 +19,7 @@ sefi_component = SEFIComponent()
                                           "nb_iter": {"desc": "迭代攻击轮数", "type": "INT", "def": "50"},
                                           "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"},{"value": "UNTARGETED", "name": "非靶向"}], "required": "true"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
-                                          "rand_init": {"desc": "是否从随机干扰过的图片开始攻击", "type": "BOOLEAN", "def": "True"},
-                                          "rand_minmax": {"desc": "支持从连续均匀分布中得到图片上的随机扰动(仅当rand_init为真时才有效)", "type": "INT", "def": "None"},
+                                          "rand_minmax": {"desc": "支持从连续均匀分布中得到图片上的随机扰动(仅当rand_init为真时才有效)", "type": "FLOAT", "def": "None"},
                                       })
 class PGD():
     def __init__(self, model, epsilon=0.2, eps_iter=0.1, nb_iter=50, clip_min=-3, clip_max=3, rand_init=True,
@@ -43,7 +42,7 @@ class PGD():
         img = torch.from_numpy(img).to(self.device).float()  # 输入img为tensor形式
 
         if self.attack_type == 'UNTARGETED':
-            img = projected_gradient_descent(model_fn=self.model,
+            adv_img = projected_gradient_descent(model_fn=self.model,
                                              x=img,
                                              eps=self.epsilon,
                                              eps_iter=self.eps_iter,
@@ -58,8 +57,8 @@ class PGD():
                                              sanity_checks=self.sanity_checks) #非靶向 n_classes为int类型
             #projected_gradient_descent中 'assert eps_iter <= eps, (eps_iter, eps)'
         else:
-            y = torch.from_numpy(np.array(self.tlabel)).to(self.device)
-            img = projected_gradient_descent(model_fn=self.model,
+            y = torch.from_numpy(np.array([self.tlabel])).to(self.device)
+            adv_img = projected_gradient_descent(model_fn=self.model,
                                              x=img,
                                              eps=self.epsilon,
                                              eps_iter=self.eps_iter,
@@ -73,4 +72,4 @@ class PGD():
                                              rand_minmax=None,
                                              sanity_checks=self.sanity_checks) #靶向 y带有真标签的张量
 
-        return img
+        return adv_img.cpu().detach().numpy()
