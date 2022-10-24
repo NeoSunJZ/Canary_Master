@@ -1,9 +1,13 @@
+import cv2
 import torch
+from numpy.linalg import norm
+from torch import nn
 from torch.autograd import Variable
 from torchvision import models
 import numpy as np
 from torchvision.models import AlexNet_Weights
 import torch.nn.functional as F
+from torchvision.transforms import Normalize
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 
@@ -13,18 +17,18 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 @sefi_component.model(name="Alexnet(ImageNet)")
 def create_model():
-    alexnet = models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V1).to(device).eval()
-    return alexnet
+    norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229,0.224,0.225])
+    alexnet_model = nn.Sequential(
+        norm_layer,
+        models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
+    ).to(device).eval()
+    return alexnet_model.eval()
 
 
 @sefi_component.util(util_type="img_preprocessor", util_target="model", name="Alexnet(ImageNet)")
 def img_pre_handler(img, args):
     img = img.copy().astype(np.float32)
-    mean = [0.485, 0.456, 0.406]
-    std = [0.229, 0.224, 0.225]
-
     img /= 255.0
-    img = (img - mean) / std
     img = img.transpose(2, 0, 1)
     img = np.expand_dims(img, axis=0)
     return img
@@ -32,15 +36,9 @@ def img_pre_handler(img, args):
 
 @sefi_component.util(util_type="img_reverse_processor", util_target="model", name="Alexnet(ImageNet)")
 def img_post_handler(adv, args):
-    mean = [0.485, 0.456, 0.406]
-    std = [0.229, 0.224, 0.225]
-
     adv = np.squeeze(adv, axis=0)
-    print(adv.shape)
     adv = adv.transpose(1, 2, 0)
-    adv = (adv * std) + mean
     adv = adv * 255.0
-
     adv = np.clip(adv, 0, 255).astype(np.float32)
     return adv
 
