@@ -3,7 +3,7 @@ import numpy as np
 
 import foolbox as fb
 import eagerpy as ep
-from foolbox.attacks import GenAttack
+from  Attack_Method.black_box_adv.genattack.GenAttack import GenAttack
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
@@ -48,7 +48,6 @@ class GA():
     def attack(self, img, ori_label):
         img = torch.from_numpy(img).to(torch.float32).to(self.device)
         img = ep.astensor(img)
-
         # 实例化攻击类
         attack = GenAttack(steps=self.step,population=self.population,mutation_range=self.mutation_range,mutation_probability=self.mutation_probability,sampling_temperature=self.sampling_temperature,channel_axis=self.channel_axis,reduced_dims=self.reduced_dims)
         criterion = TargetedMisclassification(target_classes=torch.tensor([self.tlabel]).to(self.device))  # 参数为具有目标类的张量
