@@ -62,8 +62,8 @@ class AdvAttacker:
             def __getitem__(self, index):
                 img, label = self.ori_dataset.__getitem__(index)
                 if self.img_preprocessor is not None:  # 图片预处理器存在
-                    img = self.img_preprocessor(img, self.img_proc_args_dict)
-                return img, label
+                    img = self.img_preprocessor([img], self.img_proc_args_dict)
+                return img[0], label
 
             def __len__(self):
                 return ori_dataset.__len__()
