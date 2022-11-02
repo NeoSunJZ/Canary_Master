@@ -1,6 +1,6 @@
 from colorama import Fore
 
-from CANARY_SEFI.batch_manager import batch_manager
+from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
@@ -19,7 +19,7 @@ from CANARY_SEFI.handler.tools.analyzer_tools import calc_average
 
 def model_inference_capability_analyzer_and_evaluation(model_name):
     msg = "Analyzing and Evaluating Model({})'s inference capability test result".format(model_name)
-    reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
+    reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
 
     is_skip, completed_num = global_recovery.check_skip(model_name)
     if is_skip:
@@ -45,13 +45,13 @@ def model_inference_capability_analyzer_and_evaluation(model_name):
     clear_conf = calc_average(analyzer_log["inference_confs"])
     save_model_capability_indicator_data(model_name, clear_acc, clear_f1, clear_conf)
     # 增加计数
-    batch_manager.sys_log_logger.update_completed_num(1)
-    batch_manager.sys_log_logger.update_finish_status(True)
+    task_manager.sys_log_logger.update_completed_num(1)
+    task_manager.sys_log_logger.update_finish_status(True)
 
 
 def attack_deflection_capability_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data=False):
     msg = "Analyzing and Evaluating Method({} *BaseModel {}*)'s deflection capability test result".format(atk_name, base_model)
-    reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
+    reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
 
     is_skip, completed_num = global_recovery.check_skip(atk_name + ":" + base_model)
     if is_skip:
@@ -86,7 +86,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, us
                 is_valid = ori_img_inference_log["inference_img_label"] == ori_label
         if not is_valid:
             msg = "Adv Example(ImgID {}) is not VALID (due to the original img inference error), has been abandoned.".format(adv_img_file_id)
-            reporter.console_log(msg, Fore.GREEN, save_db=False, send_msg=False, show_batch=True, show_step_sequence=True)
+            reporter.console_log(msg, Fore.GREEN, save_db=False, send_msg=False, show_task=True, show_step_sequence=True)
             continue
 
         for adv_img_inference_log in adv_img_inference_log_list:
@@ -124,13 +124,13 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, us
         save_attack_deflection_capability_indicator_data(attack_info['atk_name'], attack_info['base_model'], inference_model, adv_example_file_type,
                                    MR, AIAC, ARTC, atk_perturbation_budget=attack_info['atk_perturbation_budget'])
     # 增加计数
-    batch_manager.sys_log_logger.update_completed_num(1)
-    batch_manager.sys_log_logger.update_finish_status(True)
+    task_manager.sys_log_logger.update_completed_num(1)
+    task_manager.sys_log_logger.update_finish_status(True)
 
 
 def attack_adv_example_da_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data=False):
     msg = "Analyzing and Evaluating Method({} *BaseModel {}*)'s adv example disturbance-aware test result".format(atk_name, base_model)
-    reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
+    reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
 
     is_skip, completed_num = global_recovery.check_skip(atk_name + ":" + base_model)
     if is_skip:
@@ -146,7 +146,7 @@ def attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, use_raw_n
     adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG.value
 
     analyzer_log = {
-        "CT": [], "MD": [], "ED": [], "PCR": [], "DMS": [], "LMS": []
+        "CT": [], "MD": [], "ED": [], "ED_HF": [], "ED_LF": [], "PCR": [], "DMS": [], "LMS": []
     }
     for adv_example_log in all_adv_example_log:
         # 获取消耗时间
@@ -155,6 +155,8 @@ def attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, use_raw_n
         adv_example_da_test_data = find_adv_example_da_test_data_by_id_and_type(adv_example_log["adv_img_file_id"], adv_example_file_type)
         analyzer_log["MD"].append(float(adv_example_da_test_data["maximum_disturbance"]))
         analyzer_log["ED"].append(float(adv_example_da_test_data["euclidean_distortion"]))
+        analyzer_log["ED_HF"].append(float(adv_example_da_test_data["high_freq_euclidean_distortion"]))
+        analyzer_log["ED_LF"].append(float(adv_example_da_test_data["low_freq_euclidean_distortion"]))
         analyzer_log["PCR"].append(float(adv_example_da_test_data["pixel_change_ratio"]))
         analyzer_log["DMS"].append(float(adv_example_da_test_data["deep_metrics_similarity"]))
         analyzer_log["LMS"].append(float(adv_example_da_test_data["low_level_metrics_similarity"]))
@@ -162,22 +164,24 @@ def attack_adv_example_da_analyzer_and_evaluation_handler(attack_info, use_raw_n
     ACT = calc_average(analyzer_log["CT"])
     AMD = calc_average(analyzer_log["MD"])
     AED = calc_average(analyzer_log["ED"])
+    AED_HF = calc_average(analyzer_log["ED_HF"])
+    AED_LF = calc_average(analyzer_log["ED_LF"])
     APCR = calc_average(analyzer_log["PCR"])
     ADMS = calc_average(analyzer_log["DMS"])
     ALMS = calc_average(analyzer_log["LMS"])
 
     # 写入日志
     save_attack_adv_example_da_indicator_data(attack_info['atk_name'], attack_info['base_model'], adv_example_file_type,
-                                              ACT, AMD, AED, APCR, ADMS, ALMS,
+                                              ACT, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS,
                                               atk_perturbation_budget=attack_info['atk_perturbation_budget'])
     # 增加计数
-    batch_manager.sys_log_logger.update_completed_num(1)
-    batch_manager.sys_log_logger.update_finish_status(True)
+    task_manager.sys_log_logger.update_completed_num(1)
+    task_manager.sys_log_logger.update_finish_status(True)
 
 
 def attack_capability_with_perturbation_increment_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data=False):
     msg = "统计攻击方法 {} (基于 {} 模型) 生成的对抗样本扰动探索结果".format(atk_name, base_model)
-    reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
+    reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
     participant = atk_name + ":" + base_model
     participant += "(RAW)" if use_raw_nparray_data else "(IMG)"
     is_skip, completed_num = global_recovery.check_skip(participant)

@@ -2,7 +2,7 @@ from distutils.util import strtobool
 
 from flask import Blueprint, request
 
-from CANARY_SEFI.batch_manager import batch_manager
+from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.helper.task_thread import task_thread
 from CANARY_SEFI.entity.msg_entity import MsgEntity
 
@@ -12,10 +12,10 @@ api = Blueprint('task_status_api', __name__)
 
 @api.route('/task/runningStatus', methods=['GET'])
 def running_status():
-    batch_token = request.args.get("batchToken")
-    task = task_thread.execute_task_list.get(batch_token, None)
+    task_token = request.args.get("batchToken")
+    task = task_thread.execute_task_list.get(task_token, None)
     if task is None or task.done():
-        if check_abnormal_termination(batch_token):
+        if check_abnormal_termination(task_token):
             return MsgEntity("SUCCESS", "1", "finished").msg2json()
         else:
             return MsgEntity("SUCCESS", "-1", "unfinished").msg2json()
@@ -25,11 +25,11 @@ def running_status():
         return MsgEntity("SUCCESS", "2", "running").msg2json()
 
 
-def check_abnormal_termination(batch_token):
+def check_abnormal_termination(task_token):
     # 初始化批次
-    batch_manager.init_batch(batch_token)
+    task_manager.init_task(task_token)
 
-    progress_log = batch_manager.sys_log_logger.get_all_task_progress_log()
+    progress_log = task_manager.sys_log_logger.get_all_task_progress_log()
     for log in progress_log:
         if not strtobool(log.get("is_finish")):
             return False
@@ -47,17 +47,17 @@ def stop_task():
 @api.route('/task/getTaskStepLog', methods=['GET'])
 def get_task_progress_log():
     # 初始化批次
-    batch_manager.init_batch(request.args.get("batchToken"))
+    task_manager.init_task(request.args.get("batchToken"))
 
-    log = batch_manager.sys_log_logger.get_all_task_progress_log()
+    log = task_manager.sys_log_logger.get_all_task_progress_log()
     return MsgEntity("SUCCESS", "1", log).msg2json()
 
 
 @api.route('/task/getTaskConsoleLog', methods=['GET'])
 def get_task_console_log():
     # 初始化批次
-    batch_manager.init_batch(request.args.get("batchToken"))
+    task_manager.init_task(request.args.get("batchToken"))
 
     before_time = request.args.get("beforeTime", None)
-    log = batch_manager.sys_log_logger.get_all_console_msg(before_time)
+    log = task_manager.sys_log_logger.get_all_console_msg(before_time)
     return MsgEntity("SUCCESS", "1", log).msg2json()

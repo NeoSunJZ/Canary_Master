@@ -22,7 +22,7 @@ def inference_detector_single_img():
 
 
 @api.route('/inferenceDetector/inferenceBatchImg', methods=['POST'])
-def inference_detector_batch_img():
+def inference_detector_task_img():
     model_name = request.form.get('modelName')
     model_args = request.form.get('modelArgs')
     img_proc_args = request.form.get('imgProcArgs')

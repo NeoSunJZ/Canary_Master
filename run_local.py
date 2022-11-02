@@ -1,4 +1,4 @@
-from CANARY_SEFI.batch_manager import batch_manager
+from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.service.security_evaluation import SecurityEvaluation
 # 模型
@@ -6,12 +6,67 @@ from CANARY_SEFI.service.security_evaluation import SecurityEvaluation
 from Model.ImageNet.Alexnet_ImageNet import sefi_component as alexnet_model
 # ConvNext
 from Model.ImageNet.ConvNeXt_ImageNet import sefi_component as convnext_model
+# DenseNet
+from Model.ImageNet.DenseNet_ImageNet import sefi_component as densenet_model_imagenet
+from Model.CIFAR10.DenseNet.DenseNet_CIFAR10 import sefi_component as densenet_model_cifar10
+# EfficientNet
+from Model.ImageNet.EfficientNet_ImageNet import sefi_component as efficientnet_model
+# EfficientNetV2
+from Model.ImageNet.EfficientNetV2_ImageNet import sefi_component as efficientnetV2_model
+# GoogLeNet
+from Model.ImageNet.GoogLeNet_ImageNet import sefi_component as googlenet_model
+# InceptionV3
+from Model.ImageNet.InceptionV3_ImageNet import sefi_component as inceptionV3_model
+# MNASNet
+from Model.ImageNet.MNASNet_ImageNet import sefi_component as mnasnet_model
+# MobileNetV2
+from Model.ImageNet.MobileNetV2_ImageNet import sefi_component as mobilenetv2_model
+# MobileNetV3
+from Model.ImageNet.MobileNetV3_ImageNet import sefi_component as mobilenetv3_model
+# RegNet
+from Model.ImageNet.RegNet_ImageNet import sefi_component as regnet_model
+# ResNet
+from Model.ImageNet.ResNet_ImageNet import sefi_component as resnet_model
+# ResNeXt
+from Model.ImageNet.ResNeXt_ImageNet import sefi_component as resnext_model
+# ShuffleNetV2
+from Model.ImageNet.ShuffleNetV2_ImageNet import sefi_component as shufflenetV2_model
+# SqueezeNet
+from Model.ImageNet.SqueezeNet_ImageNet import sefi_component as squeezenet_model
+# SwinTransformer
+from Model.ImageNet.SwinTransformer_ImageNet import sefi_component as swintransformer_model
+# VGG
+from Model.ImageNet.VGG_ImageNet import sefi_component as vgg_model
+# ViT
+from Model.ImageNet.VisionTransformer_ImageNet import sefi_component as vit_model
+# WideResNet
+from Model.ImageNet.WideResNet_ImageNet import sefi_component as wideresnet_model
 
 SEFI_component_manager.add(alexnet_model)
 SEFI_component_manager.add(convnext_model)
+SEFI_component_manager.add(densenet_model_imagenet)
+SEFI_component_manager.add(densenet_model_cifar10)
+SEFI_component_manager.add(efficientnet_model)
+SEFI_component_manager.add(efficientnetV2_model)
+SEFI_component_manager.add(googlenet_model)
+SEFI_component_manager.add(inceptionV3_model)
+SEFI_component_manager.add(mnasnet_model)
+SEFI_component_manager.add(mobilenetv2_model)
+SEFI_component_manager.add(mobilenetv3_model)
+SEFI_component_manager.add(regnet_model)
+SEFI_component_manager.add(resnet_model)
+SEFI_component_manager.add(resnext_model)
+SEFI_component_manager.add(shufflenetV2_model)
+SEFI_component_manager.add(squeezenet_model)
+SEFI_component_manager.add(swintransformer_model)
+SEFI_component_manager.add(vgg_model)
+SEFI_component_manager.add(vit_model)
+SEFI_component_manager.add(wideresnet_model)
 
-from Model.ImageNet.common import sefi_component as common
-SEFI_component_manager.add(common)
+from Model.ImageNet.common import sefi_component as common_imagenet
+from Model.CIFAR10.common import sefi_component as common_cifar10
+SEFI_component_manager.add(common_imagenet)
+SEFI_component_manager.add(common_cifar10)
 
 # 攻击方案
 # CW
@@ -31,35 +86,118 @@ SEFI_component_manager.add(deepfool_attacker)
 # 数据集
 # IMAGENET2012
 from Dataset.ImageNet2012.dataset_loader import sefi_component as imgnet2012_dataset
-
+from Dataset.CIFAR10.dataset_loader import sefi_component as cifar10_dataset
+SEFI_component_manager.add(cifar10_dataset)
 SEFI_component_manager.add(imgnet2012_dataset)
 
 if __name__ == "__main__":
-    config = {"dataset_size": 2,"dataset": "ILSVRC-2012",
+    config = {"dataset_size": 1000, "dataset": "ILSVRC-2012",
+              "dataset_seed": 40376958655838027,
               "model_list": [
-                  "ConvNext(ImageNet)",
+                  "DenseNet(ImageNet)",
               ],
-              "model_config": {"ConvNext(ImageNet)": {},},
-              "img_proc_config": {"ConvNext(ImageNet)": {},},
               "attacker_list": {
-                  "MI-FGSM": [
-                      "ConvNext(ImageNet)",
+                  "CW": [
+                      "DenseNet(ImageNet)",
                   ],
               },
-              "transfer_attack_test_mode": "NOT",
-              "transfer_attack_test_on_model_list": {},
               "attacker_config": {
-                  "MI-FGSM": {"alpha": 0.001, "epsilon": None, "pixel_min": 0, "pixel_max": 1, "T": 1000,
-                              "attack_type": "UNTARGETED", "tlabel": None}
-                  # "UAP": {"num_classes":1000,
-                  #         "xi":10 / 255.0,
-                  #         "p":"l-inf",
-                  #         "overshoot":0.02,
-                  #         "delta":0.2,
-                  #         "max_iter_df":10
-                  #         }
+                  "CW": {
+                      "classes": 1000,
+                      "tlabel": None,
+                      "attack_type": "UNTARGETED",
+                      "clip_min": 0,
+                      "clip_max": 1,
+                      "lr": 2e-2,
+                      "initial_const": 1e-2,
+                      "binary_search_steps": 5,
+                      "max_iterations":250,
                   }
+              },
+              "inference_batch_config":{
+                  "DenseNet(ImageNet)": 15,
+              },
+              "adv_example_generate_batch_config": {
+                  "CW": {
+                      "DenseNet(ImageNet)":15,
+                  },
               }
+              }
+    task_manager.init_task(show_logo=True)
+    security_evaluation = SecurityEvaluation(config)
+    security_evaluation.adv_example_generate()
+
+    # "ConvNext(ImageNet)",
+    # "DenseNet(ImageNet)",
+    # "EfficientNet(ImageNet)",
+    # "EfficientNetV2(ImageNet)",
+    # "GoogLeNet(ImageNet)",
+    # "InceptionV3(ImageNet)",
+    # "MNASNet(ImageNet)",
+    # "MobileNetV2(ImageNet)",
+    # "MobileNetV3(ImageNet)",
+    # "RegNet(ImageNet)",
+    # "ResNet(ImageNet)",
+    # "ResNeXt(ImageNet)",
+    # "ShuffleNetV2(ImageNet)",
+    # "SqueezeNet(ImageNet)",
+    # "SwinTransformer(ImageNet)",
+    # "VGG(ImageNet)",
+    # "ViT(ImageNet)",
+    # "WideResNet(ImageNet)",
+
+    # config = {"dataset_size": 1000, "dataset": "CIFAR-10",
+    #           "dataset_seed": 40376958655838027,
+    #           "model_list": [
+    #               "DenseNet(CIFAR-10)",
+    #           ],
+    #           "attacker_list": {
+    #               "CW": [
+    #                   "DenseNet(CIFAR-10)",
+    #               ],
+    #           },
+    #           "attacker_config": {
+    #               "CW": {
+    #                   "classes": 1000,
+    #                   "tlabel": None,
+    #                   "attack_type": "UNTARGETED",
+    #                   "clip_min": 0,
+    #                   "clip_max": 1,
+    #                   "lr": 2e-2,
+    #                   "initial_const": 1e-2,
+    #                   "binary_search_steps": 5,
+    #                   "max_iterations":250,
+    #               }
+    #           }}
+    # batch_manager.init_batch(show_logo=True)
+    # security_evaluation = SecurityEvaluation(config)
+    # security_evaluation.adv_example_generate()
+
+    # config = {"dataset_size": 2,"dataset": "ILSVRC-2012",
+    #           "model_list": [
+    #               "ConvNext(ImageNet)",
+    #           ],
+    #           "model_config": {"ConvNext(ImageNet)": {},},
+    #           "img_proc_config": {"ConvNext(ImageNet)": {},},
+    #           "attacker_list": {
+    #               "MI-FGSM": [
+    #                   "ConvNext(ImageNet)",
+    #               ],
+    #           },
+    #           "transfer_attack_test_mode": "NOT",
+    #           "transfer_attack_test_on_model_list": {},
+    #           "attacker_config": {
+    #               "MI-FGSM": {"alpha": 0.001, "epsilon": None, "pixel_min": 0, "pixel_max": 1, "T": 1000,
+    #                           "attack_type": "UNTARGETED", "tlabel": None}
+    #               # "UAP": {"num_classes":1000,
+    #               #         "xi":10 / 255.0,
+    #               #         "p":"l-inf",
+    #               #         "overshoot":0.02,
+    #               #         "delta":0.2,
+    #               #         "max_iter_df":10
+    #               #         }
+    #               }
+    #           }
     # config = {"dataset_size": 2,"dataset": "ILSVRC-2012",
     #           "model_list": [
     #               "Alexnet(ImageNet)",
@@ -83,9 +221,6 @@ if __name__ == "__main__":
     #                   "max_iter":10
     #               }}
     #           }
-    batch_manager.init_batch(show_logo=True)
-    security_evaluation = SecurityEvaluation(config)
-    security_evaluation.attack_full_test(use_img_file=True, use_raw_nparray_data=True)
 
     # config = {"dataset_size": 3,"dataset": "ILSVRC-2012",
     #           "model_list": [

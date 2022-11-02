@@ -4,7 +4,7 @@ from colorama import Fore, Style
 from flask_socketio import SocketIO, join_room, emit
 from tqdm import tqdm
 
-from CANARY_SEFI.batch_manager import batch_manager
+from CANARY_SEFI.task_manager import task_manager
 
 
 class RealtimeReport:
@@ -12,15 +12,15 @@ class RealtimeReport:
     def __init__(self):
         self.room = None
 
-    def console_log(self, msg, fore, type="INFO", save_db=True, send_msg=True, show_batch=False,
+    def console_log(self, msg, fore, type="INFO", save_db=True, send_msg=True, show_task=False,
                     show_step_sequence=False):
         if save_db:
-            batch_manager.sys_log_logger.new_console_record(msg, type)
+            task_manager.sys_log_logger.new_console_record(msg, type)
         # 处理额外信息附加
-        if show_batch:
-            msg = "[ BATCH {} ] ".format(batch_manager.batch_token) + msg
+        if show_task:
+            msg = "[ TASK {} ] ".format(task_manager.task_token) + msg
         if show_step_sequence:
-            msg = "[ STEP {} ] ".format(batch_manager.sys_log_logger.step_sequence) + msg
+            msg = "[ STEP {} ] ".format(task_manager.sys_log_logger.step_sequence) + msg
 
         if self.room is not None and send_msg:
             self.send_realtime_msg(msg, type)

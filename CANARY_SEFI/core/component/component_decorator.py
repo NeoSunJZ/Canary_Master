@@ -19,7 +19,7 @@ class SEFIComponent:
             def inner(*args, **kwargs):
                 model = decorated(*args, **kwargs)
                 if not no_torch_model_check and not isinstance(model, torch.nn.Module):
-                    raise TypeError("[baispBoot] The return model type must be a torch.nn.Module , but it was not")
+                    raise TypeError("[ Config Error ] The return model type must be a torch.nn.Module , but it was not")
                 return model
 
             target_model['model_create_func'] = inner
@@ -49,11 +49,11 @@ class SEFIComponent:
         if handler_target == ComponentType.MODEL:
             target = self.get_models(name)
             if args_type not in ('model_args', 'target_args'):
-                raise Exception("[baispBoot] Illegal Model Args Handler Type")
+                raise Exception("[ Config Error ] Illegal Model Args Handler Type")
         elif handler_target == ComponentType.ATTACK:
             target = self.get_attack_methods(name)
             if args_type not in (ComponentConfigHandlerType.ATTACK_PARAMS, 'target_args'):
-                raise Exception("[baispBoot] Illegal Attack Args Handler Type")
+                raise Exception("[ Config Error ] Illegal Attack Args Handler Type")
 
         target[args_type.value + "_handler_params"] = params
 
@@ -64,7 +64,7 @@ class SEFIComponent:
             def inner(*args, **kwargs):
                 args_dict = decorated(*args, **kwargs)
                 if not isinstance(args_dict, dict):
-                    raise TypeError("[baispBoot] The return type must be a dict , but it was not")
+                    raise TypeError("[ Config Error ] The config params handler return type must be a dict , but it was not")
                 return args_dict
 
             target[args_type + '_handler'] = inner
@@ -73,8 +73,6 @@ class SEFIComponent:
         return wrapper
 
     def util(self, util_target, util_type, name):
-        # if util_type not in ('target_file_preprocessor', 'target_file_postprocessor'):
-        #     raise Exception("[baispBoot] Illegal Util Type")
         target = None
         if util_target == "model":
             target = self.get_models(name)

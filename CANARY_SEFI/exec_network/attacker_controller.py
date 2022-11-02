@@ -25,7 +25,7 @@ def adv_attack_4_single_img():
 
 
 @api.route('/advExample/attackBatchImg', methods=['POST'])
-def attack_batch_img():
+def attack_task_img():
     atk_name = request.form.get('atkName')
     atk_args = request.form.get('atkArgs')
     model_name = request.form.get('modelName')
@@ -39,9 +39,9 @@ def attack_batch_img():
         if request.form.get('room') is not None:
             emit("attack_result", show_img_diff(img, adv_result), room=request.form.get('room'), namespace='/websocket')
 
-    batch_token = adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_name,
+    task_token = adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_name,
                                          img_list, each_img_finish_callback)
     if request.form.get('returnType') == 'token':
-        return MsgEntity("SUCCESS", "1", batch_token).msg2json()
+        return MsgEntity("SUCCESS", "1", task_token).msg2json()
     else:
-        return get_temp_download_url(batch_token)
+        return get_temp_download_url(task_token)

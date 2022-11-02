@@ -59,7 +59,7 @@ def get_model_list(config):
                                    "modelName": {"type": "ModelName"},
                                    "imgList": {"type": "ImgList", "desc": "请输入数据集对应的图片文件名列表，必须为数组"},
                                    "datasetName": {"type": "DatasetName", "desc": "请输入数据集名称"},
-                                   "batch_token": {"type": "Token", "desc": "请输入对抗样本批次号"}}
+                                   "task_token": {"type": "Token", "desc": "请输入对抗样本批次号"}}
                 }
             }
         }

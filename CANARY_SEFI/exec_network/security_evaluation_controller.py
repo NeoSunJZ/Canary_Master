@@ -3,7 +3,7 @@ import sys
 from colorama import Fore
 from flask import Blueprint, request, current_app
 
-from CANARY_SEFI.batch_manager import batch_manager
+from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.helper.excepthook import excepthook
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
@@ -17,12 +17,12 @@ api = Blueprint('test_api', __name__)
 def full_test(debug_log, config, context):
     with context():
         try:
-            batch_manager.test_data_logger.debug_log = debug_log
+            task_manager.test_data_logger.debug_log = debug_log
             security_evaluation = SecurityEvaluation(config)
             security_evaluation.attack_full_test(config.get('use_img_file', True),
                                                  config.get('use_raw_nparray_data', False))
 
-            reporter.console_log("任务已顺利结束", Fore.GREEN, type="SUCCESS", show_batch=True, show_step_sequence=True)
+            reporter.console_log("任务已顺利结束", Fore.GREEN, type="SUCCESS", show_task=True, show_step_sequence=True)
             reporter.send_disconnect()
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -33,15 +33,15 @@ def full_test(debug_log, config, context):
 def start_full_test():
     restart_flag = request.json.get("isRestart", False)
     if not restart_flag:
-        batch_manager.init_batch(show_logo=True)
+        task_manager.init_task(show_logo=True)
         global_recovery.is_recovery_mode = False
     else:
         global_recovery.start_recovery_mode(request.json.get("batchToken"))
-        reporter.console_log("恢复测试启动 任务标识{}".format(str(batch_manager.batch_token)), Fore.GREEN, type="SUCCESS")
+        reporter.console_log("恢复测试启动 任务标识{}".format(str(task_manager.task_token)), Fore.GREEN, type="SUCCESS")
 
     try:
-        task_thread.execute_task(batch_manager.batch_token, full_test, request.json.get("debugMode", False), request.json.get("config"), current_app.app_context)
+        task_thread.execute_task(task_manager.task_token, full_test, request.json.get("debugMode", False), request.json.get("config"), current_app.app_context)
     except RuntimeError as e:
         return MsgEntity("ERROR", "-1", e).msg2json()
 
-    return MsgEntity("SUCCESS", "1", batch_manager.batch_token).msg2json()
+    return MsgEntity("SUCCESS", "1", task_manager.task_token).msg2json()

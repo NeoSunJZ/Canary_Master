@@ -9,7 +9,7 @@ from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
 
 
-def build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args, atk_perturbation_budget=None):
+def build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args, atk_batch_config, atk_perturbation_budget=None, run_device=None):
     with tqdm(total=dataset_info.dataset_size, desc="Adv-example Generating progress", ncols=120) as bar:
         def each_img_finish_callback(img, adv_result):
             check_cuda_memory_alloc_status(empty_cache=True)
@@ -22,14 +22,18 @@ def build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc
         if is_skip:
             return None
 
+        batch_size = atk_batch_config.get(atk_name, {}).get(model_name, 1)
         adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info,
-                               each_img_finish_callback=each_img_finish_callback, completed_num=completed_num)
+                               each_img_finish_callback=each_img_finish_callback,
+                               batch_size=batch_size,
+                               completed_num=completed_num,
+                               run_device=run_device)
         check_cuda_memory_alloc_status(empty_cache=True)
         bar.update(1)
 
 
 def build_AEs_with_perturbation_increment(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args,
-                                          perturbation_increment_args=None):
+                                          atk_batch_config, perturbation_increment_args=None, run_device=None):
     if perturbation_increment_args is None:
         perturbation_increment_args = {"upper_bound": 0.2, "lower_bound": 0, "step": 0.01}
 
@@ -48,8 +52,9 @@ def build_AEs_with_perturbation_increment(dataset_info, atk_name, atk_args, mode
             now_perturbation += step
 
             msg = "Generating Adv Example By Attack Method {} on(base) Model {}(Now perturbation:{}).".format(atk_name, model_name, now_perturbation)
-            reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
+            reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
 
             atk_args[perturbation_budget_var_name] = now_perturbation
-            build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args, now_perturbation)
+            build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args,
+                      atk_batch_config, now_perturbation, run_device)
             bar.update(1)

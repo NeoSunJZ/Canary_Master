@@ -1,6 +1,6 @@
 from colorama import Fore
 
-from CANARY_SEFI.batch_manager import batch_manager
+from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
@@ -12,14 +12,14 @@ from CANARY_SEFI.handler.tools.analyzer_tools import calc_average
 
 def model_security_synthetical_capability_analyzer_and_evaluation(model_name, use_raw_nparray_data=False):
     msg = "Analyze Model({})'s synthetical capability evaluation result.".format(model_name)
-    reporter.console_log(msg, Fore.GREEN, show_batch=True, show_step_sequence=True)
+    reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
 
     is_skip, completed_num = global_recovery.check_skip(model_name)
     if is_skip:
         return
     model_capability_indicator_data = get_model_capability_indicator_data(model_name)
     adversarial_example_analyzer_log = {
-        "MR": [], "AIAC": [], "ARTC": [], "ACT": [], "AMD": [], "AED": [], "APCR": [], "ADMS": [], "ALMS": []
+        "MR": [], "AIAC": [], "ARTC": [], "ACT": [], "AMD": [], "AED": [], "AED_HF": [], "AED_LF": [], "APCR": [], "ADMS": [], "ALMS": []
     }
     attack_deflection_capability_indicator_data = get_attack_deflection_capability_indicator_data_by_base_model(model_name)
     attack_adv_example_da_indicator_data = get_attack_adv_example_da_indicator_data_by_base_model(model_name)
@@ -34,6 +34,8 @@ def model_security_synthetical_capability_analyzer_and_evaluation(model_name, us
         adversarial_example_analyzer_log['ACT'].append(float(log["ACT"]))
         adversarial_example_analyzer_log['AMD'].append(float(log["AMD"]))
         adversarial_example_analyzer_log['AED'].append(float(log["AED"]))
+        adversarial_example_analyzer_log['AED_HF'].append(float(log["AED_HF"]))
+        adversarial_example_analyzer_log['AED_LF'].append(float(log["AED_LF"]))
         adversarial_example_analyzer_log['APCR'].append(float(log["APCR"]))
         adversarial_example_analyzer_log['ADMS'].append(float(log["ADMS"]))
         adversarial_example_analyzer_log['ALMS'].append(float(log["ALMS"]))
@@ -43,11 +45,13 @@ def model_security_synthetical_capability_analyzer_and_evaluation(model_name, us
     model_Conf = float(model_capability_indicator_data["clear_conf"])
 
     model_MR = calc_average(adversarial_example_analyzer_log["MR"])
-    model_AIAC =calc_average(adversarial_example_analyzer_log["AIAC"])
+    model_AIAC = calc_average(adversarial_example_analyzer_log["AIAC"])
     model_ARTC = calc_average(adversarial_example_analyzer_log["ARTC"])
     model_ACT = calc_average(adversarial_example_analyzer_log["ACT"])
     model_AMD = calc_average(adversarial_example_analyzer_log["AMD"])
-    model_AED =calc_average(adversarial_example_analyzer_log["AED"])
+    model_AED = calc_average(adversarial_example_analyzer_log["AED"])
+    model_AED_HF = calc_average(adversarial_example_analyzer_log["AED_HF"])
+    model_AED_LF = calc_average(adversarial_example_analyzer_log["AED_LF"])
     model_APCR = calc_average(adversarial_example_analyzer_log["APCR"])
     model_ADMS = calc_average(adversarial_example_analyzer_log["ADMS"])
     model_ALMS = calc_average(adversarial_example_analyzer_log["ALMS"])
@@ -57,7 +61,7 @@ def model_security_synthetical_capability_analyzer_and_evaluation(model_name, us
     add_model_security_synthetical_capability_log(model_name, test_adv_example_file_type,
                                                   model_ACC, model_F1, model_Conf,
                                                   model_MR, model_AIAC, model_ARTC, model_ACT,
-                                                  model_AMD, model_AED, model_APCR, model_ADMS, model_ALMS)
+                                                  model_AMD, model_AED, model_AED_HF, model_AED_LF, model_APCR, model_ADMS, model_ALMS)
     # 增加计数
-    batch_manager.sys_log_logger.update_completed_num(1)
-    batch_manager.sys_log_logger.update_finish_status(True)
+    task_manager.sys_log_logger.update_completed_num(1)
+    task_manager.sys_log_logger.update_finish_status(True)

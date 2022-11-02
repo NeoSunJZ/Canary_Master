@@ -11,7 +11,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 @sefi_component.model(name="ResNeXt(ImageNet)")
-def create_model():
+def create_model(args):
     norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229,0.224,0.225])
     densenet_model = nn.Sequential(
         norm_layer,

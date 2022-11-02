@@ -21,7 +21,7 @@ sefi_component = SEFIComponent()
                                           "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"},{"value": "UNTARGETED", "name": "非靶向"}], "required": "true"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"}})
 class MI_FGSM():
-    def __init__(self, model, pixel_min=0, pixel_max=1, T=1000, epsilon=None, alpha=6 / 25, attack_type='UNTARGETED', tlabel=-1):
+    def __init__(self, model, run_device, pixel_min=0, pixel_max=1, T=1000, epsilon=None, alpha=6 / 25, attack_type='UNTARGETED', tlabel=-1):
         self.model = model  # 待攻击的白盒模型
         self.T = T  # 迭代攻击轮数
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
@@ -31,7 +31,7 @@ class MI_FGSM():
         self.attack_type = attack_type  # 攻击类型：靶向 or 非靶向
         self.tlabel = tlabel
         self.label = -1
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = run_device
 
     # 将图片进行clip
     def clip_value(self, x, ori_x):
@@ -71,7 +71,6 @@ class MI_FGSM():
 
     @sefi_component.attack(name="MI-FGSM", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
-        img = torch.from_numpy(img).to(self.device).float()
         # 定义图片可获取梯度，设置计算图叶子节点
         img.requires_grad = True
         # 克隆原始数据
@@ -87,7 +86,5 @@ class MI_FGSM():
             adv_label = np.argmax(self.model(img).data.to('cpu').numpy())
             if adv_label != self.label:
                 break
-
-        img = img.data.cpu().numpy()
         return img
 

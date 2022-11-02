@@ -1,6 +1,6 @@
 from tqdm import tqdm
 
-from CANARY_SEFI.batch_manager import batch_manager
+from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader, dataset_single_image_reader
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo, DatasetType
@@ -36,18 +36,18 @@ def adv_example_da_check(atk_log, dataset_info, use_raw_nparray_data=False):
         adv_da_tester = AdvDisturbanceAwareTester()
 
         def adv_img_iterator(adv_img, adv_img_file_id, img_label):
-            ori_img_log = find_img_log_by_id(adv_img_ori_dict[adv_img_file_id])
+            ori_img_log = find_img_log_by_id(adv_img_ori_dict[adv_img_file_id[0]])
             ori_img, _ = dataset_single_image_reader(dataset_info, ori_img_cursor=ori_img_log['ori_img_cursor'])
 
             # 执行测试
-            adv_da_test_result = adv_da_tester.test_all(ori_img, adv_img)
+            adv_da_test_result = adv_da_tester.test_all(ori_img, adv_img[0])
             # 写入日志
-            save_adv_example_da_test_data(adv_img_file_id, adv_dataset_info.dataset_type.value, adv_da_test_result)
-            batch_manager.sys_log_logger.update_completed_num(1)
+            save_adv_example_da_test_data(adv_img_file_id[0], adv_dataset_info.dataset_type.value, adv_da_test_result)
+            task_manager.sys_log_logger.update_completed_num(1)
             bar.update(1)
 
-        dataset_image_reader(adv_img_iterator, adv_dataset_info, completed_num)
-        batch_manager.sys_log_logger.update_finish_status(True)
+        dataset_image_reader(adv_img_iterator, adv_dataset_info, batch_size=1, completed_num=completed_num)
+        task_manager.sys_log_logger.update_finish_status(True)
         check_cuda_memory_alloc_status(empty_cache=True)
 
 

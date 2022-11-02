@@ -3,7 +3,7 @@ import json
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 
 
-def get_model(model_name, model_init_args):
+def get_model(model_name, model_init_args, run_device):
     # 根据modelName寻找Model是否已经注册
     model_component = SEFI_component_manager.model_list.get(model_name)
     if model_component is None:
@@ -12,15 +12,15 @@ def get_model(model_name, model_init_args):
 
     # 构建Model
     create_model_func = model_component.get("model_create_func")
-    model_args_dict = build_dict_with_json_args(model_component, "model", model_init_args)
+    model_args_dict = build_dict_with_json_args(model_component, "model", model_init_args, run_device)
     model = create_model_func(**model_args_dict)
     return model
 
 
-def build_dict_with_json_args(component, component_name, args):
+def build_dict_with_json_args(component, component_name, args, run_device=None):
     # 当传入值已经是dict时，无需进行任何处理
     if type(args) == dict:
-        return args
+        return add_run_device(args, run_device)
     args_handler_func = component.get(component_name + "_args_handler")
     target_args_dict = {}
     # 当json参数存在时构造dict
@@ -32,6 +32,13 @@ def build_dict_with_json_args(component, component_name, args):
             try:
                 target_args_dict = json.loads(args)
             except Exception as e:
-                raise TypeError("The default parameter converter is used but the input is not JSON")
-    return target_args_dict
+                raise TypeError("[ Config Error ] The default parameter converter is used but the input is not JSON")
+    return add_run_device(target_args_dict, run_device)
+
+
+def add_run_device(args, run_device=None):
+    # 添加执行设备
+    if run_device is not None:
+        args['run_device'] = run_device
+    return args
 

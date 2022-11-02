@@ -1,5 +1,5 @@
 import sys
-from CANARY_SEFI.batch_manager import batch_manager
+from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.enum.transfer_attack_type_enum import TransferAttackType
 from CANARY_SEFI.core.function.helper.excepthook import excepthook
 from CANARY_SEFI.core.function.init_dataset import init_dataset
@@ -32,17 +32,20 @@ class SecurityEvaluation:
 
         self.perturbation_increment_config = config.get("perturbation_increment_config", None)
 
+        self.inference_batch_config = config.get("inference_batch_config", {})
+        self.adv_example_generate_batch_config = config.get("adv_example_generate_batch_config", {})
+
     def adv_example_generate(self):
         # 生成对抗样本与对抗样本质量分析
-        adv_example_generate(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config, self.img_proc_config)
-        batch_manager.test_data_logger.finish()
+        adv_example_generate(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config, self.img_proc_config, self.adv_example_generate_batch_config)
+        task_manager.test_data_logger.finish()
 
     def model_inference_capability_test_and_evaluation(self):
         # 模型推理能力测试
-        model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config)
+        model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config, self.inference_batch_config)
         # 模型推理能力评估
         model_inference_capability_evaluation(self.model_list)
-        batch_manager.test_data_logger.finish()
+        task_manager.test_data_logger.finish()
 
     def attack_deflection_capability_test_and_evaluation(self, use_raw_nparray_data=False):
         # 攻击偏转能力测试
@@ -51,14 +54,14 @@ class SecurityEvaluation:
                                           use_raw_nparray_data)
         # 攻击偏转能力评估
         attack_deflection_capability_evaluation(self.attacker_list, use_raw_nparray_data)
-        batch_manager.test_data_logger.finish()
+        task_manager.test_data_logger.finish()
 
     def attack_adv_example_da_test_and_evaluation(self, use_raw_nparray_data=False):
         # 攻击偏转能力测试
         attack_adv_example_da_test(self.attacker_list, self.dataset_info, use_raw_nparray_data)
         # 攻击偏转能力评估
         attack_adv_example_da_evaluation(self.attacker_list, use_raw_nparray_data)
-        batch_manager.test_data_logger.finish()
+        task_manager.test_data_logger.finish()
 
     def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False):
         self.model_inference_capability_test_and_evaluation()
@@ -78,10 +81,12 @@ class SecurityEvaluation:
 
     def attack_perturbation_increment_test(self, use_img_file=True, use_raw_nparray_data=False):
         # 递增扰动生成对抗样本
-        adv_example_generate_with_perturbation_increment(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config, self.img_proc_config,
-                                    self.perturbation_increment_config)
+        adv_example_generate_with_perturbation_increment(self.dataset_info, self.attacker_list, self.attacker_config,
+                                                         self.model_config, self.img_proc_config,
+                                                         self.adv_example_generate_batch_config,
+                                                         self.perturbation_increment_config)
         # 模型推理能力测试
-        model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config)
+        model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config, self.inference_batch_config)
 
         if use_img_file:
             # 测试
@@ -96,7 +101,7 @@ class SecurityEvaluation:
             # 结果分析
             attack_capability_evaluation_with_perturbation_increment(self.attacker_list, use_raw_nparray_data=True)
 
-        batch_manager.test_data_logger.finish()
+        task_manager.test_data_logger.finish()
 
 
 # sys.excepthook = excepthook

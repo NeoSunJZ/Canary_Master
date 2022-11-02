@@ -25,7 +25,6 @@ class AdvDisturbanceAwareTester:
             "pixel_change_ratio": float(self.calculate_pixel_change_ratio(ori_img, adv_img)),
             "deep_metrics_similarity": float(self.calculate_deep_metrics_similarity(ori_img, adv_img)),
             "low_level_metrics_similarity": float(self.calculate_low_level_metrics_similarity(ori_img, adv_img)),
-
             "high_freq_euclidean_distortion": high_freq_euclidean_distortion,
             "low_freq_euclidean_distortion": low_freq_euclidean_distortion
         }

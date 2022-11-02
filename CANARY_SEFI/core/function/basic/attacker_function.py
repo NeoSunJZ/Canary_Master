@@ -1,4 +1,4 @@
-from CANARY_SEFI.batch_manager import batch_manager
+from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
@@ -11,18 +11,18 @@ from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_
 
 
 class AdvAttacker:
-    def __init__(self, atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info=None):
+    def __init__(self, atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info=None, run_device=None):
         self.atk_component = SEFI_component_manager.attack_method_list.get(atk_name)
         # 攻击处理参数JSON转DICT
-        self.atk_args_dict = build_dict_with_json_args(self.atk_component, "attack", atk_args)
-        # 是否不需要传入模型（例如当这个模型是黑盒时）
+        self.atk_args_dict = build_dict_with_json_args(self.atk_component, "attack", atk_args, run_device)
+        # 是否不需要传入模型
         no_model = config_manager.config.get("attackConfig", {}).get(atk_name, {}).get("no_model", False)
-        model = get_model(model_name, model_args)
         if no_model is not True:
-            self.atk_args_dict['model'] = model
+            self.atk_args_dict['model'] = get_model(model_name, model_args, run_device)
         model_component = SEFI_component_manager.model_list.get(model_name)
+
         # 图片处理参数JSON转DICT
-        self.img_proc_args_dict = build_dict_with_json_args(model_component, "img_processing", img_proc_args)
+        self.img_proc_args_dict = build_dict_with_json_args(model_component, "img_processing", img_proc_args, run_device)
         # 图片预处理
         self.img_preprocessor = model_component.get("img_preprocessor")
         # 结果处理
@@ -96,11 +96,11 @@ class AdvAttacker:
 
 
 def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info,
-                           each_img_finish_callback=None, completed_num=0):
+                           each_img_finish_callback=None, batch_size=1, completed_num=0, run_device=None):
 
     adv_img_id_list = []
     # 构建攻击者
-    adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info)
+    adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info, run_device)
 
     # 写入日志
     atk_perturbation_budget = atk_args[adv_attacker.perturbation_budget_var_name] \
@@ -109,31 +109,37 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
     attack_id = add_attack_log(atk_name, model_name, atk_perturbation_budget=atk_perturbation_budget)
 
     # 攻击单图片迭代函数
-    def attack_iterator(img, img_log_id, img_label, save_raw_data=True):
+    def attack_iterator(imgs, img_log_ids, img_labels, save_raw_data=True):
         # 执行攻击
-        adv_result = adv_attacker.adv_attack_4_img(img, img_label)
+        adv_results = adv_attacker.adv_attack_4_img(imgs, img_labels)
 
-        # 保存至临时文件夹
-        # 因为直接转储为PNG会导致精度丢失，产生很多奇怪的结论
-        img_file_name = "adv_{}_{}_{}.png".format(batch_manager.batch_token, attack_id, img_log_id)
-        save_pic_to_temp(img_file_name, adv_result)
+        # batch分割
+        for index in range(len(adv_results)):
 
-        raw_file_name = None
-        if save_raw_data:
-            raw_file_name = "adv_raw_{}_{}_{}.npy".format(batch_manager.batch_token, attack_id, img_log_id)
-            save_pic_to_temp(raw_file_name, adv_result, save_as_numpy_array=True)
+            adv_result = adv_results[index]
+            img_log_id = img_log_ids[index]
 
-        # 写入日志
-        adv_img_id = add_adv_example_file_log(attack_id, img_log_id, img_file_name, raw_file_name)
-        set_adv_example_file_cost_time(adv_img_id, adv_attacker.cost_time)
+            # 保存至临时文件夹
+            # 因为直接转储为PNG会导致精度丢失，产生很多奇怪的结论
+            img_file_name = "adv_{}.png".format(img_log_id)
+            save_pic_to_temp(str(attack_id) + "/", img_file_name, adv_result)
 
-        adv_img_id_list.append(adv_img_id)
+            raw_file_name = None
+            if save_raw_data:
+                raw_file_name = "adv_raw_{}.npy".format(img_log_id)
+                save_pic_to_temp(str(attack_id) + "/", raw_file_name, adv_result, save_as_numpy_array=True)
 
-        if each_img_finish_callback is not None:
-            each_img_finish_callback(img, adv_result)
+            # 写入日志
+            adv_img_id = add_adv_example_file_log(attack_id, img_log_id, img_file_name, raw_file_name)
+            set_adv_example_file_cost_time(adv_img_id, adv_attacker.cost_time)
 
-    dataset_image_reader(attack_iterator, dataset_info, completed_num)
-    batch_manager.sys_log_logger.update_finish_status(True)
+            adv_img_id_list.append(adv_img_id)
+
+            if each_img_finish_callback is not None:
+                each_img_finish_callback(imgs[index], adv_result)
+
+    dataset_image_reader(attack_iterator, dataset_info, batch_size, completed_num)
+    task_manager.sys_log_logger.update_finish_status(True)
 
     adv_attacker.destroy()
     del adv_attacker

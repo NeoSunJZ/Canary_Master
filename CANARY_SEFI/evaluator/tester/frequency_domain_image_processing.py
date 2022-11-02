@@ -100,20 +100,3 @@ def get_low_high_f(img, radius_ratio, D):
     img_new_low = np.array(img_new_low * 255, np.uint8)
     img_new_high = np.array(img_new_high * 255, np.uint8)
     return img_new_low, img_new_high
-
-
-# 频域中使用高斯滤波器能更好的减少振铃效应
-if __name__ == '__main__':
-    radius_ratio = 0.5  # 圆形过滤器的半径：ratio * w/2
-    D = 5              # 高斯过滤器的截止频率：2 5 10 20 50 ，越小越模糊信息越少
-    img = cv2.imread('C:\\Users\\neosunjz\\Desktop\\ican\\6.jpg', cv2.IMREAD_COLOR)
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    low_freq_part_img, high_freq_part_img = get_low_high_f(img, radius_ratio=radius_ratio, D=D)  # multi channel or single
-
-    plt.subplot(131), plt.imshow(img, 'gray'), plt.title('Original Image')
-    plt.axis('off')
-    plt.subplot(132), plt.imshow(low_freq_part_img, 'gray'), plt.title('low_freq_img')
-    plt.axis('off')
-    plt.subplot(133), plt.imshow(high_freq_part_img, 'gray'), plt.title('high_freq_img')
-    plt.axis('off')
-    plt.show()

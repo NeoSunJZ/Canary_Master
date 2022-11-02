@@ -3,7 +3,7 @@ import numpy as np
 
 import foolbox as fb
 import eagerpy as ep
-from  Attack_Method.black_box_adv.genattack.GenAttack import GenAttack
+from Attack_Method.black_box_adv.genattack.GenAttack import GenAttack
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
