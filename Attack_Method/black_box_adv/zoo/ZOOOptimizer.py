@@ -104,12 +104,12 @@ class ZOOptim(object):
                     if not tqdm_disabled:
                         print("First valid image found at iteration {} with l2-distance = {}".format(iteration, curr_l2))
                     best_l2 = curr_l2
-                    best_image = x.clone()
+                    best_image = x.detach().clone()
                     best_loss = curr_loss
                 # New best example
                 if curr_l2 < best_l2 and curr_loss_st == 0:
                     best_l2 = curr_l2
-                    best_image = x.clone()
+                    best_image = x.detach().clone()
                     best_loss = curr_loss
                 # Worst example
                 else:
@@ -122,7 +122,7 @@ class ZOOptim(object):
             outs.append(float(out.detach().cpu()[0, self.loss.neuron].item()))
             losses_st.append(float(curr_loss_st.detach().cpu().item()))
             l2_dists.append(curr_l2)
-            losses.append(curr_loss)
+            losses.append(curr_loss.detach())
 
             # 2.6 Display  info
             if verbose:
