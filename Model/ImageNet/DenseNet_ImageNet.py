@@ -8,6 +8,7 @@ from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 
 sefi_component = SEFIComponent()
 
+
 @sefi_component.model(name="DenseNet(ImageNet)")
 def create_model(run_device):
     run_device = run_device if run_device is None else ('cuda' if torch.cuda.is_available() else 'cpu')
