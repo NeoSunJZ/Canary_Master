@@ -80,8 +80,10 @@ from Attack_Method.white_box_adv.UAP import sefi_component as uap_attacker
 from Attack_Method.white_box_adv.DeepFool import sefi_component as deepfool_attacker
 # EAD
 from Attack_Method.white_box_adv.EAD import sefi_component as ead_attacker
-#SA
+# SA
 from Attack_Method.black_box_adv.SA import sefi_component as sa_attacker
+# ADVGAN
+from Attack_Method.black_box_adv.ADVGAN import sefi_component as advgan_attacker
 
 SEFI_component_manager.add(cw_attacker)
 SEFI_component_manager.add(mi_fgsm_attacker)
@@ -89,6 +91,7 @@ SEFI_component_manager.add(uap_attacker)
 SEFI_component_manager.add(deepfool_attacker)
 SEFI_component_manager.add(ead_attacker)
 SEFI_component_manager.add(sa_attacker)
+SEFI_component_manager.add(advgan_attacker)
 
 # 数据集
 # IMAGENET2012
@@ -107,12 +110,15 @@ if __name__ == "__main__":
                   # "CW": [
                   #     "DenseNet(ImageNet)",
                   # ],
-                  "EAD": [
-                      "DenseNet(ImageNet)",
-                  ],
+                  # "EAD": [
+                  #     "DenseNet(ImageNet)",
+                  # ],
                   # "SA": [
                   #     "DenseNet(ImageNet)",
                   # ],
+                  "ADVGAN": [
+                      "DenseNet(ImageNet)",
+                  ],
               },
               "attacker_config": {
                   # "CW": {
@@ -127,21 +133,21 @@ if __name__ == "__main__":
                   #     "binary_search_steps": 5,
                   #     "max_iterations": 250,
                   # },
-                  "EAD": {
-                      "clip_min": -3,
-                      "clip_max": 3,
-                      "epsilon": 0.03,
-                      "attack_type": 'UNTARGETED',
-                      "tlabel": None,
-                      "steps": 10,
-                      "initial_const": 1e-3,
-                      "binary_search_steps": 9,
-                      "initial_stepsize": 1e-2,
-                      "confidence": 0.0,
-                      "regularization": 1e-2,
-                      "decision_rule": 'EN',
-                      "abort_early": True,
-                  },
+                  # "EAD": {
+                  #     "clip_min": -3,
+                  #     "clip_max": 3,
+                  #     "epsilon": 0.03,
+                  #     "attack_type": 'UNTARGETED',
+                  #     "tlabel": None,
+                  #     "steps": 10,
+                  #     "initial_const": 1e-3,
+                  #     "binary_search_steps": 9,
+                  #     "initial_stepsize": 1e-2,
+                  #     "confidence": 0.0,
+                  #     "regularization": 1e-2,
+                  #     "decision_rule": 'EN',
+                  #     "abort_early": True,
+                  # },
                   # "SA": {
                   #     "clip_min": -3,
                   #     "clip_max": 3,
@@ -155,6 +161,15 @@ if __name__ == "__main__":
                   #     "grid_search": True,
                   #     "random_steps": 100,
                   # },
+                  "SA": {
+                          "model_num_labels": 1000,
+                          "image_nc": 3,
+                          "output_nc": 3,
+                          "box_min": 0,
+                          "box_max": 1,
+                          "lr": 0.001,
+                          "epochs": 60,
+                  },
               },
               "inference_batch_config":{
                   "DenseNet(ImageNet)": 15,
@@ -163,12 +178,15 @@ if __name__ == "__main__":
                   # "CW": {
                   #     "DenseNet(ImageNet)":15,
                   # },
-                  "EAD": {
-                      "DenseNet(ImageNet)":15,
-                  },
+                  # "EAD": {
+                  #     "DenseNet(ImageNet)":15,
+                  # },
                   # "SA": {
                   #     "DenseNet(ImageNet)": 15,
                   # },
+                  "ADVGAN": {
+                      "DenseNet(ImageNet)": 15,
+                  },
               }
               }
     task_manager.init_task(show_logo=True)
