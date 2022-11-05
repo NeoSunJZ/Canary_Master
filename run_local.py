@@ -1,3 +1,4 @@
+import Attack_Method.black_box_adv.BA
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.service.security_evaluation import SecurityEvaluation
@@ -77,11 +78,17 @@ from Attack_Method.white_box_adv.MI_FGSM import sefi_component as mi_fgsm_attack
 from Attack_Method.white_box_adv.UAP import sefi_component as uap_attacker
 # DeepFool
 from Attack_Method.white_box_adv.DeepFool import sefi_component as deepfool_attacker
+# EAD
+from Attack_Method.white_box_adv.EAD import sefi_component as ead_attacker
+#SA
+from Attack_Method.black_box_adv.SA import sefi_component as sa_attacker
 
 SEFI_component_manager.add(cw_attacker)
 SEFI_component_manager.add(mi_fgsm_attacker)
 SEFI_component_manager.add(uap_attacker)
 SEFI_component_manager.add(deepfool_attacker)
+SEFI_component_manager.add(ead_attacker)
+SEFI_component_manager.add(sa_attacker)
 
 # 数据集
 # IMAGENET2012
@@ -91,36 +98,77 @@ SEFI_component_manager.add(cifar10_dataset)
 SEFI_component_manager.add(imgnet2012_dataset)
 
 if __name__ == "__main__":
-    config = {"dataset_size": 1000, "dataset": "ILSVRC-2012",
+    config = {"dataset_size": 5, "dataset": "ILSVRC-2012",
               "dataset_seed": 40376958655838027,
               "model_list": [
                   "DenseNet(ImageNet)",
               ],
               "attacker_list": {
-                  "CW": [
+                  # "CW": [
+                  #     "DenseNet(ImageNet)",
+                  # ],
+                  "EAD": [
                       "DenseNet(ImageNet)",
                   ],
+                  # "SA": [
+                  #     "DenseNet(ImageNet)",
+                  # ],
               },
               "attacker_config": {
-                  "CW": {
-                      "classes": 1000,
+                  # "CW": {
+                  #     "classes": 1000,
+                  #     "run_device":'cuda',
+                  #     "tlabel": None,
+                  #     "attack_type": "UNTARGETED",
+                  #     "clip_min": 0,
+                  #     "clip_max": 1,
+                  #     "lr": 2e-2,
+                  #     "initial_const": 1e-2,
+                  #     "binary_search_steps": 5,
+                  #     "max_iterations": 250,
+                  # },
+                  "EAD": {
+                      "clip_min": -3,
+                      "clip_max": 3,
+                      "epsilon": 0.03,
+                      "attack_type": 'UNTARGETED',
                       "tlabel": None,
-                      "attack_type": "UNTARGETED",
-                      "clip_min": 0,
-                      "clip_max": 1,
-                      "lr": 2e-2,
-                      "initial_const": 1e-2,
-                      "binary_search_steps": 5,
-                      "max_iterations":250,
-                  }
+                      "steps": 10,
+                      "initial_const": 1e-3,
+                      "binary_search_steps": 9,
+                      "initial_stepsize": 1e-2,
+                      "confidence": 0.0,
+                      "regularization": 1e-2,
+                      "decision_rule": 'EN',
+                      "abort_early": True,
+                  },
+                  # "SA": {
+                  #     "clip_min": -3,
+                  #     "clip_max": 3,
+                  #     "epsilon": 0.03,
+                  #     "attack_type": 'UNTARGETED',
+                  #     "tlabel": None,
+                  #     "max_translation": 3,
+                  #     "max_rotation": 30,
+                  #     "num_translations": 5,
+                  #     "num_rotations": 5,
+                  #     "grid_search": True,
+                  #     "random_steps": 100,
+                  # },
               },
               "inference_batch_config":{
                   "DenseNet(ImageNet)": 15,
               },
               "adv_example_generate_batch_config": {
-                  "CW": {
+                  # "CW": {
+                  #     "DenseNet(ImageNet)":15,
+                  # },
+                  "EAD": {
                       "DenseNet(ImageNet)":15,
                   },
+                  # "SA": {
+                  #     "DenseNet(ImageNet)": 15,
+                  # },
               }
               }
     task_manager.init_task(show_logo=True)

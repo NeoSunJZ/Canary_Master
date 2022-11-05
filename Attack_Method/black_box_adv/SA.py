@@ -28,13 +28,13 @@ sefi_component = SEFIComponent()
                                           "random_steps": {"desc": "随机生成的映射的数量（仅当grid_search为False时有效）", "type": "INT", "def": "100"}
                                       })
 class SA():
-    def __init__(self, model, epsilon=0.03, attack_type='UNTARGETED', tlabel=1, max_translation=3, max_rotation=30,
+    def __init__(self, model, run_device, epsilon=0.03, attack_type='UNTARGETED', tlabel=1, max_translation=3, max_rotation=30,
                  num_translations=5, num_rotations=5, grid_search=True, random_steps=100, clip_min=0, clip_max=1):
         self.model = model  # 待攻击的白盒模型
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.attack_type = attack_type  # 攻击类型：靶向 or 非靶向
         self.tlabel = tlabel
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = run_device
         self.max_translation = max_translation  # 浮点型
         self.max_rotation = max_rotation  # 浮点型
         self.num_translations = num_translations  # 整型
@@ -48,10 +48,12 @@ class SA():
     @sefi_component.attack(name="SA", is_inclass=True, support_model=["vision_transformer"])
     def attack(self, img, ori_label):
         ori_label = np.array([ori_label])
-        img = torch.from_numpy(img).to(torch.float32).to(self.device)
+        # img = torch.from_numpy(img).to(torch.float32).to(self.device)
 
         ori_label = ep.astensor(torch.LongTensor(ori_label).to(self.device))
-        img = ep.astensor(img)
+        # img = ep.astensor(img)
+
+        ori_label = ori_label.squeeze(0)
 
         # 实例化攻击类
         attack = SpatialAttack(max_translation=self.max_translation, max_rotation=self.max_rotation, num_translations=self.num_translations,
@@ -63,7 +65,7 @@ class SA():
             criterion = TargetedMisclassification(target_classes=torch.tensor([self.tlabel] ), device=self.device)  # 参数为具有目标类的张量
             raw, clipped, is_adv = attack(self.model, img, ori_label, epsilons=self.epsilon, criterion=criterion)
 
-        adv_img = raw.raw
+        adv_img = raw
         # 由EagerPy张量转化为Native张量
 
         return adv_img
