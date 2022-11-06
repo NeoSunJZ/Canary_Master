@@ -58,7 +58,7 @@ class L_BFGS():
             print('扰动失败 ')
             return self._adv
 
-        # 使用二分法优化最后的参数c，如果不需要优化，可以将此部分去掉
+        # 使用二分法优化最后的参数
         c_low = 0
         c_high = c
         while c_high - c_low >= self.epsilon:
@@ -78,16 +78,16 @@ class L_BFGS():
 
         adv = torch.from_numpy(adv_x.reshape(self.data.size())).float().to(self.device).requires_grad_(True)
 
-        # cross_entropy交叉熵损失
+        # 交叉熵损失
         output = self.model(adv)
         ce = F.cross_entropy(output, self.target)
-        # L2 distance
+        # L2
         d = torch.sum((self.data - adv) ** 2)
 
         #  Loss
         loss = c * ce + d
 
-        # gradient
+        # 梯度
         loss.backward()
         grad_ret = adv.grad.data.cpu().numpy().flatten().astype(float)
         loss = loss.data.cpu().numpy().flatten().astype(float)
@@ -133,7 +133,7 @@ class L_BFGS():
         ori_label = ep.astensor(torch.LongTensor(ori_label).to(self.device))
         ori_label = ori_label.squeeze(0).numpy()
 
-        for i in range(img.size()[0]):
+        for i in range(img.size()[0]):  # 为了能跑batch
             one_img = torch.unsqueeze(img[i], dim=0)
             one_label = torch.tensor(ori_label[i])
 
