@@ -15,7 +15,7 @@ sefi_component = SEFIComponent()
 
 
 @sefi_component.attacker_class(attack_name="L_BFGS")
-@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="ADVGAN",
+@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="L_BFGS",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
                                           "bounds_min": {"desc": "变量下界", "type": "FLOAT", "required": "true", "def": "0.0"},
