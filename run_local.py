@@ -84,6 +84,8 @@ from Attack_Method.white_box_adv.EAD import sefi_component as ead_attacker
 from Attack_Method.black_box_adv.SA import sefi_component as sa_attacker
 # ADVGAN
 from Attack_Method.black_box_adv.ADVGAN import sefi_component as advgan_attacker
+# L_BFGS
+from Attack_Method.white_box_adv.L_BFGS import sefi_component as lbfgs_attacker
 
 SEFI_component_manager.add(cw_attacker)
 SEFI_component_manager.add(mi_fgsm_attacker)
@@ -92,6 +94,7 @@ SEFI_component_manager.add(deepfool_attacker)
 SEFI_component_manager.add(ead_attacker)
 SEFI_component_manager.add(sa_attacker)
 SEFI_component_manager.add(advgan_attacker)
+SEFI_component_manager.add(lbfgs_attacker)
 
 # 数据集
 # IMAGENET2012
@@ -116,7 +119,10 @@ if __name__ == "__main__":
                   # "SA": [
                   #     "DenseNet(ImageNet)",
                   # ],
-                  "ADVGAN": [
+                  # "ADVGAN": [
+                  #     "DenseNet(ImageNet)",
+                  # ],
+                  "L_BFGS": [
                       "DenseNet(ImageNet)",
                   ],
               },
@@ -161,14 +167,22 @@ if __name__ == "__main__":
                   #     "grid_search": True,
                   #     "random_steps": 100,
                   # },
-                  "SA": {
-                          "model_num_labels": 1000,
-                          "image_nc": 3,
-                          "output_nc": 3,
-                          "box_min": 0,
-                          "box_max": 1,
-                          "lr": 0.001,
-                          "epochs": 60,
+                  # "ADVGAN": {
+                  #         "model_num_labels": 1000,
+                  #         "image_nc": 3,
+                  #         "output_nc": 3,
+                  #         "box_min": 0,
+                  #         "box_max": 1,
+                  #         "lr": 0.001,
+                  #         "epochs": 60,
+                  # },
+                  "L_BFGS": {
+                          "bounds_min": 0.0,
+                          "bounds_max": 1.0,
+                          "epsilon": 0.01,
+                          "steps": 10,
+                          "attack_type": 'UNTARGETED',
+                          "attack_target": None,
                   },
               },
               "inference_batch_config":{
@@ -184,7 +198,10 @@ if __name__ == "__main__":
                   # "SA": {
                   #     "DenseNet(ImageNet)": 15,
                   # },
-                  "ADVGAN": {
+                  # "ADVGAN": {
+                  #     "DenseNet(ImageNet)": 15,
+                  # },
+                  "L_BFGS": {
                       "DenseNet(ImageNet)": 15,
                   },
               }

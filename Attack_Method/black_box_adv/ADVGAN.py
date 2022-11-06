@@ -2,18 +2,13 @@ import torch.nn as nn
 import torch
 import numpy as np
 import torch.nn.functional as F
-import torchvision
-import os
 
-import foolbox as fb
 import eagerpy as ep
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
-from foolbox.criteria import TargetedMisclassification
 
 sefi_component = SEFIComponent()
-models_path = "E:/dataset/adversarial"
 
 
 @sefi_component.attacker_class(attack_name="ADVGAN")
@@ -51,9 +46,6 @@ class ADVGAN():
         # 初始化 optimizers
         self.optimizer_G = torch.optim.Adam(self.netG.parameters(), lr=self.lr)
         self.optimizer_D = torch.optim.Adam(self.netDisc.parameters(), lr=self.lr)
-
-        if not os.path.exists(models_path):
-            os.makedirs(models_path)
 
     # 权重初始化函数
     @staticmethod
