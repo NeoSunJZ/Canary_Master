@@ -1,11 +1,8 @@
 import torch
 import numpy as np
-from PIL import Image
-from tqdm import tqdm
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType, ComponentType
-from CANARY_SEFI.evaluator.tester.adv_disturbance_aware import AdvDisturbanceAwareTester
 
 sefi_component = SEFIComponent()
 
