@@ -26,7 +26,7 @@ sefi_component = SEFIComponent()
                                           "pixels": {"desc": "改变像素的数量", "type": "INT", "def": "1"},
                                       })
 class OnePixel():
-    def __init__(self, model, max_iter=100, epsilon=0.2, clip_min=-3, clip_max=3, pixels=1, population=400, attack_type='UNTARGETED',
+    def __init__(self, model, run_device, max_iter=100, epsilon=0.2, clip_min=-3, clip_max=3, pixels=1, population=400, attack_type='UNTARGETED',
                  tlabel=-1):
         self.model = model  # 待攻击的白盒模型
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
@@ -34,15 +34,14 @@ class OnePixel():
         self.clip_max = clip_max  # 像素值的上限（这与当前图片范围有一定关系，建议0-255，因为对于无穷约束来将不会因为clip原因有一定损失）
         self.attack_type = attack_type  # 攻击类型：靶向 or 非靶向
         self.tlabel = tlabel
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = run_device if run_device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
         self.population = population
         self.max_iter = max_iter
         self.pixels = pixels
 
     @sefi_component.attack(name="One_Pixel", is_inclass=True, support_model=["vision_transformer"])
-    def attack(self, img, ori_label):
+    def attack(self, img, ori_labels):
         _, c, h, w, = img.shape
-        img = torch.from_numpy(img).to(self.device).float()
 
         bounds = [(0, h), (0, w)]
         bounds += [(self.clip_min, self.clip_max)] * c
@@ -53,9 +52,9 @@ class OnePixel():
 
         if self.attack_type == 'UNTARGETED':
             predict_fn = lambda xs: _predict_classes(
-                xs, img, ori_label, self.model, False)
+                xs, img, ori_labels[0], self.model, False)
             callback_fn = lambda x, convergence: _attack_success(
-                x, img, ori_label, self.model, False, False)
+                x, img, ori_labels[0], self.model, False, False)
         else:
             predict_fn = lambda xs: _predict_classes(
                 xs, img, self.tlabel, self.model, True)
@@ -80,10 +79,10 @@ class OnePixel():
 
         predicted_class = np.argmax(predicted_probs)
 
-        if (self.attack_type == 'UNTARGETED' and predicted_class != ori_label) or (self.attack_type != 'UNTARGETED' and predicted_class == self.tlabel):
-            return attack_image.cpu().detach().numpy()
+        if (self.attack_type == 'UNTARGETED' and predicted_class != ori_labels[0]) or (self.attack_type != 'UNTARGETED' and predicted_class == self.tlabel):
+            return attack_image
 
-        return img.cpu().detach().numpy()
+        return img
 
 
 def _perturb_image(xs, img):

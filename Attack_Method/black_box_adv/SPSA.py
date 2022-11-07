@@ -26,15 +26,16 @@ sefi_component = SEFIComponent()
                                           "spsa_iters": {"desc": "更新前模型评估的次数（每次评估都会在不同的spsa_samples数量的输入上评估）", "type": "INT"},
                                       })
 class SPSA():
-    def __init__(self, model, clip_min=-3, clip_max=3, epsilon=0.3, norm=np.inf, attack_type='UNTARGETED', tlabel=-1, nb_iter=100,
-                 early_stop_loss_threshold=None, learning_rate=0.01, delta=0.01, spsa_samples=128, spsa_iters=1):
+    def __init__(self, model, run_device, clip_min=-3, clip_max=3, epsilon=0.3, norm=np.inf, attack_type='UNTARGETED',
+                 tlabel=-1, nb_iter=100,early_stop_loss_threshold=None, learning_rate=0.01, delta=0.01,
+                 spsa_samples=128, spsa_iters=1):
         self.model = model  # 待攻击的白盒模型
         self.clip_min = clip_min  # 对抗性示例组件的最小浮点值
         self.clip_max = clip_max  # 对抗性示例组件的最大浮点值
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.attack_type = attack_type  # 攻击类型：靶向 or 非靶向
         self.tlabel = tlabel
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = run_device if run_device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
         self.norm = norm
         self.nb_iter = nb_iter
         self.early_stop_loss_threshold = early_stop_loss_threshold
@@ -44,18 +45,16 @@ class SPSA():
         self.spsa_iters = spsa_iters # Number of model evaluations before performing an update, where each evaluation is on spsa_samples different inputs
 
     @sefi_component.attack(name="SPSA", is_inclass=True, support_model=["vision_transformer"], attack_type="WHITE_BOX")
-    def attack(self, img, ori_label):
-        img = torch.from_numpy(img).to(self.device).float()  # 输入img为tensor形式
-
+    def attack(self, imgs, ori_labels):
         if self.attack_type == 'UNTARGETED':
             adv_img = spsa(model_fn=self.model,
-                       x=img,
+                       x=imgs,
                        eps=self.epsilon,
                        nb_iter=self.nb_iter,
                        norm=self.norm,
                        clip_min=self.clip_min,
                        clip_max=self.clip_max,
-                       y=torch.from_numpy(np.array([ori_label])).to(self.device),
+                       y=torch.from_numpy(np.array(ori_labels)).to(self.device),
                        targeted=False,
                        early_stop_loss_threshold=self.early_stop_loss_threshold,
                        learning_rate=self.learning_rate,
@@ -65,14 +64,15 @@ class SPSA():
                        is_debug=False,
                        sanity_checks=False) #非靶向 n_classes为int类型
         elif self.attack_type == 'TARGETED':
+            y = torch.from_numpy(np.array(self.tlabel).repeat(imgs.size(0), axis=0)).to(self.device)
             adv_img = spsa(model_fn=self.model,
-                       x=img,
+                       x=imgs,
                        eps=self.epsilon,
                        nb_iter=self.nb_iter,
                        norm=self.norm,
                        clip_min=self.clip_min,
                        clip_max=self.clip_max,
-                       y=torch.from_numpy(np.array([self.tlabel])).to(self.device),
+                       y=y,
                        targeted=True,
                        early_stop_loss_threshold=self.early_stop_loss_threshold,
                        learning_rate=self.learning_rate,
@@ -84,4 +84,4 @@ class SPSA():
         else:
             raise Exception("未知攻击方式")
 
-        return adv_img.cpu().detach().numpy()
+        return adv_img

@@ -22,7 +22,7 @@ sefi_component = SEFIComponent()
                                           "rand_minmax": {"desc": "支持从连续均匀分布中得到图片上的随机扰动(仅当rand_init为真时才有效)", "type": "FLOAT", "def": "None"},
                                       })
 class PGD():
-    def __init__(self, model, epsilon=0.2, eps_iter=0.1, nb_iter=50, clip_min=-3, clip_max=3, rand_init=True,
+    def __init__(self, model, run_device, epsilon=0.2, eps_iter=0.1, nb_iter=50, clip_min=-3, clip_max=3, rand_init=True,
                  rand_minmax=None, sanity_checks=False, attack_type='UNTARGETED', tlabel=1):
         self.model = model  # 待攻击的白盒模型
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
@@ -35,31 +35,29 @@ class PGD():
         self.sanity_checks = sanity_checks  # 如果为True，则包含断言 布尔型
         self.attack_type = attack_type  # 攻击类型：靶向 or 非靶向
         self.tlabel = tlabel
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = run_device if run_device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
 
     @sefi_component.attack(name="PGD", is_inclass=True, support_model=["vision_transformer"])
-    def attack(self, img, ori_label):
-        img = torch.from_numpy(img).to(self.device).float()  # 输入img为tensor形式
-
+    def attack(self, imgs, ori_labels):
         if self.attack_type == 'UNTARGETED':
             adv_img = projected_gradient_descent(model_fn=self.model,
-                                             x=img,
+                                             x=imgs,
                                              eps=self.epsilon,
                                              eps_iter=self.eps_iter,
                                              nb_iter=self.nb_iter,
                                              norm=np.inf,
                                              clip_min=self.clip_min,
                                              clip_max=self.clip_max,
-                                             y=torch.from_numpy(np.array([ori_label])).to(self.device),
+                                             y=torch.from_numpy(np.array(ori_labels)).to(self.device),
                                              targeted=False,
                                              rand_init=self.rand_init,
                                              rand_minmax=None,
                                              sanity_checks=self.sanity_checks) #非靶向 n_classes为int类型
             #projected_gradient_descent中 'assert eps_iter <= eps, (eps_iter, eps)'
         else:
-            y = torch.from_numpy(np.array([self.tlabel])).to(self.device)
+            y = torch.from_numpy(np.array(self.tlabel).repeat(imgs.size(0), axis=0)).to(self.device)
             adv_img = projected_gradient_descent(model_fn=self.model,
-                                             x=img,
+                                             x=imgs,
                                              eps=self.epsilon,
                                              eps_iter=self.eps_iter,
                                              nb_iter=self.nb_iter,
@@ -72,4 +70,4 @@ class PGD():
                                              rand_minmax=None,
                                              sanity_checks=self.sanity_checks) #靶向 y带有真标签的张量
 
-        return adv_img.cpu().detach().numpy()
+        return adv_img

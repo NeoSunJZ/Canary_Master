@@ -27,7 +27,7 @@ sefi_component = SEFIComponent()
                                           "constraint": {"desc": "范数", "type": "SELECT", "selector": [{"value": "l2", "name": "l2范数"},{"value": "linf", "name": "l∞范数"}], "required": "true"}
                                       })
 class HSJA():
-    def __init__(self, model, epsilon=0.03, attack_type='UNTARGETED', tlabel=1, init_attack=None, steps=64,
+    def __init__(self, model, run_device, epsilon=0.03, attack_type='UNTARGETED', tlabel=1, init_attack=None, steps=64,
                  initial_gradient_eval_steps=100, max_gradient_eval_steps=10000, gamma: float = 1.0, constraint="l2",
                  tensorboard=False, clip_min=0, clip_max=1):
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
@@ -40,18 +40,16 @@ class HSJA():
         self.gamma = gamma  # 设置二分搜索停止条件的阈值：如果二分两点的距离小于此值，则认为已经搜索到边界
         self.constraint = constraint  # 范数
         self.tensorboard = tensorboard  # TensorBoard摘要的日志目录。如果为False，则TensorBoard摘要将要被禁用；如果为None,则将运行/CURRENT_DATETIME_HOSTNAME
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = run_device if run_device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
         self.clip_min = clip_min
         self.clip_max = clip_max
         self.model = fb.PyTorchModel(model, bounds=(self.clip_min, self.clip_max))
 
     @sefi_component.attack(name="HSJA", is_inclass=True, support_model=["vision_transformer"])
-    def attack(self, img, ori_label):
-        ori_label = np.array([ori_label])
-        img = torch.from_numpy(img).to(torch.float32).to(self.device)
+    def attack(self, imgs, ori_labels):
 
-        ori_label = ep.astensor(torch.LongTensor(ori_label).to(self.device))
-        img = ep.astensor(img)
+        ori_labels = ep.astensor(torch.from_numpy(np.array(ori_labels)).to(self.device))
+        imgs = ep.astensor(imgs)
 
         # 实例化攻击类
         attack = HopSkipJumpAttack(init_attack=self.init_attack, steps=self.steps,
@@ -59,13 +57,13 @@ class HSJA():
                                    max_gradient_eval_steps=self.max_gradient_eval_steps,
                                    gamma=self.gamma, tensorboard=self.tensorboard, constraint=self.constraint)
         if self.attack_type == 'UNTARGETED':
-            raw, clipped, is_adv = attack(self.model, img, ori_label, epsilons=self.epsilon)  # 模型、图像、真标签
+            raw, clipped, is_adv = attack(self.model, imgs, ori_labels, epsilons=self.epsilon)  # 模型、图像、真标签
             # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的布尔值
         else:
-            criterion = TargetedMisclassification(target_classes=ep.astensor(torch.LongTensor([self.tlabel]).to(self.device)))  # 参数为具有目标类的张量
-            raw, clipped, is_adv = attack(self.model, img, criterion, epsilons=self.epsilon)
+            criterion = TargetedMisclassification(target_classes=ep.astensor(torch.from_numpy(np.array(self.tlabel).repeat(imgs.shape[0], axis=0)).to(self.device)))  # 参数为具有目标类的张量
+            raw, clipped, is_adv = attack(self.model, imgs, criterion, epsilons=self.epsilon)
 
         adv_img = raw.raw
         # 由EagerPy张量转化为Native张量
 
-        return adv_img.cpu().detach().numpy()
+        return adv_img
