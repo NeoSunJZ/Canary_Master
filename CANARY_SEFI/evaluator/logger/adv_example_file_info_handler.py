@@ -5,9 +5,18 @@ from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 
 # 新增对抗样本文件记录
 def add_adv_example_file_log(attack_id, ori_img_id, adv_img_filename, adv_raw_nparray_filename):
-    sql = "INSERT INTO adv_img_file_log (adv_img_file_id, attack_id, ori_img_id, adv_img_filename, adv_raw_nparray_filename) " \
+    sql_insert = "INSERT INTO adv_img_file_log (adv_img_file_id, attack_id, ori_img_id, adv_img_filename, adv_raw_nparray_filename) " \
           "VALUES (NULL,?,?,?,?)"
-    adv_img_file_id = task_manager.test_data_logger.insert_log(sql, (attack_id, ori_img_id, str(adv_img_filename), str(adv_raw_nparray_filename)))
+
+    sql_query = " SELECT adv_img_file_id FROM adv_img_file_log " \
+                " WHERE attack_id = ? AND ori_img_id = ? AND adv_img_filename = ? AND adv_raw_nparray_filename = ? "
+    args = (attack_id, ori_img_id, str(adv_img_filename), str(adv_raw_nparray_filename))
+    result = task_manager.test_data_logger.query_log(sql_query, args)
+
+    if result is not None:
+        adv_img_file_id = result["adv_img_file_id"]
+    else:
+        adv_img_file_id = task_manager.test_data_logger.insert_log(sql_insert, args)
     if task_manager.test_data_logger.debug_log:
         msg = "[ LOGGER ] Logged. Adversarial-example file ID: {}. Img file name: {}. Numpy array file name: {}."\
             .format(adv_img_file_id, adv_img_filename, adv_raw_nparray_filename)

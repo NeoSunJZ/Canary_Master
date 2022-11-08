@@ -47,7 +47,8 @@ class TestDataLogger:
                        'cost_time float, '
                        'ori_img_id integer, '
                        'adv_img_filename varchar, '
-                       'adv_raw_nparray_filename varchar)')
+                       'adv_raw_nparray_filename varchar,'
+                       'UNIQUE (attack_id, ori_img_id))')
 
         cursor.execute('create table if not exists adv_example_da_test_data '
                        '(adv_img_file_id integer, '
