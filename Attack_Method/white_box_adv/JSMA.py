@@ -7,23 +7,22 @@ from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType
 
 sefi_component = SEFIComponent()
 
-@sefi_component.attacker_class(attack_name="JSMA", perturbation_budget_var_name="epsilon")
+@sefi_component.attacker_class(attack_name="JSMA", perturbation_budget_var_name=None)
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="JSMA",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "alpha": {"desc": "攻击算法的学习率(每轮攻击步长)", "type": "FLOAT", "def": "5e-3"},
-                                          "epsilon": {"desc": "扰动大小", "type": "FLOAT"},
+                                          "theta": {"desc": "扰动大小", "type": "FLOAT"},
                                           "pixel_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "pixel_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "T": {"desc": "最大迭代次数(整数)", "type": "INT", "def": "1000"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"}})
 class JSMA():
-    def __init__(self, model, run_device, T=1000, pixel_min=-3.0, pixel_max=3.0, epsilon=0.3, tlabel=1):
+    def __init__(self, model, run_device, T=1000, pixel_min=0.0, pixel_max=1.0, theta=0.25, tlabel=1):
         self.model = model  # 待攻击的白盒模型
         self.T = int(T)  # 迭代攻击轮数
         self.pixel_min = float(pixel_min)  # 像素值的下限
         self.pixel_max = float(pixel_max)  # 像素值的上限（这与当前图片范围有一定关系，建议0-255，因为对于无穷约束来将不会因为clip原因有一定损失）
-        self.epsilon = float(epsilon)  # 扰动系数
+        self.theta = float(theta)  # 扰动系数
         self.tlabel = int(tlabel)
         self.device = run_device
 
@@ -58,6 +57,7 @@ class JSMA():
 
     @sefi_component.attack(name="JSMA", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
+        batch_size = img.shape[0]
         # 图像数据梯度可以获取
         img.requires_grad = True
 
@@ -66,32 +66,35 @@ class JSMA():
             param.requires_grad = False
 
         # 攻击目标
-        target = Variable(torch.Tensor([float(self.tlabel)]).to(self.device).long())
+        target = Variable(torch.Tensor([float(self.tlabel)]).to(self.device).long().repeat(batch_size))
 
         mask = np.ones_like(img.data.cpu().numpy())
 
         for epoch in range(self.T):
 
             # forward
-            output = self.model(img)
+            result = self.model(img)
+            outputs = torch.nn.functional.softmax(result, dim=1).detach().cpu().numpy()
+            labels = []
+            for output in outputs:
+                labels.append(np.argmax(output))
 
-            label = np.argmax(output.data.cpu().numpy())
             loss_func = torch.nn.CrossEntropyLoss()
-            loss = loss_func(output, target)
-            print("epoch={} label={} loss={}".format(epoch, label, loss))
+            loss = loss_func(result, target)
+            print("epoch={} labels={} loss={}".format(epoch, labels, loss))
 
             # 如果定向攻击成功
-            if label == self.tlabel:
+            if (labels == target.data.cpu().numpy()).all():
                 break
 
             # 梯度清零
             if img.grad is not None:
                 img.grad.zero_()
 
-            idx, pix_sign = self.saliency_map(output, img, self.tlabel, mask)
+            idx, pix_sign = self.saliency_map(result, img, self.tlabel, mask)
 
             # apply perturbation
-            img.data[idx] = img.data[idx] + pix_sign * self.epsilon * (self.pixel_max - self.pixel_min)
+            img.data[idx] = img.data[idx] + pix_sign * self.theta * (self.pixel_max - self.pixel_min)
 
             # 达到极限的点不再参与更新
             if (img.data[idx] <= self.pixel_min) or (img.data[idx] >= self.pixel_max):

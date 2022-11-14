@@ -12,11 +12,10 @@ import torch.nn.functional as F
 
 sefi_component = SEFIComponent()
 
-@sefi_component.attacker_class(attack_name="One_Pixel", perturbation_budget_var_name="epsilon")
+@sefi_component.attacker_class(attack_name="One_Pixel", perturbation_budget_var_name=None)
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="One_Pixel",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "epsilon": {"desc": "扰动大小", "type": "FLOAT", "def": "0.2"},
                                           "clip_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "clip_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"}, {"value": "UNTARGETED", "name": "非靶向"}], "required": "true"},
@@ -26,21 +25,21 @@ sefi_component = SEFIComponent()
                                           "pixels": {"desc": "改变像素的数量", "type": "INT", "def": "1"},
                                       })
 class OnePixel():
-    def __init__(self, model, run_device, max_iter=100, epsilon=0.2, clip_min=-3, clip_max=3, pixels=1, population=400, attack_type='UNTARGETED',
+    def __init__(self, model, run_device, max_iter=100, clip_min=-3, clip_max=3, pixels=1, population=400, attack_type='UNTARGETED',
                  tlabel=-1):
         self.model = model  # 待攻击的白盒模型
-        self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.clip_min = clip_min  # 像素值的下限
         self.clip_max = clip_max  # 像素值的上限（这与当前图片范围有一定关系，建议0-255，因为对于无穷约束来将不会因为clip原因有一定损失）
         self.attack_type = attack_type  # 攻击类型：靶向 or 非靶向
         self.tlabel = tlabel
-        self.device = run_device if run_device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = run_device
         self.population = population
         self.max_iter = max_iter
         self.pixels = pixels
 
     @sefi_component.attack(name="One_Pixel", is_inclass=True, support_model=["vision_transformer"])
     def attack(self, img, ori_labels):
+        ori_img = img.clone()
         _, c, h, w, = img.shape
 
         bounds = [(0, h), (0, w)]
@@ -82,7 +81,7 @@ class OnePixel():
         if (self.attack_type == 'UNTARGETED' and predicted_class != ori_labels[0]) or (self.attack_type != 'UNTARGETED' and predicted_class == self.tlabel):
             return attack_image
 
-        return img
+        return ori_img
 
 
 def _perturb_image(xs, img):
