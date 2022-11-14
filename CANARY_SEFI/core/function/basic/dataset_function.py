@@ -52,8 +52,12 @@ def dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num=0):
         task_manager.sys_log_logger.update_completed_num(len(_img_array))
 
     # Batch
-    all_img_count = dataset_info.dataset_size - completed_num
-    for batch_cursor in range(int(math.ceil(all_img_count/batch_size))):
+    all_batch = int(math.ceil(dataset_info.dataset_size/batch_size))
+    completed_batch = int(math.ceil(completed_num / batch_size))
+
+    for batch_cursor in range(all_batch):
+        if batch_cursor <= completed_batch - 1:
+            continue
         img_array = []
         label_array = []
         img_cursor_array = []

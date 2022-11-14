@@ -8,7 +8,7 @@ def add_attack_log(atk_name, base_model, atk_type=None, atk_perturbation_budget=
                  " VALUES (NULL,?,?,?,?)"
     sql_query = " SELECT attack_id FROM attack_info_log " \
                 " WHERE atk_name = ? AND base_model = ? AND atk_type = ? AND atk_perturbation_budget = ? "
-    args = (str(atk_name), str(base_model), str(atk_type), atk_perturbation_budget)
+    args = (str(atk_name), str(base_model), str(atk_type), str(atk_perturbation_budget))
     result = task_manager.test_data_logger.query_log(sql_query, args)
     if result is not None:
         attack_id = result["attack_id"]

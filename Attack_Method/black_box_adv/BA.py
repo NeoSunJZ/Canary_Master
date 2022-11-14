@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from foolbox.attacks import BoundaryAttack
+from foolbox.attacks import BoundaryAttack, LinearSearchBlendedUniformNoiseAttack
 import foolbox as fb
 from foolbox.criteria import TargetedMisclassification
 import eagerpy as ep
@@ -11,13 +11,12 @@ from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentCo
 
 sefi_component = SEFIComponent()
 
-@sefi_component.attacker_class(attack_name="BA", perturbation_budget_var_name="epsilon")
+@sefi_component.attacker_class(attack_name="BA", perturbation_budget_var_name=None)
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="BA",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
                                           "clip_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "clip_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
-                                          "epsilon": {"desc": "对抗样本与原始输入图片的最大变化", "type": "FLOAT", "def": "0.03"},
                                           "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"},{"value": "UNTARGETED", "name": "非靶向"}], "required": "true"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
                                           "max_iterations": {"desc": "要运行的最大步骤数，可能会在此之前收敛并停止", "type": "INT", "def": "50"},
@@ -28,13 +27,13 @@ sefi_component = SEFIComponent()
                                           "update_stats_every_k": {"desc": "每k步检查是否更新spherical_step，source_step", "type": "INT", "def": "10"},
                                       })
 class BA():
-    def __init__(self, model, run_device, epsilon=0.3, attack_type='UNTARGETED', tlabel=1, init_attack=None, max_iterations=25000,
+    def __init__(self, model, run_device, attack_type='UNTARGETED', tlabel=1, max_iterations=25000,
                  spherical_step=0.01, source_step=0.01, source_step_convergance=1e-07, step_adaptation=1.5,
-                 tensorboard=False, update_stats_every_k=10, clip_min=-3, clip_max=3):
-        self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
+                 tensorboard=False, update_stats_every_k=10, clip_min=0, clip_max=1):
         self.attack_type = attack_type  # 攻击类型：靶向 or 非靶向
         self.tlabel = tlabel
-        self.init_attack = init_attack  # 攻击用来寻找起点 仅当starting_points为None时才使用
+        self.init_attack = LinearSearchBlendedUniformNoiseAttack(steps=150)
+        # 攻击用来寻找起点 仅当starting_points为None时才使用
         self.steps = max_iterations  # 要运行的最大步骤数，可能会在此之前收敛并停止 整型
         self.spherical_step = spherical_step  # 正交（球形）补偿的初始步长
         self.source_step = source_step  # 迈向目标的步骤的初始步长 浮点型
@@ -42,10 +41,10 @@ class BA():
         self.step_adaptation = step_adaptation  # 步长乘以或除以的因子 浮点型
         self.tensorboard = tensorboard  # TensorBoard摘要的日志目录。如果为False，则TensorBoard摘要将要被禁用；如果为None,则将运行/CURRENT_DATETIME_HOSTNAME
         self.update_stats_every_k = update_stats_every_k  # 整型
-        self.device = run_device if run_device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = run_device
         self.clip_min = clip_min
         self.clip_max = clip_max
-        self.model = fb.PyTorchModel(model, bounds=(self.clip_min, self.clip_max))
+        self.model = fb.PyTorchModel(model, bounds=(self.clip_min, self.clip_max), device=run_device)
 
     @sefi_component.attack(name="BA", is_inclass=True, support_model=["vision_transformer"])
     def attack(self, imgs, ori_labels):
@@ -58,12 +57,11 @@ class BA():
                                 source_step=self.source_step, source_step_convergance=self.source_step_convergance,
                                 step_adaptation=self.step_adaptation, tensorboard=self.tensorboard, update_stats_every_k=self.update_stats_every_k)
         if self.attack_type == 'UNTARGETED':
-            raw, clipped, is_adv = attack(self.model, imgs, ori_labels, epsilons=self.epsilon)  # 模型、图像、真标签
+            raw, clipped, is_adv = attack(self.model, imgs, ori_labels, epsilons=None)  # 模型、图像、真标签
             # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的布尔值
         else:
-
             criterion = TargetedMisclassification(target_classes=ep.astensor(torch.from_numpy(np.array(self.tlabel).repeat(imgs.shape[0], axis=0)).to(self.device)))  # 参数为具有目标类的张量
-            raw, clipped, is_adv = attack(self.model, imgs, criterion, epsilons=self.epsilon)
+            raw, clipped, is_adv = attack(self.model, imgs, criterion, epsilons=None)
 
         adv_img = raw.raw
         # 由EagerPy张量转化为Native张量

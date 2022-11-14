@@ -1,3 +1,4 @@
+from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.service.security_evaluation import SecurityEvaluation
@@ -65,12 +66,15 @@ SEFI_component_manager.add(wideresnet_model)
 
 from Model.ImageNet.common import sefi_component as common_imagenet
 from Model.CIFAR10.common import sefi_component as common_cifar10
+
 SEFI_component_manager.add(common_imagenet)
 SEFI_component_manager.add(common_cifar10)
 
 # 攻击方案
 # CW
 from Attack_Method.white_box_adv.CW import sefi_component as cw_attacker
+# FGM
+from Attack_Method.white_box_adv.FGM import sefi_component as fgm_attacker
 # MI-FGSM
 from Attack_Method.white_box_adv.MI_FGSM import sefi_component as mi_fgsm_attacker
 # UAP
@@ -79,6 +83,7 @@ from Attack_Method.white_box_adv.UAP import sefi_component as uap_attacker
 from Attack_Method.white_box_adv.DeepFool import sefi_component as deepfool_attacker
 
 SEFI_component_manager.add(cw_attacker)
+SEFI_component_manager.add(fgm_attacker)
 SEFI_component_manager.add(mi_fgsm_attacker)
 SEFI_component_manager.add(uap_attacker)
 SEFI_component_manager.add(deepfool_attacker)
@@ -87,6 +92,7 @@ SEFI_component_manager.add(deepfool_attacker)
 # IMAGENET2012
 from Dataset.ImageNet2012.dataset_loader import sefi_component as imgnet2012_dataset
 from Dataset.CIFAR10.dataset_loader import sefi_component as cifar10_dataset
+
 SEFI_component_manager.add(cifar10_dataset)
 SEFI_component_manager.add(imgnet2012_dataset)
 
@@ -94,38 +100,98 @@ if __name__ == "__main__":
     config = {"dataset_size": 1000, "dataset": "ILSVRC-2012",
               "dataset_seed": 40376958655838027,
               "model_list": [
-                  "DenseNet(ImageNet)",
+                  "Alexnet(ImageNet)",  # 2012 Alex & Hinton
+                  "VGG(ImageNet)",  # 2014 牛津大学计算机视觉组
+                  "GoogLeNet(ImageNet)",  # 2014 谷歌
+                  "InceptionV3(ImageNet)",  # 2014:V1 2015:V3
+                  "ResNet(ImageNet)",  # 2015 脸书 何凯明
+                  "DenseNet(ImageNet)",  # 2016
+                  "SqueezeNet(ImageNet)",  # 2016
+                  "MobileNetV3(ImageNet)",  # 2017:V1 2019:V3 谷歌
+                  "ShuffleNetV2(ImageNet)",  # 2018:V2 旷视
+                  "MNASNet(ImageNet)",  # 2018
+                  "EfficientNetV2(ImageNet)",  # 2019
+                  "ViT(ImageNet)",  # 2020 谷歌
+                  "RegNet(ImageNet)",  # 2020 脸书 何凯明
+                  "SwinTransformer(ImageNet)",  # 2021
+                  "ConvNext(ImageNet)",  # 2022 脸书
               ],
               "attacker_list": {
-                  "CW": [
-                      "DenseNet(ImageNet)",
+                  "FGM": [
+                      "Alexnet(ImageNet)",  # 2012 Alex & Hinton
+                      "VGG(ImageNet)",  # 2014 牛津大学计算机视觉组
+                      "GoogLeNet(ImageNet)",  # 2014 谷歌
+                      "InceptionV3(ImageNet)",  # 2014:V1 2015:V3
+                      "ResNet(ImageNet)",  # 2015 脸书 何凯明
+                      "DenseNet(ImageNet)",  # 2016
+                      "SqueezeNet(ImageNet)",  # 2016
+                      "MobileNetV3(ImageNet)",  # 2017:V1 2019:V3 谷歌
+                      "ShuffleNetV2(ImageNet)",  # 2018:V2 旷视
+                      "MNASNet(ImageNet)",  # 2018
+                      "EfficientNetV2(ImageNet)",  # 2019
+                      "ViT(ImageNet)",  # 2020 谷歌
+                      "RegNet(ImageNet)",  # 2020 脸书 何凯明
+                      "SwinTransformer(ImageNet)",  # 2021
+                      "ConvNext(ImageNet)",  # 2022 脸书
                   ],
               },
+              "img_proc_config": {
+                  "EfficientNetV2(ImageNet)": {
+                      "img_size_h": 384,
+                      "img_size_w": 384
+                  },
+                  "InceptionV3(ImageNet)": {
+                      "img_size_h": 299,
+                      "img_size_w": 299
+                  },
+              },
               "attacker_config": {
-                  "CW": {
-                      "classes": 1000,
-                      "tlabel": None,
-                      "attack_type": "UNTARGETED",
-                      "clip_min": 0,
-                      "clip_max": 1,
-                      "lr": 2e-2,
-                      "initial_const": 1e-2,
-                      "binary_search_steps": 5,
-                      "max_iterations":250,
+                  "FGM": {
+                      "epsilon": 0.3,
                   }
               },
-              "inference_batch_config":{
-                  "DenseNet(ImageNet)": 15,
-              },
+              # "inference_batch_config": {
+              #     "DenseNet(ImageNet)": 15,
+              # },
               "adv_example_generate_batch_config": {
-                  "CW": {
-                      "DenseNet(ImageNet)":15,
+                  # "FGM": { # 3090:24G
+                  #     "Alexnet(ImageNet)": 150,  # ~8G 3090:65%
+                  #     "VGG(ImageNet)": 50,  # ~19G 3090:95%
+                  #     "GoogLeNet(ImageNet)": 80,  # ~10G 3090:85%
+                  #     "InceptionV3(ImageNet)": 50,  # ~7G 3090:90%
+                  #     "ResNet(ImageNet)": 50,  # ~11G 3090:90%
+                  #     "DenseNet(ImageNet)": 35,  # ~19G 3090:90%
+                  #     "SqueezeNet(ImageNet)": 150,  # ~12G 3090:80%
+                  #     "MobileNetV3(ImageNet)": 100,  # ~11G 3090:80%
+                  #     "ShuffleNetV2(ImageNet)": 100,  # ~10G 3090:80%
+                  #     "MNASNet(ImageNet)": 50,  # ~8G 3090:85%
+                  #     "EfficientNetV2(ImageNet)": 20,  # ~20G 3090:95%
+                  #     "ViT(ImageNet)": 50,  # ~6G 3090:90%
+                  #     "RegNet(ImageNet)": 40,  # ~18G 3090:100%
+                  #     "SwinTransformer(ImageNet)": 50,  # ~19G 3090:95%
+                  #     "ConvNext(ImageNet)": 35,  # ~18G 3090:100%
+                  # },
+                  "FGM": { # 2080:12G
+                      "Alexnet(ImageNet)": 150,  #
+                      "VGG(ImageNet)": 25,  #
+                      "GoogLeNet(ImageNet)": 80,  #
+                      "InceptionV3(ImageNet)": 30,  #
+                      "ResNet(ImageNet)": 45,  #
+                      "DenseNet(ImageNet)": 15,  #
+                      "SqueezeNet(ImageNet)": 100,  #
+                      "MobileNetV3(ImageNet)": 90,  #
+                      "ShuffleNetV2(ImageNet)": 100,  #
+                      "MNASNet(ImageNet)": 50,  #
+                      "EfficientNetV2(ImageNet)": 10,  #
+                      "ViT(ImageNet)": 50,  #
+                      "RegNet(ImageNet)": 20,  #
+                      "SwinTransformer(ImageNet)": 25,  #
+                      "ConvNext(ImageNet)": 15,  #
                   },
               }
               }
-    task_manager.init_task(show_logo=True)
-    security_evaluation = SecurityEvaluation(config)
-    security_evaluation.adv_example_generate()
+
+
 
     # "ConvNext(ImageNet)",
     # "DenseNet(ImageNet)",

@@ -11,7 +11,7 @@ sefi_component = SEFIComponent()
 
 @sefi_component.model(name="RegNet(ImageNet)")
 def create_model(run_device):
-    run_device = run_device if run_device is None else ('cuda' if torch.cuda.is_available() else 'cpu')
+    run_device = run_device if run_device is not None else ('cuda' if torch.cuda.is_available() else 'cpu')
     norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229,0.224,0.225])
     regnet_model = nn.Sequential(
         norm_layer,

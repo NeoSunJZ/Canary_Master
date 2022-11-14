@@ -8,7 +8,7 @@ class BatchListIterator:
     def model_list_iterator(model_list, model_config, img_proc_config, function):
         for model_name in model_list:
             model_args = {} if model_config is None else model_config.get(model_name, {})
-            img_proc_args = {} if model_config is None else img_proc_config.get(model_name, {})
+            img_proc_args = {} if img_proc_config is None else img_proc_config.get(model_name, {})
 
             function(model_name, model_args, img_proc_args, run_device=task_manager.run_device)
 
