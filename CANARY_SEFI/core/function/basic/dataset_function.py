@@ -56,7 +56,7 @@ def dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num=0):
     completed_batch = int(math.ceil(completed_num / batch_size))
 
     for batch_cursor in range(all_batch):
-        if batch_cursor <= completed_batch:
+        if batch_cursor <= completed_batch - 1:
             continue
         img_array = []
         label_array = []
