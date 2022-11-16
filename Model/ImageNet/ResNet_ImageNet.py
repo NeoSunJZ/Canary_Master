@@ -17,3 +17,9 @@ def create_model(run_device):
         norm_layer,
         models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)).to(run_device).eval()
     return resnet_model.eval()
+
+
+@sefi_component.util(util_type="target_layers_getter", util_target="model", name="ResNet(ImageNet)")
+def target_layers_getter(model):
+    target_layers = [model[1].layer4]
+    return target_layers

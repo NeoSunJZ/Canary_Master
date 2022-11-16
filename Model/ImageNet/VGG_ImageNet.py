@@ -17,3 +17,9 @@ def create_model(run_device):
         norm_layer,
         models.vgg16_bn(weights=VGG16_BN_Weights.IMAGENET1K_V1)).to(run_device).eval()
     return vgg_model.eval()
+
+
+@sefi_component.util(util_type="target_layers_getter", util_target="model", name="VGG(ImageNet)")
+def target_layers_getter(model):
+    target_layers = [model[1].features]
+    return target_layers
