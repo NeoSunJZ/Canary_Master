@@ -33,6 +33,16 @@ def set_adv_example_file_cost_time(adv_img_file_id, cost_time):
         reporter.console_log(msg, Fore.CYAN, type="DEBUG")
 
 
+# 设置对抗样本文件生成模型查询量
+def set_adv_example_file_query_num(adv_img_file_id, query_num):
+    query_num_forward, query_num_backward = query_num.forward, query_num.backward
+    sql = "UPDATE adv_img_file_log SET query_num_forward = ?,query_num_backward = ? WHERE adv_img_file_id = ?"
+    task_manager.test_data_logger.update_log(sql, (query_num_forward, query_num_backward, adv_img_file_id))
+    if task_manager.test_data_logger.debug_log:
+        msg = "[ LOGGER ] Logged. Adversarial-example file ID: {}. Query Num (Forward): {} , Query Num (Backward): {}."\
+            .format(adv_img_file_id, query_num_forward, query_num_backward)
+        reporter.console_log(msg, Fore.CYAN, type="DEBUG")
+
 def find_all_adv_example_file_logs():
     sql = "SELECT * FROM adv_img_file_log"
     return task_manager.test_data_logger.query_logs(sql, ())

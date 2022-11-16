@@ -3,7 +3,8 @@ from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
 from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader, get_dataset
-from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import add_adv_example_file_log, set_adv_example_file_cost_time
+from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import add_adv_example_file_log, \
+    set_adv_example_file_cost_time, set_adv_example_file_query_num
 from CANARY_SEFI.evaluator.logger.attack_info_handler import add_attack_log
 from CANARY_SEFI.evaluator.monitor.attack_effect import time_cost_statistics
 from CANARY_SEFI.handler.image_handler.img_io_handler import save_pic_to_temp
@@ -17,8 +18,14 @@ class AdvAttacker:
         self.atk_args_dict = build_dict_with_json_args(self.atk_component, "attack", atk_args, run_device)
         # 是否不需要传入模型
         no_model = config_manager.config.get("attackConfig", {}).get(atk_name, {}).get("no_model", False)
+
+        # 增加模型访问统计
+        self.query_num = {
+            "backward": 0,
+            "forward": 0,
+        }
         if no_model is not True:
-            self.atk_args_dict['model'] = get_model(model_name, model_args, run_device)
+            self.atk_args_dict['model'] = get_model(model_name, model_args, run_device, self)
         model_component = SEFI_component_manager.model_list.get(model_name)
 
         # 图片处理参数JSON转DICT
@@ -132,6 +139,7 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
             # 写入日志
             adv_img_id = add_adv_example_file_log(attack_id, img_log_id, img_file_name, raw_file_name)
             set_adv_example_file_cost_time(adv_img_id, adv_attacker.cost_time)
+            set_adv_example_file_query_num(adv_img_id, adv_attacker.query_num)
 
             adv_img_id_list.append(adv_img_id)
 

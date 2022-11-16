@@ -46,6 +46,8 @@ class TestDataLogger:
                        'attack_id integer, '
                        'cost_time float, '
                        'ori_img_id integer, '
+                       'query_num_forward integer, '
+                       'query_num_backward integer, '
                        'adv_img_filename varchar, '
                        'adv_raw_nparray_filename varchar,'
                        'UNIQUE (attack_id, ori_img_id))')
@@ -93,6 +95,19 @@ class TestDataLogger:
 
         # 缩写释义:
         # ACT: average cost time
+        # AQN_F: average query number (Forward)
+        # AQN_B: average query number (Backward)
+        cursor.execute('create table if not exists attack_adv_example_cost_indicator_data '
+                       '(atk_name varchar, '
+                       'base_model varchar, '
+                       'atk_perturbation_budget float, '
+                       'ACT float, '
+                       'AQN_F integer, '
+                       'AQN_B integer, '
+                       'UNIQUE (atk_name, base_model, atk_perturbation_budget))')
+
+
+        # 缩写释义:
         # AMD: average maximum disturbance
         # AED: average euclidean distortion
         # APCR: average pixel change ratio
@@ -103,7 +118,6 @@ class TestDataLogger:
                        'base_model varchar, '
                        'atk_perturbation_budget float, '
                        'adv_example_file_type varchar, '  # 对抗样本文件类型 IMG文件可能导致真实误差，NP文件不会转换类型因而没有误差，但并不真实
-                       'ACT float, '
                        'AMD float, '
                        'AED float, '
                        'AED_HF float, '
@@ -111,7 +125,8 @@ class TestDataLogger:
                        'APCR float, '
                        'ADMS float, '
                        'ALMS float, '
-                       'UNIQUE (atk_name, base_model, atk_perturbation_budget, adv_example_file_type))')  #
+                       'UNIQUE (atk_name, base_model, atk_perturbation_budget, adv_example_file_type))')
+
 
         cursor.execute('create table if not exists model_dimension_summary '
                        '(model_name varchar, '
@@ -123,6 +138,8 @@ class TestDataLogger:
                        'AIAC float, '
                        'ARTC float, '
                        'ACT float,'
+                       'AQN_F integer, '
+                       'AQN_B integer, '
                        'AMD float, '
                        'AED float, '
                        'AED_HF float, '
@@ -141,6 +158,8 @@ class TestDataLogger:
                        'AIAC float, '
                        'ARTC float, '
                        'ACT float,'
+                       'AQN_F integer, '
+                       'AQN_B integer, '
                        'AMD float, '
                        'AED float, '
                        'AED_HF float, '

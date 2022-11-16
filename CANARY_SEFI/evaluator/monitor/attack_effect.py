@@ -14,3 +14,9 @@ def time_cost_statistics(logger):
 
         return wrapper
     return decorated
+
+
+def model_query_statistics(logger, query_type):
+    def hook_fn(module, grad_input, grad_output):
+        logger.query_num[query_type] += 1
+    return hook_fn
