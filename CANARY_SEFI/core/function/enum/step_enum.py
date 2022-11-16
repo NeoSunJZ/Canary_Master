@@ -8,14 +8,17 @@ class Step(Enum):
     MODEL_INFERENCE_CAPABILITY_EVALUATION = {'step_name': "模型预测能力评估"}
 
     ADV_EXAMPLE_GENERATE = {'step_name': "对抗样本生成"}
-    ATTACK_ADV_EXAMPLE_DA_TEST = {'step_name': "攻击方法生成对抗样本质量测试"}
-    ATTACK_ADV_EXAMPLE_DA_EVALUATION = {'step_name': "攻击方法生成对抗样本质量评估"}
-    ATTACK_DEFLECTION_CAPABILITY_TEST = {'step_name': "攻击方法偏转效果测试"}
-    ATTACK_DEFLECTION_CAPABILITY_EVALUATION = {'step_name': "攻击方法偏转效果评估"}
+    ATTACK_ADV_EXAMPLE_COMPARATIVE_TEST = {'step_name': "攻击方法生成对抗样本综合对比测试(图像相似性/模型注意力差异对比/像素差异对比)"}
+    ATTACK_ADV_EXAMPLE_DA_AND_COST_EVALUATION = {'step_name': "攻击方法生成对抗样本图像相似性(扰动距离)/生成代价评估"}
+
+    ATTACK_DEFLECTION_CAPABILITY_TEST = {'step_name': "攻击方法推理偏转效果/模型注意力偏转效果测试"}
+    ATTACK_DEFLECTION_CAPABILITY_EVALUATION = {'step_name': "攻击方法推理偏转效果/模型注意力偏转效果评估"}
 
     ADV_EXAMPLE_GENERATE_WITH_PERTURBATION_INCREMENT = {'step_name': "递增扰动的对抗样本生成"}
-    ATTACK_DEFLECTION_CAPABILITY_TEST_WITH_PERTURBATION_INCREMENT = {'step_name': "攻击方法偏转效果测试(扰动递增)"}
-    ATTACK_ADV_EXAMPLE_DA_TEST_WITH_PERTURBATION_INCREMENT = {'step_name': "攻击方法生成对抗样本质量测试(扰动递增)"}
+    ATTACK_DEFLECTION_CAPABILITY_TEST_WITH_PERTURBATION_INCREMENT = \
+        {'step_name': "攻击方法推理偏转效果/模型注意力偏转效果测试(扰动递增)"}
+    ATTACK_ADV_EXAMPLE_COMPARATIVE_TEST_WITH_PERTURBATION_INCREMENT = \
+        {'step_name': "攻击方法生成对抗样本综合对比测试(图像相似性/模型注意力差异对比/像素差异对比)(扰动递增)"}
     ATTACK_EVALUATION_WITH_PERTURBATION_INCREMENT = {'step_name': "攻击方法效果评估(扰动递增)"}
 
     MODEL_SECURITY_SYNTHETICAL_CAPABILITY_EVALUATION = {'step_name': "模型综合安全能力评估"}

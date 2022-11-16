@@ -37,7 +37,7 @@ def adv_inference(atk_log, test_model, model_args, img_proc_args, use_raw_nparra
             bar.update(1)
 
         participant = "{}({}):{}".format(atk_log['atk_name'], atk_log['base_model'], test_model)
-        if atk_log['atk_perturbation_budget'] is not None:
+        if atk_log['atk_perturbation_budget'] != "None":
             participant = "{}({})(e-{}):{}".format(atk_log['atk_name'], atk_log['base_model'],
                                                    str(round(float(atk_log['atk_perturbation_budget']), 5)), test_model)
         participant += "(RAW)" if use_raw_nparray_data else "(IMG)"

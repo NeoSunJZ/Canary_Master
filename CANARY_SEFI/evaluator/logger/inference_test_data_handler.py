@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 from colorama import Fore
 from CANARY_SEFI.task_manager import task_manager
@@ -5,24 +7,31 @@ from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 
 
-def save_inference_test_data(img_id, img_type, inference_model, inference_img_label, inference_img_conf_array):
-    sql = "INSERT INTO inference_test_data (inference_test_data_id, img_id, img_type, inference_model, inference_img_label, inference_img_conf_array) " \
-          "VALUES (NULL,?,?,?,?,?)"
-    args = (img_id, str(img_type), str(inference_model), str(inference_img_label), str(inference_img_conf_array))
+def save_inference_test_data(img_id, img_type, inference_model, inference_img_label, inference_img_conf_array,
+                             inference_cams=(None, None)):
+    true_class_cams, inference_class_cams = inference_cams
+    sql = "INSERT INTO inference_test_data (inference_test_data_id, img_id, img_type, " \
+          "inference_model, inference_img_label, inference_img_conf_array, true_class_cams, inference_class_cams) " \
+          "VALUES (NULL,?,?,?,?,?,?,?)"
+    args = (img_id, str(img_type), str(inference_model),
+            str(inference_img_label),
+            str(pickle.dumps(inference_img_conf_array)),
+            str(pickle.dumps(true_class_cams)),
+            str(pickle.dumps(inference_class_cams)))
     inference_test_data_id = task_manager.test_data_logger.insert_log(sql, args)
     if task_manager.test_data_logger.debug_log:
         msg = "[ LOGGER ] Logged. Image(ImgID:{} Type:{}) has Inferenced by Model({}). Inference result is {}. ".format(*args)
+        if true_class_cams is not None and inference_class_cams is not None:
+            msg += "G-CAM(Gradient-weighted Class Activation Mapping): Ready"
         reporter.console_log(msg, Fore.CYAN, type="DEBUG")
     return inference_test_data_id
 
 
-def read_conf_array(inference_img_conf_array):
-    return np.array(eval(', '.join(inference_img_conf_array.split())))
-
-
 def handle_result(inference_logs):
     for inference_log in inference_logs:
-        inference_log["inference_img_conf_array"] = read_conf_array(inference_log["inference_img_conf_array"]).tolist()
+        inference_log["inference_img_conf_array"] = pickle.loads(eval(inference_log["inference_img_conf_array"]))
+        inference_log["inference_class_cams"] = pickle.loads(eval(inference_log["inference_class_cams"]))
+        inference_log["true_class_cams"] = pickle.loads(eval(inference_log["true_class_cams"]))
     return inference_logs
 
 

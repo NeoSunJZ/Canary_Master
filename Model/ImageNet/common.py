@@ -100,12 +100,12 @@ def img_post_handler(adv_imgs, args):
 @sefi_component.util(util_type="result_postprocessor", util_target="model", name="VGG(ImageNet)")
 @sefi_component.util(util_type="result_postprocessor", util_target="model", name="ViT(ImageNet)")
 @sefi_component.util(util_type="result_postprocessor", util_target="model", name="WideResNet(ImageNet)")
-def result_post_handler(result, args):
-    outputs = torch.nn.functional.softmax(result, dim=1).detach().cpu().numpy()
+def result_post_handler(logits, args):
+    results = torch.nn.functional.softmax(logits, dim=1).detach().cpu().numpy()
     predicts = []
-    for output in outputs:
-        predicts.append(np.argmax(output))
-    return predicts, outputs
+    for result in results:
+        predicts.append(np.argmax(result))
+    return (predicts, results)
 
 
 @sefi_component.inference_detector(model_name="Alexnet(ImageNet)", support_type="numpy_array", return_type="label_string")

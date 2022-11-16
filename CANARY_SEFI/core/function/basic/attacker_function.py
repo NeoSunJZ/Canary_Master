@@ -138,7 +138,7 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
 
             # 写入日志
             adv_img_id = add_adv_example_file_log(attack_id, img_log_id, img_file_name, raw_file_name)
-            set_adv_example_file_cost_time(adv_img_id, adv_attacker.cost_time / len(adv_results))
+            set_adv_example_file_cost_time(adv_img_id, float(adv_attacker.cost_time) / len(adv_results))
             set_adv_example_file_query_num(adv_img_id, adv_attacker.query_num)
 
             adv_img_id_list.append(adv_img_id)

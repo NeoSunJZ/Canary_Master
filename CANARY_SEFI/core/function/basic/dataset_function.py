@@ -10,7 +10,7 @@ from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_log_by_id
-from CANARY_SEFI.evaluator.logger.img_file_info_handler import add_img_log
+from CANARY_SEFI.evaluator.logger.img_file_info_handler import add_img_log, find_img_log_by_id
 from CANARY_SEFI.handler.image_handler.img_io_handler import get_pic_nparray_from_temp
 
 
@@ -93,18 +93,21 @@ def adv_dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num
     for batch_cursor in range(int(math.ceil(all_adv_count/batch_size))):
         adv_img_array = []
         adv_log_id_array = []
+        ori_label_array = []
 
         for adv_cursor in range(batch_cursor * batch_size, min((batch_cursor+1) * batch_size, dataset_info.dataset_size)):
-            adv_file_log = find_adv_example_file_log_by_id(adv_img_cursor_list[adv_cursor])
-            adv_img = adv_dataset_single_image_reader(adv_file_log, adv_img_type)
+            adv_example_file_log = find_adv_example_file_log_by_id(adv_img_cursor_list[adv_cursor])
+            adv_img = adv_dataset_single_image_reader(adv_example_file_log, adv_img_type)
+            ori_label = find_img_log_by_id(adv_example_file_log["ori_img_id"])["ori_img_label"]
 
             if type(adv_img) != numpy.ndarray:
                 adv_img = np.array(adv_img, dtype=np.float32)
 
             adv_img_array.append(adv_img)
             adv_log_id_array.append(adv_img_cursor_list[adv_cursor])
+            ori_label_array.append(ori_label)
 
-        iterator(adv_img_array, adv_log_id_array, None)
+        iterator(adv_img_array, adv_log_id_array, ori_label_array)
         task_manager.sys_log_logger.update_completed_num(len(adv_img_array))
 
     # for i in range(len(adv_img_cursor_list)):

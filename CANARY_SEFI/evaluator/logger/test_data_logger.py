@@ -50,6 +50,7 @@ class TestDataLogger:
                        'query_num_backward integer, '
                        'adv_img_filename varchar, '
                        'adv_raw_nparray_filename varchar,'
+                       'ground_valid varchar,'
                        'UNIQUE (attack_id, ori_img_id))')
 
         cursor.execute('create table if not exists adv_example_da_test_data '
@@ -70,7 +71,9 @@ class TestDataLogger:
                        'img_type varchar, '
                        'inference_model varchar, '
                        'inference_img_label integer, '
-                       'inference_img_conf_array varchar)')
+                       'inference_img_conf_array varchar, '
+                       'true_class_cams varchar, '
+                       'inference_class_cams varchar)')
 
         cursor.execute('create table if not exists model_inference_capability_indicator_data '
                        '(model_name varchar PRIMARY KEY, '
@@ -82,6 +85,8 @@ class TestDataLogger:
         # MR: misclassification ratio
         # AIAC: average increase adversarial-class confidence
         # ARTC: average reduction true-class confidence
+        # ACAMC_A: average G-CAM Change (Adversarial-class)
+        # ACAMC_T: average G-CAM Change (True-class)
         cursor.execute('create table if not exists attack_deflection_capability_indicator_data '
                        '(atk_name varchar, '
                        'base_model varchar, '
@@ -91,6 +96,8 @@ class TestDataLogger:
                        'MR float, '
                        'AIAC float, '
                        'ARTC float, '
+                       'ACAMC_A float, '
+                       'ACAMC_T float, '
                        'UNIQUE (atk_name, base_model, atk_perturbation_budget, inference_model, adv_example_file_type))')
 
         # 缩写释义:

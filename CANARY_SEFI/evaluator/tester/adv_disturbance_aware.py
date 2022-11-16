@@ -3,10 +3,10 @@ from functools import reduce
 import cv2
 import piq
 import torch
-from matplotlib import pyplot as plt
 from torchvision.transforms import Resize
 
 from CANARY_SEFI.evaluator.tester.frequency_domain_image_processing import get_low_high_f
+from CANARY_SEFI.handler.image_handler.img_utils import img_size_uniform_fix
 
 
 class AdvDisturbanceAwareTester:
@@ -16,7 +16,7 @@ class AdvDisturbanceAwareTester:
         self.min_pixel = min_pixel
 
     def test_all(self, ori_img, adv_img):
-        ori_img, adv_img = self.img_size_uniform_fix(ori_img, adv_img)
+        # ori_img, adv_img = img_size_uniform_fix(ori_img, adv_img)
         high_freq_euclidean_distortion, low_freq_euclidean_distortion = self.calculate_freq_euclidean_distortion(
             ori_img, adv_img)
         return {
@@ -84,13 +84,3 @@ class AdvDisturbanceAwareTester:
         if len(img.shape) == 3:
             img = img.transpose(2, 0, 1)
         return torch.from_numpy(img).to(self.device).float()
-
-    def img_size_uniform_fix(self, ori_img, adv_img):
-        ori_h, ori_w = ori_img.shape[0], ori_img.shape[1]
-        adv_h, adv_w = adv_img.shape[0], adv_img.shape[1]
-        if ori_h != adv_h or ori_w != adv_w:
-            ori_img = torch.from_numpy(ori_img.transpose(2, 0, 1)).to(self.device).float()
-            resize = Resize([adv_h, adv_w])
-            ori_img = resize(ori_img)
-            ori_img = ori_img.data.cpu().numpy().transpose(1, 2, 0)
-        return ori_img, adv_img
