@@ -54,7 +54,7 @@ class SecurityEvaluation:
                                           self.transfer_attack_test_mode, self.transfer_attack_test_on_model_list,
                                           use_raw_nparray_data)
         # 攻击方法推理偏转效果/模型注意力偏转效果评估
-        attack_deflection_capability_evaluation(self.attacker_list, use_raw_nparray_data)
+        attack_deflection_capability_evaluation(self.attacker_list,self.dataset_info, use_raw_nparray_data)
         # 攻击方法生成对抗样本综合对比测试(图像相似性/模型注意力差异对比/像素差异对比)
         attack_adv_example_comparative_test(self.attacker_list, self.dataset_info, use_raw_nparray_data)
         # 攻击方法生成对抗样本图像相似性(扰动距离)/生成代价评估
@@ -89,13 +89,13 @@ class SecurityEvaluation:
             attack_deflection_capability_test_with_perturbation_increment(self.attacker_list, self.model_config, self.img_proc_config, use_raw_nparray_data=False)
             attack_adv_example_da_test_with_perturbation_increment(self.attacker_list, self.dataset_info, use_raw_nparray_data=False)
             # 结果分析
-            attack_capability_evaluation_with_perturbation_increment(self.attacker_list, use_raw_nparray_data=False)
+            attack_capability_evaluation_with_perturbation_increment(self.attacker_list, self.dataset_info, use_raw_nparray_data=False)
         if use_raw_nparray_data:
             # 测试
             attack_deflection_capability_test_with_perturbation_increment(self.attacker_list, self.model_config, self.img_proc_config, use_raw_nparray_data=True)
             attack_adv_example_da_test_with_perturbation_increment(self.attacker_list, self.dataset_info, use_raw_nparray_data=True)
             # 结果分析
-            attack_capability_evaluation_with_perturbation_increment(self.attacker_list, use_raw_nparray_data=True)
+            attack_capability_evaluation_with_perturbation_increment(self.attacker_list, self.dataset_info, use_raw_nparray_data=True)
 
         task_manager.test_data_logger.finish()
 

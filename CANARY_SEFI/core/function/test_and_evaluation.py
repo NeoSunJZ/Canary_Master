@@ -89,12 +89,12 @@ def attack_deflection_capability_test(attacker_list, model_config, img_proc_conf
 
 
 # 攻击方法推理偏转效果/模型注意力偏转效果评估
-def attack_deflection_capability_evaluation(attacker_list, use_raw_nparray_data=False):
+def attack_deflection_capability_evaluation(attacker_list, dataset_info=None, use_raw_nparray_data=False):
     # 标记当前步骤
     task_manager.sys_log_logger.set_step(Step.ATTACK_DEFLECTION_CAPABILITY_EVALUATION)
     for atk_name in attacker_list:
         for base_model in attacker_list[atk_name]:
-            attack_deflection_capability_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data)
+            attack_deflection_capability_analyzer_and_evaluation(atk_name, base_model, dataset_info, use_raw_nparray_data)
 
 
 # 模型推理能力测试
@@ -186,9 +186,9 @@ def attack_adv_example_da_test_with_perturbation_increment(attacker_list, datase
 
 
 # 攻击对抗样本质量\攻击偏转能力(扰动递增)评估
-def attack_capability_evaluation_with_perturbation_increment(attacker_list, use_raw_nparray_data=False):
+def attack_capability_evaluation_with_perturbation_increment(attacker_list, dataset_info=None, use_raw_nparray_data=False):
     # 标记当前步骤
     task_manager.sys_log_logger.set_step(Step.ATTACK_EVALUATION_WITH_PERTURBATION_INCREMENT)
     for atk_name in attacker_list:
         for base_model in attacker_list[atk_name]:
-            attack_capability_with_perturbation_increment_analyzer_and_evaluation(atk_name, base_model, use_raw_nparray_data)
+            attack_capability_with_perturbation_increment_analyzer_and_evaluation(atk_name, base_model, dataset_info, use_raw_nparray_data)

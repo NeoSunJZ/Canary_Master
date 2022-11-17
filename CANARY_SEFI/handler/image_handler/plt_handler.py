@@ -30,19 +30,35 @@ def img_diff_plt_builder(original_img, adversarial_img):
     return figure
 
 
-def cam_diff_plt_builder(original_img, adversarial_img, ori_cam, adv_cam, title=None):
+def cam_diff_plt_builder(img, true_class_cams, inference_class_cams, info):
+    model_name, atk_name, ori_img_id, adv_img_file_id, ori_label, ori_inference_label, adv_inference_label = info
+    ori_img, adv_img = img
     figure = plt.figure(facecolor='w')
-    figure.suptitle(title)
+    figure.suptitle('Gradient-weighted Class Activation Mapping\n Inference Model {}'.format(model_name), fontsize=12)
 
-    ax_1 = figure.add_subplot(131)
-    ax_1.set_title('Original CAM')
-    ax_1.imshow(show_cam_on_image(original_img / 255, ori_cam, True))
+    ori_cam, adv_cam = true_class_cams
+
+    ax_1 = figure.add_subplot(221)
+    ax_1.set_title('Original Img (ID:{})\nTarget Category {}\n(GT Label)'.format(ori_img_id, ori_label), fontsize=8)
+    ax_1.imshow(show_cam_on_image(ori_img / 255, ori_cam, True))
     ax_1.axis('off')
 
-    ax_2 = figure.add_subplot(132)
-    ax_2.set_title('Adversarial CAM')
-    ax_2.imshow(show_cam_on_image(adversarial_img / 255, adv_cam, True))
+    ax_2 = figure.add_subplot(222)
+    ax_2.set_title('Adv Img (ID:{})\n({})\nTarget Category {}\n(GT Label)'.format(adv_img_file_id, atk_name, ori_label), fontsize=8)
+    ax_2.imshow(show_cam_on_image(adv_img / 255, adv_cam, True))
     ax_2.axis('off')
+
+    ori_cam, adv_cam = inference_class_cams
+
+    ax_3 = figure.add_subplot(223)
+    ax_3.set_title('Original Img (ID:{})\nTarget Category {}\n(Inference Label)'.format(ori_img_id, ori_inference_label), fontsize=8)
+    ax_3.imshow(show_cam_on_image(ori_img / 255, ori_cam, True))
+    ax_3.axis('off')
+
+    ax_4 = figure.add_subplot(224)
+    ax_4.set_title('Adv Img (ID:{})\n({})\nTarget Category {}\n(Inference Label)'.format(adv_img_file_id, atk_name, adv_inference_label), fontsize=8)
+    ax_4.imshow(show_cam_on_image(adv_img / 255, adv_cam, True))
+    ax_4.axis('off')
 
     figure.tight_layout()
     return figure

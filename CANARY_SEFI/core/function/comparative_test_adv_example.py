@@ -48,17 +48,14 @@ def adv_comparative_test(atk_log, dataset_info, use_raw_nparray_data=False):
             if ori_img_data is None:
                 ori_img_log = find_img_log_by_id(ori_img_id)
                 ori_img, ori_label = dataset_single_image_reader(dataset_info, ori_img_cursor=ori_img_log['ori_img_cursor'])
-                ori_inferences = get_inference_test_data_by_img_id(ori_img_id, DatasetType.NORMAL.value)
                 # 存入临时缓存
-                ori_img_list[ori_img_id]={
-                    "ori_img":ori_img,
-                    "ori_label":ori_label,
-                    "ori_inference":ori_inferences,
+                ori_img_list[ori_img_id] = {
+                    "ori_img": ori_img,
+                    "ori_label": ori_label,
                 }
             else:
                 ori_img = ori_img_data.get("ori_img")
                 ori_label = ori_img_data.get("ori_label")
-                ori_inferences = ori_img_data.get("ori_inferences")
 
             ori, adv = img_size_uniform_fix(ori_img, adv_img[0])
             # 执行Disturbance-Aware测试
@@ -66,19 +63,6 @@ def adv_comparative_test(atk_log, dataset_info, use_raw_nparray_data=False):
             # 执行像素差异对比分析
             diff_plt = img_diff_plt_builder(ori, adv)
             show_plt(diff_plt)
-            # 执行CAM可解释性偏移对比分析(必须先有推理结果才可在此测试， 否则跳过)
-            adv_inferences = get_inference_test_data_by_img_id(adv_img_file_id[0], adv_dataset_info.dataset_type.value)
-            if (ori_inferences is not None and adv_inferences is not None):
-                for ori_inference in ori_inferences:
-                    for adv_inference in adv_inferences:
-                        cam_adv = adv_inference.get("true_class_cams")
-                        cam_ori = ori_inference.get("true_class_cams")
-                        cam_result_plt = cam_diff_plt_builder(ori, adv, cam_ori, cam_adv, title="True-class CAM")
-                        show_plt(cam_result_plt)
-                        cam_adv = adv_inference.get("inference_class_cams")
-                        cam_ori = ori_inference.get("inference_class_cams")
-                        cam_result_plt = cam_diff_plt_builder(ori, adv, cam_ori, cam_adv, title="Inference-class CAM")
-                        show_plt(cam_result_plt)
 
             # 写入日志
             save_adv_example_da_test_data(adv_img_file_id[0], adv_dataset_info.dataset_type.value, adv_da_test_result)
