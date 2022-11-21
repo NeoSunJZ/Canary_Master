@@ -81,7 +81,7 @@ class JSMA():
 
             loss_func = torch.nn.CrossEntropyLoss()
             loss = loss_func(result, target)
-            print("epoch={} labels={} loss={}".format(epoch, labels, loss))
+            # print("epoch={} labels={} loss={}".format(epoch, labels, loss))
 
             # 如果定向攻击成功
             if (labels == target.data.cpu().numpy()).all():
@@ -98,7 +98,7 @@ class JSMA():
 
             # 达到极限的点不再参与更新
             if (img.data[idx] <= self.pixel_min) or (img.data[idx] >= self.pixel_max):
-                print("idx={} over {}".format(idx, img.data[idx]))
+                # print("idx={} over {}".format(idx, img.data[idx]))
                 mask[idx] = 0
                 b = img.data[idx].cpu()
                 img.data[idx] = np.clip(b, self.pixel_min, self.pixel_max)

@@ -19,7 +19,7 @@ sefi_component = SEFIComponent()
                                           "clip_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"},{"value": "UNTARGETED", "name": "非靶向"}], "required": "true"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
-                                          "max_iterations": {"desc": "要运行的最大步骤数，可能会在此之前收敛并停止", "type": "INT", "def": "50"},
+                                          "max_iterations": {"desc": "要运行的最大步骤数，可能会在此之前收敛并停止", "type": "INT", "def": "25000"},
                                           "spherical_step": {"desc": "正交（球形）补偿的初始步长", "type": "FLOAT", "def": "1e-2"},
                                           "source_step_convergance": {"desc": "设置停止条件的阈值：如果在攻击期间source_step小于此值，则攻击已收敛并将停止", "type": "FLOAT", "def": "1e-07"},
                                           "step_adaptation": {"desc": "步长乘以或除以的因子", "type": "FLOAT", "def": "1.5"},
