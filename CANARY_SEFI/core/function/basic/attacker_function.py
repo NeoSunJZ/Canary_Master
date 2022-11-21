@@ -20,10 +20,7 @@ class AdvAttacker:
         no_model = config_manager.config.get("attackConfig", {}).get(atk_name, {}).get("no_model", False)
 
         # 增加模型访问统计
-        self.query_num = {
-            "backward": 0,
-            "forward": 0,
-        }
+        self.query_num = None
         if no_model is not True:
             self.atk_args_dict['model'] = get_model(model_name, model_args, run_device, self)
         model_component = SEFI_component_manager.model_list.get(model_name)
@@ -77,6 +74,10 @@ class AdvAttacker:
         return PreprocessDataset()
 
     def adv_attack_4_img(self, ori_img, ori_label):
+        self.query_num = {
+            "backward": 0,
+            "forward": 0,
+        }
         img = ori_img
         if self.img_preprocessor is not None:  # 图片预处理器存在
             img = self.img_preprocessor(ori_img, self.img_proc_args_dict)
