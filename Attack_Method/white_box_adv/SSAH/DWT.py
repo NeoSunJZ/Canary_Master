@@ -148,7 +148,9 @@ class DWT_2D_tiny(Module):
         generating the matrices: \mathcal{L}, \mathcal{H}
         :return: self.matrix_low = \mathcal{L}, self.matrix_high = \mathcal{H}
         """
-        L1 = np.max((self.input_height, self.input_width))   # 224
+        L1 = np.max((self.input_height, self.input_width))   #
+        if(L1 % 2 == 1):
+            L1 = L1 + 1
         L = math.floor(L1 / 2)   # 112
         matrix_h = np.zeros((L, L1 + self.band_length - 2))  # (112, 224 + 2 -2)
         matrix_g = np.zeros((L1 - L, L1 + self.band_length - 2))
