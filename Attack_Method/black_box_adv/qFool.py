@@ -17,36 +17,37 @@ sefi_component = SEFIComponent()
                                       params={
                                           "clip_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "clip_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
+
                                           "attack_type": {"desc": "攻击类型", "type": "SELECT",
                                                           "selector": [{"value": "TARGETED", "name": "靶向"},
                                                                        {"value": "UNTARGETED", "name": "非靶向"}],
                                                           "required": "true"},
-                                          "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
+                                          "tlabel": {"desc": "靶向攻击目标图片(仅TARGETED时有效)", "type": "PIC"},
+                                          "delta": {"desc": "攻击类型为TARGETED时有效，累加梯度的步长", "type": "FLOAT", "def": "10"},
+
+                                          "tolerance": {"desc": "设置二分搜索停止条件的阈值（如果二分两点的距离小于此值，则认为已经搜索到边界）", "type": "FLOAT", "def": "0.1"},
                                           "max_queries": {"desc": "最大查询次数", "type": "INT", "def": "10000"},
-                                          "tolerance": {"desc": "二分查找收敛阈值(距离< 此值)", "type": "FLOAT", "def": "1e-2"},
                                           "init_estimation": {"desc": "每次搜索初始查询次数", "type": "INT", "def": "100"},
                                           "eps": {"desc": "在某个点迭代的阈值", "type": "FLOAT", "def": "0.7"},
-                                          # "omega0": {"desc": "调整预估梯度的参数的初始值（原论文公式4），保证正负例子比例约为55开", "type": "FLOAT"},
-                                          # "phi0": {"desc": "调整预估梯度的参数的初始值（原论文公式4）保证正负例子比例约为55开", "type": "FLOAT"},
-                                          "delta": {"desc": "攻击类型为TARGETED时有效，累加梯度的步长", "type": "FLOAT", "def": "10"},
+
                                           "subspacedim": {"desc": "DTC子空间的长宽（长宽一致）", "type": "INT", "def": "16"},
                                       })
 
 class qFool():
     def __init__(self, model, run_device, attack_type='UNTARGETED', im_target=None, eps=0.7, clip_min=0, clip_max=1,
-                 max_queries=10000, tolerance=1e-2, init_estimation=100, omega0=3 * 1e-2, delta=10, subspacedim=None, tlabel=-1):
+                 max_queries=10000, tolerance=1e-2, init_estimation=100, omega0=3 * 1e-2, phi0=-1, delta=10, subspacedim=None, tlabel=-1):
         self.model = model
         self.device = run_device if run_device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
         self.attack_type = attack_type
         self.clip_min = clip_min
         self.clip_max = clip_max
-        self.epsilon = eps
+        self.eps = eps
 
         self.tolerance = tolerance
         self.max_queries = max_queries
         self.init_estimation = init_estimation
-        self.omega0 = omega0
-        self.phi0 = -1
+        self.omega0 = omega0  # 调整预估梯度的参数的初始值（原论文公式4），保证正负例子比例约为55开
+        self.phi0 = phi0  # 调整预估梯度的参数的初始值（原论文公式4），保证正负例子比例约为55开
         self.delta = delta
         self.subspacedim = subspacedim
         self.tlable = tlabel
@@ -84,7 +85,7 @@ class qFool():
         # plt.show()
 
         mse = torch.linalg.norm(r) / self.input_dim
-        print("mse: ", mse)
+        # print("mse: ", mse)
 
         # return xadv, xpertinv, mse
         return pert_image
@@ -109,13 +110,13 @@ class qFool():
         P0, r, num_calls2 = self.bisect(self.image, P0)
         P.append(P0)
 
-        print(self.separatorline)
-        print("starting the loop to find x_adv ...")
+        # print(self.separatorline)
+        # print("starting the loop to find x_adv ...")
 
         # line 3 and line 14
         x_adv, xi = [], []
         while np.sum(self.n) < self.max_queries:
-            print(f"	#iteration: {loop_i}")
+            # print(f"	#iteration: {loop_i}")
 
             # equation 4
             omega = self.omega0
@@ -135,7 +136,7 @@ class qFool():
                 # line 7
                 z_dot_eta_new, rho, num_calls3 = self.estimate_gradient(P[loop_i], omega, phi)
                 z_dot_eta += z_dot_eta_new
-                print(f"     	#queries until now: n[{loop_i}]={self.n[loop_i] + num_calls3}")
+                # print(f"     	#queries until now: n[{loop_i}]={self.n[loop_i] + num_calls3}")
 
                 # line 8
                 x_adv_prime = x_adv[loop_i]
@@ -153,13 +154,13 @@ class qFool():
                 # equation 4
                 omega, phi = self.update_omega(omega, phi, rho)
 
-            print(f"	#queries: n[{loop_i}]={self.n[loop_i]}")
+            # print(f"	#queries: n[{loop_i}]={self.n[loop_i]}")
 
             # line 13
             P.append(x_adv[loop_i])
             loop_i += 1
 
-        print("found x_adv!")
+        # print("found x_adv!")
 
         # line 15
         pert_image = P[-1]
@@ -182,13 +183,13 @@ class qFool():
         P0, r, num_calls1 = self.bisect(self.image, self.target)
         P.append(P0)
 
-        print(self.separatorline)
-        print("starting the loop to find x_adv ...")
+        # print(self.separatorline)
+        # print("starting the loop to find x_adv ...")
 
         # line 4 and line 17
         x_adv, xi, Q = [], [], []
         while np.sum(self.n) < self.max_queries:
-            print(f"	#iteration: {loop_i}")
+            # print(f"	#iteration: {loop_i}")
 
             # equation 4
             omega = self.omega0
@@ -210,7 +211,7 @@ class qFool():
                 # line 8
                 z_dot_eta_new, rho, num_calls2 = self.estimate_gradient(P[loop_i], omega, phi)
                 z_dot_eta += z_dot_eta_new
-                print(f"     	#queries until now: n[{loop_i}]={self.n[loop_i] + num_calls2}")
+                # print(f"     	#queries until now: n[{loop_i}]={self.n[loop_i] + num_calls2}")
 
                 # line 9
                 x_adv_prime = x_adv[loop_i]
@@ -234,13 +235,13 @@ class qFool():
                 # equation 4
                 omega, phi = self.update_omega(omega, phi, rho)
 
-            print(f"	#queries: n[{loop_i}]={self.n[loop_i]}")
+            # print(f"	#queries: n[{loop_i}]={self.n[loop_i]}")
 
             # line 16
             P.append(x_adv[loop_i])
             loop_i += 1
 
-        print("found x_adv!")
+        # print("found x_adv!")
 
         # line 15
         pert_image = P[-1]
@@ -255,8 +256,8 @@ class qFool():
         sigma = sigma0
         num_calls = 0
 
-        print(self.separatorline)
-        print("searching for the boundary using random noise ...")
+        # print(self.separatorline)
+        # print("searching for the boundary using random noise ...")
 
         while not self.is_adversarial(P0) and num_calls < k:
             rj = self.create_perturbation() * sigma
@@ -264,14 +265,14 @@ class qFool():
             num_calls += 1
             sigma = sigma0 * (num_calls + 1)
 
-            print(f"	sigma_{num_calls} = {sigma}", end='')
-            print(f"	pert norm = {torch.linalg.norm(rj)}")
-        # print(f"	pert mse = {1/self.input_dim*torch.linalg.norm(rj)}")
+            # print(f"	sigma_{num_calls} = {sigma}", end='')
+            # print(f"	pert norm = {torch.linalg.norm(rj)}")
+        # # print(f"	pert mse = {1/self.input_dim*torch.linalg.norm(rj)}")
 
-        if num_calls == k:
-            print("cannot find P0!")
-        else:
-            print("found P0!")
+        # if num_calls == k:
+            # print("cannot find P0!")
+        # else:
+            # print("found P0!")
         return P0, num_calls
 
     def P0_constants(self):
@@ -289,8 +290,8 @@ class qFool():
         newrate = torch.linalg.norm(x_adv_i - Pi) / (ni + self.init_estimation)
         prevrate = torch.linalg.norm(x_adv_prime - Pi) / ni
 
-        print(f"newrate/prevrate = {newrate / prevrate}")
-        cond2 = newrate <= self.epsilon * prevrate
+        # print(f"newrate/prevrate = {newrate / prevrate}")
+        cond2 = newrate <= self.eps * prevrate
         return cond1 and cond2
 
     def estimate_gradient(self, Pi, omega, phi):
@@ -309,7 +310,7 @@ class qFool():
             num_calls += 1
 
         rho = 0.5 - cnt / self.init_estimation
-        print(f"rho = {rho}")
+        # print(f"rho = {rho}")
         # num_calls = self.init_estimation
         return z_dot_eta, rho, num_calls
 
@@ -326,18 +327,18 @@ class qFool():
         x_tilde = deepcopy(adv_image)
         num_calls = 0
 
-        print("bisecting to get closer to boundary ...")
+        # print("bisecting to get closer to boundary ...")
         while torch.linalg.norm(x - x_tilde) > self.tolerance:
             x_mid = (x + x_tilde) / 2
-            print(f"	norm from image = {torch.linalg.norm(x_mid - image)}, ", end='')
-            print(f"norm from adv = {torch.linalg.norm(x_mid - adv_image)}")
+            # print(f"	norm from image = {torch.linalg.norm(x_mid - image)}, ", end='')
+            # print(f"norm from adv = {torch.linalg.norm(x_mid - adv_image)}")
 
             if self.is_adversarial(x_mid):
                 x_tilde = x_mid
             else:
                 x = x_mid
             num_calls += 1
-        print("bisection done!")
+        # print("bisection done!")
         return x_tilde, torch.linalg.norm(x_tilde - image), num_calls
 
     def create_perturbation(self):
