@@ -292,14 +292,14 @@ class ZOOptim(object):
             second_term = loss1_minus + (c * loss2_minus)
 
             # 2.3. Compute gradient
-            g_hat[batch_size * i:batch_size * (i + 1), :] = (first_term.view(-1, 1) - second_term.view(-1, 1)) / (2 * h)
+            g_hat[batch_size * i:batch_size * (i + 1), :] = (first_term.view(-1, 1).detach() - second_term.view(-1, 1).detach()) / (2 * h)
 
             # 2.4 Compute Hessian if we are using Newton's method
             if solver == 'newton':
                 loss1_added = torch.norm(x_expanded - x_0_expanded, dim=1)
                 loss2_added = self.loss(self.model(x_expanded.view(batch_size, *list(x_dim))))
                 additional_term = loss1_added + (c * loss2_added)
-                h_hat[batch_size * i:batch_size * (i + 1), :] = (first_term.view(-1, 1) + second_term.view(-1, 1) - 2 * additional_term.view(-1, 1)) / (h ** 2)
+                h_hat[batch_size * i:batch_size * (i + 1), :] = (first_term.view(-1, 1).detach() + second_term.view(-1, 1).detach() - 2 * additional_term.view(-1, 1).detach()) / (h ** 2)
 
         # 3. Display info
         if verbose > 0:

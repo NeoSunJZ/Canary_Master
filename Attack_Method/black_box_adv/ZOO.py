@@ -31,11 +31,12 @@ sefi_component = SEFIComponent()
                                           "h": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
                                           "beta_1": {"desc": "ADAM超参", "type": "FLOAT", "def": "0.9"},
                                           "beta_2": {"desc": "ADAM超参", "type": "FLOAT", "def": "0.999"},
+                                          "mini_batch": {"desc": "最大同时预测数", "type": "INT", "def": "16"},
                                       })
 class ZOO():
     def __init__(self, model, run_device, max_iter=10000, epsilon=0.3, clip_min=-3, clip_max=3, attack_type='UNTARGETED',
                  tlabel=-1, learning_rate=2e-3, solver="adam", loss_weight=0.3, stop_criterion=True,
-                 h=1e-4, beta_1=0.9, beta_2=0.999, n_gradient=128):
+                 h=1e-4, beta_1=0.9, beta_2=0.999, n_gradient=128, mini_batch=-1):
         self.model = model  # 待攻击的白盒模型
         self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.clip_min = clip_min  # 像素值的下限
@@ -52,6 +53,7 @@ class ZOO():
         self.h = h
         self.beta_1 = beta_1
         self.beta_2 = beta_2
+        self.batch_size = mini_batch
 
     @sefi_component.attack(name="ZOO", is_inclass=True, support_model=["vision_transformer"])
     def attack(self, img, ori_labels):
@@ -68,7 +70,7 @@ class ZOO():
                                                                   n_gradient=self.n_gradient, h=self.h,
                                                                   beta_1=self.beta_1,
                                                                   beta_2=self.beta_2, solver=self.solver, verbose=False,
-                                                                  max_steps=self.max_iter, batch_size=-1,
+                                                                  max_steps=self.max_iter, batch_size=self.batch_size,
                                                                   C=(self.clip_min, self.clip_max),
                                                                   stop_criterion=self.stop_criterion,
                                                                   tqdm_disabled=True, additional_out=False)
@@ -83,7 +85,7 @@ class ZOO():
                                                                   n_gradient=self.n_gradient, h=self.h,
                                                                   beta_1=self.beta_1,
                                                                   beta_2=self.beta_2, solver=self.solver, verbose=False,
-                                                                  max_steps=self.max_iter, batch_size=-1,
+                                                                  max_steps=self.max_iter, batch_size=self.batch_size,
                                                                   C=(self.clip_min, self.clip_max),
                                                                   stop_criterion=self.stop_criterion,
                                                                   tqdm_disabled=True, additional_out=False)
