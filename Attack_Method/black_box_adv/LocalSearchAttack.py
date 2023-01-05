@@ -7,11 +7,10 @@ from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType
 sefi_component = SEFIComponent()
 
 
-@sefi_component.attacker_class(attack_name="LocalSearchAttack", perturbation_budget_var_name="epsilon")
-@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="LocalSearchAttack",
+@sefi_component.attacker_class(attack_name="LSA", perturbation_budget_var_name=None)
+@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="LSA",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "epsilon": {"desc": "扰动大小", "type": "FLOAT", "def": "0.2"},
                                           "clip_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "clip_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "attack_type": {"desc": "攻击类型", "type": "SELECT",
@@ -19,7 +18,7 @@ sefi_component = SEFIComponent()
                                                                        {"value": "UNTARGETED", "name": "非靶向"}],
                                                           "required": "true"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
-                                          "max_iter": {"desc": "最大迭代次数(整数)", "type": "INT", "def": "150"},
+                                          "max_iter": {"desc": "最大迭代次数(整数)", "type": "INT", "def": "80"},
                                           "r": {"desc": "超参r ∈ [0,2]", "type": "FLOAT", "def": "1.5"},
                                           "p": {"desc": "超参（取值可为任意正实数）", "type": "FLOAT", "def": "0.25"},
                                           "d": {"desc": "局部搜索的半径", "type": "INT", "def": "5"},
@@ -27,10 +26,9 @@ sefi_component = SEFIComponent()
                                           "mini_batch": {"desc": "最大同时预测数", "type": "INT", "def": "16"},
                                       })
 class LocalSearchAttack():
-    def __init__(self, model, run_device, max_iter=150, epsilon=0.2, clip_min=-3, clip_max=3, attack_type='UNTARGETED',
+    def __init__(self, model, run_device, max_iter=80, clip_min=-3, clip_max=3, attack_type='UNTARGETED',
                  tlabel=-1, r=1.5, p=0.25, d=5, t=5, mini_batch=16):
         self.model = model  # 待攻击的白盒模型
-        self.epsilon = epsilon  # 以无穷范数作为约束，设置最大值
         self.clip_min = clip_min  # 像素值的下限
         self.clip_max = clip_max  # 像素值的上限
         self.attack_type = attack_type  # 攻击类型：靶向 or 非靶向
@@ -51,7 +49,7 @@ class LocalSearchAttack():
         # the half side length of the neighborhood square d ∈ N,
         # the number of pixels perturbed at each round t ∈ N,
 
-    @sefi_component.attack(name="LocalSearchAttack", is_inclass=True, support_model=["vision_transformer"])
+    @sefi_component.attack(name="LSA", is_inclass=True, support_model=[])
     def attack(self, imgs, ori_labels):
 
         min_, max_ = self.clip_min, self.clip_max
@@ -111,21 +109,21 @@ class LocalSearchAttack():
             result = r * Ibxy
             # logger.info("cyclic result:{}".format(result))
 
-            """
-            foolbox的实现 存在极端情况  本来只是有一个元素超过UB，结果一减 都完蛋了
-            if result.any() < LB:
-                #result = result/r + (UB - LB)
-                logger.info("cyclic result:{}".format(result))
-                result = result + (UB - LB)
-                logger.info("cyclic result:{}".format(result))
-                #result=LB
-            elif result.any()  > UB:
-                #result = result/r - (UB - LB)
-                logger.info("cyclic result:{}".format(result))
-                result = result - (UB - LB)
-                logger.info("cyclic result:{}".format(result))
-                #result=UB
-            """
+            # """
+            # foolbox的实现 存在极端情况  本来只是有一个元素超过UB，结果一减 都完蛋了
+            # if result.any() < LB:
+            #     #result = result/r + (UB - LB)
+            #     logger.info("cyclic result:{}".format(result))
+            #     result = result + (UB - LB)
+            #     logger.info("cyclic result:{}".format(result))
+            #     #result=LB
+            # elif result.any()  > UB:
+            #     #result = result/r - (UB - LB)
+            #     logger.info("cyclic result:{}".format(result))
+            #     result = result - (UB - LB)
+            #     logger.info("cyclic result:{}".format(result))
+            #     #result=UB
+            # """
 
             if result.any() < LB:
                 result = result + (UB - LB)

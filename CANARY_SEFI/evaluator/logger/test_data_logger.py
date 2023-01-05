@@ -51,6 +51,7 @@ class TestDataLogger:
                        'adv_img_filename varchar, '
                        'adv_raw_nparray_filename varchar,'
                        'ground_valid varchar,'
+                       'tlabel varchar, '
                        'UNIQUE (attack_id, ori_img_id))')
 
         cursor.execute('create table if not exists adv_example_da_test_data '

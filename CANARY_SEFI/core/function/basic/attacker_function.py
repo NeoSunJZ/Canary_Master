@@ -1,3 +1,6 @@
+import copy
+import random
+
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
@@ -53,6 +56,12 @@ class AdvAttacker:
         else:
             self.perturbation_budget_var_name = self.atk_component.get('perturbation_budget_var_name')
 
+        if dataset_info is not None:
+            self.n_classes = dataset_info.n_classes
+        else:
+            self.n_classes = None
+        self.random = random.Random(task_manager.task_token)
+
     @staticmethod
     def init_with_dataset(dataset_info, img_preprocessor, img_proc_args_dict):
         ori_dataset = get_dataset(dataset_info)
@@ -73,11 +82,34 @@ class AdvAttacker:
                 return ori_dataset.__len__()
         return PreprocessDataset()
 
+    def target_attack_tlabel_handler(self, img_count, ori_label):
+        tlabels = []
+        if self.atk_args_dict['attack_type'] == "TARGETED" and self.atk_args_dict['tlabel'] is None:
+            if self.n_classes is None:
+                raise ValueError(" [ Error ] Targeted Attack Method does not give valid target label parameter")
+
+            for i in range(img_count):
+                # 尝试生成随机标签
+                tlabel = None
+                while tlabel is None or tlabel is ori_label:
+                    tlabel = self.random.randint(0, self.n_classes)
+                tlabels.append(tlabel)
+            return True, tlabels
+        else:
+            return False, None
+
     def adv_attack_4_img(self, ori_img, ori_label):
+        img_count = len(ori_img)
+        target_with_no_tlabel, tlabels = self.target_attack_tlabel_handler(img_count, ori_label)
+
+        atk_args_dict = copy.deepcopy(self.atk_args_dict)
+
+        # 初始化查询量计数
         self.query_num = {
             "backward": 0,
             "forward": 0,
         }
+
         img = ori_img
         if self.img_preprocessor is not None:  # 图片预处理器存在
             img = self.img_preprocessor(ori_img, self.img_proc_args_dict)
@@ -86,9 +118,15 @@ class AdvAttacker:
         # 判断攻击方法的构造模式
         if self.atk_component.get('is_inclass') is True:
             # 构造类传入
-            adv_result = self.atk_func(self.attacker_class, img, ori_label)
+            if target_with_no_tlabel:
+                adv_result = self.atk_func(self.attacker_class, img, ori_label, tlabels)
+            else:
+                adv_result = self.atk_func(self.attacker_class, img, ori_label)
         else:
-            adv_result = self.atk_func(self.atk_args_dict, img, ori_label)
+            if target_with_no_tlabel:
+                atk_args_dict = copy.deepcopy(self.atk_args_dict)
+                atk_args_dict['tlabel'] = tlabels
+            adv_result = self.atk_func(atk_args_dict, img, ori_label)
 
         # 结果处理（一般是图片逆处理器）
         if self.img_reverse_processor is not None:
@@ -96,7 +134,7 @@ class AdvAttacker:
 
         # 不存在结果处理器则直接返回
         check_cuda_memory_alloc_status(empty_cache=True)
-        return adv_result
+        return adv_result, tlabels
 
     def destroy(self):
         del self.attacker_class
@@ -119,13 +157,14 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
     # 攻击单图片迭代函数
     def attack_iterator(imgs, img_log_ids, img_labels, save_raw_data=True):
         # 执行攻击
-        adv_results = adv_attacker.adv_attack_4_img(imgs, img_labels)
+        adv_results, tlabels = adv_attacker.adv_attack_4_img(imgs, img_labels)
 
         # batch分割
         for index in range(len(adv_results)):
 
             adv_result = adv_results[index]
             img_log_id = img_log_ids[index]
+            tlabel = tlabels[index] if tlabels is not None else None
 
             # 保存至临时文件夹
             # 因为直接转储为PNG会导致精度丢失，产生很多奇怪的结论
@@ -138,7 +177,7 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
                 save_pic_to_temp(str(attack_id) + "/", raw_file_name, adv_result, save_as_numpy_array=True)
 
             # 写入日志
-            adv_img_id = add_adv_example_file_log(attack_id, img_log_id, img_file_name, raw_file_name)
+            adv_img_id = add_adv_example_file_log(attack_id, img_log_id, img_file_name, raw_file_name, tlabel)
             set_adv_example_file_cost_time(adv_img_id, float(adv_attacker.cost_time) / len(adv_results))
             set_adv_example_file_query_num(adv_img_id, adv_attacker.query_num)
 

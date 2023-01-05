@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType, ComponentType
-from .one_pixel.differential_evolution import differential_evolution
+from Attack_Method.black_box_adv.one_pixel.differential_evolution import differential_evolution
 from torch.autograd import Variable
 import torch.nn.functional as F
 

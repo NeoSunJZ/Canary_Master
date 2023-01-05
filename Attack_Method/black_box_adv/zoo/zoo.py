@@ -8,8 +8,8 @@ from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType
 
 from torch.autograd import Variable
 import torch.nn.functional as F
-from .zoo.ZOOOptimizer import ZOOptim
-from .zoo.ZOOLossFunction import ZooLoss
+from Attack_Method.black_box_adv.zoo.zoo_optimizer import ZOOptim
+from Attack_Method.black_box_adv.zoo.zoo_loss_function import ZooLoss
 
 
 sefi_component = SEFIComponent()
@@ -53,7 +53,7 @@ class ZOO():
         self.beta_1 = beta_1
         self.beta_2 = beta_2
 
-    @sefi_component.attack(name="ZOO", is_inclass=True, support_model=["vision_transformer"])
+    @sefi_component.attack(name="ZOO", is_inclass=True, support_model=[])
     def attack(self, img, ori_labels):
         # img = torch.from_numpy(img).to(self.device).float()
         img = torch.squeeze(img, 0)
@@ -88,4 +88,4 @@ class ZOO():
                                                                   stop_criterion=self.stop_criterion,
                                                                   tqdm_disabled=True, additional_out=False)
 
-        return torch.squeeze(x, 0)
+        return torch.unsqueeze(x, 0)

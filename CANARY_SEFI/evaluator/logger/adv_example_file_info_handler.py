@@ -4,13 +4,13 @@ from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 
 
 # 新增对抗样本文件记录
-def add_adv_example_file_log(attack_id, ori_img_id, adv_img_filename, adv_raw_nparray_filename):
-    sql_insert = "INSERT INTO adv_img_file_log (adv_img_file_id, attack_id, ori_img_id, adv_img_filename, adv_raw_nparray_filename) " \
-          "VALUES (NULL,?,?,?,?)"
+def add_adv_example_file_log(attack_id, ori_img_id, adv_img_filename, adv_raw_nparray_filename, tlabel=None):
+    sql_insert = "INSERT INTO adv_img_file_log (adv_img_file_id, attack_id, ori_img_id, adv_img_filename, adv_raw_nparray_filename, tlabel) " \
+          "VALUES (NULL,?,?,?,?,?)"
 
     sql_query = " SELECT adv_img_file_id FROM adv_img_file_log " \
-                " WHERE attack_id = ? AND ori_img_id = ? AND adv_img_filename = ? AND adv_raw_nparray_filename = ? "
-    args = (attack_id, ori_img_id, str(adv_img_filename), str(adv_raw_nparray_filename))
+                " WHERE attack_id = ? AND ori_img_id = ? AND adv_img_filename = ? AND adv_raw_nparray_filename = ? AND tlabel = ?"
+    args = (attack_id, ori_img_id, str(adv_img_filename), str(adv_raw_nparray_filename), str(tlabel))
     result = task_manager.test_data_logger.query_log(sql_query, args)
 
     if result is not None:

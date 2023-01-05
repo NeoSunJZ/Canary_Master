@@ -24,3 +24,4 @@ class DatasetInfo(object):
             self.dataset_size = len(img_cursor_list)
 
         self.dataset_type = DatasetType.NORMAL
+        self.n_classes = None

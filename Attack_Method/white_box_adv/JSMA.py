@@ -15,15 +15,15 @@ sefi_component = SEFIComponent()
                                           "pixel_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "pixel_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "T": {"desc": "最大迭代次数(整数)", "type": "INT", "def": "1000"},
-                                          "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"}})
+                                          "tlabel": {"desc": "靶向攻击目标标签(分类标签)(不指定则随机指定非原始标签)", "type": "INT"}})
 class JSMA():
-    def __init__(self, model, run_device, T=1000, pixel_min=0.0, pixel_max=1.0, theta=0.25, tlabel=1):
+    def __init__(self, model, run_device, attack_type="TARGETED", T=1000, pixel_min=0.0, pixel_max=1.0, theta=0.25, tlabel=1):
         self.model = model  # 待攻击的白盒模型
-        self.T = int(T)  # 迭代攻击轮数
-        self.pixel_min = float(pixel_min)  # 像素值的下限
-        self.pixel_max = float(pixel_max)  # 像素值的上限（这与当前图片范围有一定关系，建议0-255，因为对于无穷约束来将不会因为clip原因有一定损失）
-        self.theta = float(theta)  # 扰动系数
-        self.tlabel = int(tlabel)
+        self.T = T  # 迭代攻击轮数
+        self.pixel_min = pixel_min  # 像素值的下限
+        self.pixel_max = pixel_max  # 像素值的上限（这与当前图片范围有一定关系，建议0-255，因为对于无穷约束来将不会因为clip原因有一定损失）
+        self.theta = theta  # 扰动系数
+        self.tlabel = tlabel
         self.device = run_device
 
     # 实现saliency_map
@@ -56,8 +56,10 @@ class JSMA():
         return idx, pix_sign
 
     @sefi_component.attack(name="JSMA", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
-    def attack(self, img, ori_label):
+    def attack(self, img, ori_label, tlabels=None):
         batch_size = img.shape[0]
+        tlabels = np.repeat(self.tlabel, batch_size) if tlabels is None else tlabels
+
         # 图像数据梯度可以获取
         img.requires_grad = True
 
@@ -66,7 +68,7 @@ class JSMA():
             param.requires_grad = False
 
         # 攻击目标
-        target = Variable(torch.Tensor([float(self.tlabel)]).to(self.device).long().repeat(batch_size))
+        target = Variable(torch.Tensor([float(i) for i in tlabels]).to(self.device).long())
 
         mask = np.ones_like(img.data.cpu().numpy())
 
@@ -91,7 +93,7 @@ class JSMA():
             if img.grad is not None:
                 img.grad.zero_()
 
-            idx, pix_sign = self.saliency_map(result, img, self.tlabel, mask)
+            idx, pix_sign = self.saliency_map(result, img, self.tlabel if tlabels is None else tlabels, mask)
 
             # apply perturbation
             img.data[idx] = img.data[idx] + pix_sign * self.theta * (self.pixel_max - self.pixel_min)

@@ -27,7 +27,7 @@ sefi_component = SEFIComponent()
                                       })
 class SPSA():
     def __init__(self, model, run_device, clip_min=-3, clip_max=3, epsilon=0.3, norm=np.inf, attack_type='UNTARGETED',
-                 tlabel=-1, nb_iter=100,early_stop_loss_threshold=None, learning_rate=0.01, delta=0.01,
+                 tlabel=-1, nb_iter=100, early_stop_loss_threshold=None, learning_rate=0.01, delta=0.01,
                  spsa_samples=128, spsa_iters=1):
         self.model = model  # 待攻击的白盒模型
         self.clip_min = clip_min  # 对抗性示例组件的最小浮点值
@@ -45,16 +45,16 @@ class SPSA():
         self.spsa_iters = spsa_iters # Number of model evaluations before performing an update, where each evaluation is on spsa_samples different inputs
 
     @sefi_component.attack(name="SPSA", is_inclass=True, support_model=["vision_transformer"], attack_type="WHITE_BOX")
-    def attack(self, imgs, ori_labels):
+    def attack(self, img, ori_labels, tlabels=None):
         if self.attack_type == 'UNTARGETED':
             adv_img = spsa(model_fn=self.model,
-                       x=imgs,
+                       x=img,
                        eps=self.epsilon,
                        nb_iter=self.nb_iter,
                        norm=self.norm,
                        clip_min=self.clip_min,
                        clip_max=self.clip_max,
-                       y=torch.from_numpy(np.array(ori_labels)).to(self.device),
+                       y=None,
                        targeted=False,
                        early_stop_loss_threshold=self.early_stop_loss_threshold,
                        learning_rate=self.learning_rate,
@@ -64,9 +64,11 @@ class SPSA():
                        is_debug=False,
                        sanity_checks=False) #非靶向 n_classes为int类型
         elif self.attack_type == 'TARGETED':
-            y = torch.from_numpy(np.array(self.tlabel).repeat(imgs.size(0), axis=0)).to(self.device)
+            batch_size = img.shape[0]
+            tlabels = np.repeat(self.tlabel, batch_size) if tlabels is None else tlabels
+            y = torch.from_numpy(np.array(tlabels)).to(self.device)
             adv_img = spsa(model_fn=self.model,
-                       x=imgs,
+                       x=img,
                        eps=self.epsilon,
                        nb_iter=self.nb_iter,
                        norm=self.norm,
@@ -83,5 +85,4 @@ class SPSA():
                        sanity_checks=False)  # 非靶向 n_classes为int类型
         else:
             raise Exception("未知攻击方式")
-
         return adv_img

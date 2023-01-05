@@ -1,10 +1,12 @@
+import foolbox
 import torch
-from torch.autograd import Variable
-import copy
 import numpy as np
+import eagerpy as ep
+
+from foolbox import TargetedMisclassification
+from Attack_Method.white_box_adv.deepfool.deepfool import L2DeepFoolAttack, LinfDeepFoolAttack
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
-
 sefi_component = SEFIComponent()
 
 
@@ -18,113 +20,47 @@ sefi_component = SEFIComponent()
                                           "max_iter": {"desc": "最大迭代次数(整数)", "type": "INT", "def": "1000"},
                                           "num_classes": {"desc": "模型中类的数量", "type": "INT", "required": "true"},
                                           "overshoot": {"desc": "最大超出边界的值", "type": "FLOAT", "def": "0.02"},
+                                          "candidates": {"desc": "最大超出边界的值", "type": "INT", "def": "10"},
                                       })
 class DeepFool():
-    def __init__(self, model, pixel_min=0, pixel_max=1, p="l-2", num_classes=1000, overshoot=0.02, max_iter=50):
-        self.model = model  # 待攻击的白盒模型
-        self.num_classes = num_classes  # 模型中类的数量
-        self.overshoot = overshoot  # 边界超出量，用作终止条件以防止类别更新
-        self.max_iter = max_iter # FoolBox的最大迭代次数
-
+    def __init__(self, model, run_device, attack_type="UNTARGETED", pixel_min=0, pixel_max=1, p="l-2", overshoot=0.02, max_iter=50, candidates=10, num_classes=1000):
+        self.model = foolbox.PyTorchModel(model, bounds=(pixel_min, pixel_max), device=run_device)
+        self.attack_type = attack_type
         self.p = p
 
-        self.pixel_min = pixel_min
-        self.pixel_max = pixel_max
+        self.device = run_device
 
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.overshoot = overshoot  # 边界超出量，用作终止条件以防止类别更新
+        self.max_iter = max_iter # FoolBox的最大迭代次数
+        self.candidates = candidates
+        self.loss = 'logits'
 
         # 全局变量
-        self.label = -1
-        self.r_tot = None
-        self.loop_i = 0
+        self.classes = None
+        self.p_total = None
+        self.loop_count = 0
 
-    def clip_value(self, x):
-        x = torch.clamp(x, self.pixel_min, self.pixel_max)
-        return x.data
+    @sefi_component.attack(name="DeepFool", is_inclass=True, support_model=[])
+    def attack(self, imgs, ori_labels, tlabels=None):
 
-    @sefi_component.attack(name="DeepFool", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
-    def attack(self, image, ori_label):
-        """
-           :param image: Image of size 3*H*W
-           :param net: network (input: images, output: values of activation **BEFORE** softmax).
-           :param num_classes: num_classes (limits the number of classes to test against, by default = 10)
-           :param overshoot: used as a termination criterion to prevent vanishing updates (default = 0.02).
-           :param max_iter: maximum number of iterations for deepfool (default = 50)
-           :return: minimal perturbation that fools the classifier, number of iterations that it required, new estimated_label and perturbed image
-        """
-        image = torch.from_numpy(image).to(self.device).float()
-        image = Variable(image, requires_grad=True)
-        f_image = self.model(image).data.cpu().numpy().flatten()
-        I = f_image.argsort()[::-1]  # 从小到大排序, 再从后往前复制一遍，So相当于从大到小排序
-        I = I[0:self.num_classes]
-        self.label = I[0]
+        ori_labels = ep.astensor(torch.from_numpy(np.array(ori_labels)).to(self.device))
+        imgs = ep.astensor(imgs)
 
-        input_shape = image.detach().cpu().numpy().shape
-        pert_image = copy.deepcopy(image)
-
-        w = np.zeros(input_shape)
-        self.r_tot = np.zeros(input_shape)
-        self.loop_i = 0
-
-        x = Variable(pert_image, requires_grad=True)
-        fs = self.model(x)
-
-        k_i = self.label
-
-        while k_i == self.label and self.loop_i < self.max_iter:
-            pert = np.inf
-            fs[0, I[0]].backward(retain_graph=True)
-            grad_orig = x.grad.data.cpu().numpy().copy()
-
-            for k in range(1, self.num_classes):
-                x.grad.zero_()
-                fs[0, I[k]].backward(retain_graph=True)
-                cur_grad = x.grad.data.cpu().numpy().copy()
-
-                # set new w_k and new f_k
-                w_k = cur_grad - grad_orig
-                f_k = (fs[0, I[k]] - fs[0, I[0]]).data.cpu().numpy()
-
-                pert_k = self.get_distances(f_k, w_k)
-
-                # determine which w_k to use
-                if pert_k < pert:
-                    pert = pert_k
-                    w = w_k
-
-            # compute r_i and r_tot
-            # Added 1e-4 for numerical stability
-            r_i = (pert + 1e-4) * w / np.linalg.norm(w)
-            r_i = self.get_perturbations(pert + 1e-4, w)
-
-            self.r_tot = np.float32(self.r_tot + r_i)
-
-            pert_image = image + (1 + self.overshoot) * torch.from_numpy(self.r_tot).to(self.device)
-
-            pert_image = self.clip_value(pert_image)
-
-            x = Variable(pert_image, requires_grad=True)
-            fs = self.model(x)
-            k_i = np.argmax(fs.data.cpu().numpy().flatten())
-
-            self.loop_i += 1
-
-        self.r_tot = (1 + self.overshoot) * self.r_tot
-
-        return pert_image.data.cpu().numpy()
-
-    def get_distances(self, losses, grads):
-        if self.p == "l-2":
-            return abs(losses) / np.linalg.norm(grads.flatten(), ord=2)
-        elif self.p == "l-inf":
-            return abs(losses) / np.linalg.norm(grads.flatten(), ord=np.inf)
+        # 实例化攻击类
+        if self.p is "l-2":
+            attack = L2DeepFoolAttack(steps=self.max_iter, candidates=self.candidates, overshoot=self.overshoot, loss=self.loss)
         else:
-            raise TypeError("[ Type Error ] Unsupported norm type!")
+            attack = LinfDeepFoolAttack(steps=self.max_iter, candidates=self.candidates, overshoot=self.overshoot, loss=self.loss)
 
-    def get_perturbations(self, distances, grads):
-        if self.p == "l-2":
-            return distances * grads / np.linalg.norm(grads.flatten(), ord=2)
-        elif self.p == "l-inf":
-            return distances * grads / np.linalg.norm(grads.flatten(), ord=np.inf)
+        if self.attack_type == 'UNTARGETED':
+            raw, clipped, is_adv = attack(self.model, imgs, ori_labels, epsilons=None)
+            # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的布尔值
         else:
-            raise TypeError("[ Type Error ] Unsupported norm type!")
+            criterion = TargetedMisclassification(target_classes=torch.tensor(tlabels))  # 参数为具有目标类的张量
+            raw, clipped, is_adv = attack(self.model, imgs, ori_labels, epsilons=None, criterion=criterion)
+
+        adv_img = raw.raw
+        self.p_total = attack.p_total
+        self.loop_count = attack.loop_count
+
+        return adv_img

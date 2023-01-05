@@ -26,12 +26,11 @@ sefi_component = SEFIComponent()
                                           "sampling_temperature": {"desc": "采样温度，用于计算遗传算法中的选择概率","type": "FLOAT","def": "0.3"},
                                           "reduced_dims": {"desc": "是否缩减维度","type": "TUPLE[INT, INT]","def": "None"}
                                           })
-class GA():
-    def __init__(self, model, run_device, clip_min=0, clip_max=1,
-                 epsilon=None, tlabel=1,
+class GenAttack:
+    def __init__(self, model, run_device, attack_type='TARGETED', tlabel=1, clip_min=0, clip_max=1, epsilon=None,
                  step=1000, population=10, mutation_probability=0.1, mutation_range=0.15, sampling_temperature=0.3,
                  reduced_dims=None):
-        self.model = fb.PyTorchModel(model, bounds=(clip_min, clip_max))
+        self.model = fb.PyTorchModel(model.to(run_device), bounds=(clip_min, clip_max), device=run_device)
         self.device = run_device
         self.clip_min = clip_min
         self.clip_max = clip_max
@@ -46,22 +45,33 @@ class GA():
         self.reduced_dims = reduced_dims
 
 
-    @sefi_component.attack(name="GA", is_inclass=True, support_model=["vision_transformer"], attack_type="BLACK_BOX")
-    def attack(self, img, ori_label):
-        batch_size = img.shape[0]
+    @sefi_component.attack(name="GenAttack", is_inclass=True, support_model=[], attack_type="BLACK_BOX")
+    def attack(self, imgs, ori_labels, tlabels=None):
+        batch_size = imgs.shape[0]
+        tlabels = np.repeat(self.tlabel, batch_size) if tlabels is None else tlabels
 
-        img = ep.astensor(img)
+        # 转为PyTorch变量
+        tlabels = ep.astensor(torch.from_numpy(np.array(tlabels)).to(self.device))
+        ori_labels = ep.astensor(torch.from_numpy(np.array(ori_labels)).to(self.device))
+        imgs = ep.astensor(imgs)
+
         # 实例化攻击类
-        attack = GenAttack(steps=self.step,population=self.population,mutation_range=self.mutation_range,mutation_probability=self.mutation_probability,sampling_temperature=self.sampling_temperature,channel_axis=self.channel_axis,reduced_dims=self.reduced_dims)
-        criterion = TargetedMisclassification(target_classes=torch.tensor([self.tlabel]).to(self.device).repeat(batch_size))  # 参数为具有目标类的张量
+        attack = GenAttack(steps=self.step,
+                           population=self.population,
+                           mutation_range=self.mutation_range,
+                           mutation_probability=self.mutation_probability,
+                           sampling_temperature=self.sampling_temperature,
+                           channel_axis=self.channel_axis,
+                           reduced_dims=self.reduced_dims)
+        criterion = TargetedMisclassification(target_classes=torch.tensor(tlabels).to(self.device))  # 参数为具有目标类的张量
 
         # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的布尔值
 
         # 由EagerPy张量转化为Native张量
         if self.epsilon is None:
-            raw, clipped, isadv = attack(self.model, img, criterion, epsilons=16/255)
+            raw, clipped, isadv = attack(self.model, imgs, criterion, epsilons=16/255)
             adv_img = raw.raw
         else:
-            raw, clipped, isadv = attack(self.model, img, criterion, epsilons=self.epsilon)
+            raw, clipped, isadv = attack(self.model, imgs, criterion, epsilons=self.epsilon)
             adv_img = clipped.raw
         return adv_img

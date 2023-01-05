@@ -27,7 +27,7 @@ class MI_FGSM():
         self.alpha = alpha  # 每一轮迭代攻击的步长
         self.attack_type = attack_type  # 攻击类型：靶向 or 非靶向
         self.tlabel = tlabel
-        self.label = -1
+        self.label = []
         self.device = run_device
 
     # 将图片进行clip
@@ -40,7 +40,7 @@ class MI_FGSM():
     def get_loss(self):
         return torch.nn.CrossEntropyLoss()
 
-    def attack_iter(self, x, ori_x, sum_grad):
+    def attack_iter(self, x, ori_x, sum_grad, tlabels):
         # 模型梯度清零
         self.model.zero_grad()
         # 模型前向传播
@@ -49,9 +49,9 @@ class MI_FGSM():
         loss_ = self.get_loss()
 
         if self.attack_type == 'UNTARGETED':
-            loss = loss_(output, torch.Tensor([float(self.label)]).to(self.device).long())  # 非靶向
+            loss = loss_(output, torch.Tensor(self.label).to(self.device).long())  # 非靶向
         else:
-            loss = -loss_(output, torch.Tensor([float(self.tlabel)]).to(self.device).long())  # 靶向
+            loss = -loss_(output, torch.Tensor(tlabels).to(self.device).long())  # 靶向
 
         # 反向传播
         loss.backward()
@@ -67,7 +67,10 @@ class MI_FGSM():
         return x.data, sum_grad
 
     @sefi_component.attack(name="MI-FGSM", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
-    def attack(self, img, ori_label):
+    def attack(self, img, ori_label, tlabels=None):
+        batch_size = img.shape[0]
+        tlabels = np.repeat(self.tlabel, batch_size) if tlabels is None else tlabels
+
         # 定义图片可获取梯度，设置计算图叶子节点
         img.requires_grad = True
         # 克隆原始数据
@@ -76,12 +79,10 @@ class MI_FGSM():
         sum_grad = 0
         # 迭代攻击开始
         if self.attack_type == 'UNTARGETED':
-            self.label = np.argmax(self.model(img).data.to('cpu').numpy())
+            self.label = ori_label
+            # self.label = np.argmax(self.model(img).data.to('cpu').numpy())
 
         for i in range(self.T):
-            img.data, sum_grad = self.attack_iter(img, ori_x, sum_grad)
-            adv_label = np.argmax(self.model(img).data.to('cpu').numpy())
-            if adv_label != self.label:
-                break
+            img.data, sum_grad = self.attack_iter(img, ori_x, sum_grad, tlabels)
         return img
 
