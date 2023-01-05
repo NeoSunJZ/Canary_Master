@@ -1,7 +1,6 @@
 import torch.nn as nn
-from auxiliary_utils import *
 import torch.nn.functional as F
-from DWT import *
+from .DWT import *
 from torch.autograd import Variable
 import torch.optim as optim
 import torch
@@ -12,31 +11,25 @@ from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentCo
 
 sefi_component = SEFIComponent()
 
-@sefi_component.attacker_class(attack_name="SSAH", perturbation_budget_var_name="epsilon")
+@sefi_component.attacker_class(attack_name="SSAH", perturbation_budget_var_name=None)
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="SSAH",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
+                                          "num_iteration": {"desc": "迭代次数", "type": "INT", "def": "150"},
+                                          "learning_rate": {"desc": "学习率", "type": "FLOAT", "def": "0.001"},
+                                          "m": {"desc": "margin", "type": "FLOAT", "def": "0.2"},
+                                          "alpha": {"desc": "扰动花费的超参数", "type": "FLOAT", "def": "1"},
+                                          "lambda_lf": {"desc":"低频约束的超参数", "type": "FLOAT", "def": "0.1"}
                                       })
 
 class SSAH(nn.Module):
-    def __init__(self,
-                 model: nn.Module,
-                 num_iteration: int = 150,
-                 learning_rate: float = 0.001,
-                 device: torch.device = torch.device('cuda'),
-                 Targeted: bool = False,
-                 dataset: str = 'cifar10',
-                 m: float = 0.2,
-                 alpha: float = 1,
-                 lambda_lf: float = 0.1,
-                 wave: str = 'haar',) -> None:
+    def __init__(self, model,run_device, num_iteration: int = 150,learning_rate: float = 0.001,
+                 m: float = 0.2,alpha: float = 1,lambda_lf: float = 0.1,wave: str = 'haar',) -> None:
         super(SSAH, self).__init__()
-        self.model = model
-        self.device = device
+        self.model= nn.Sequential(*list(model.children())[1:]).to(run_device)
+        self.device = run_device
         self.lr = learning_rate
-        self.target = Targeted
         self.num_iteration = num_iteration
-        self.dataset = dataset
         self.m = m
         self.alpha = alpha
         self.lambda_lf = lambda_lf
@@ -44,9 +37,8 @@ class SSAH(nn.Module):
         self.encoder_fea = nn.Sequential(*list(self.model.children())[:-1]).to(self.device)
         self.encoder_fea= nn.DataParallel(self.encoder_fea)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, 1)).to(self.device)
-        self.model = nn.DataParallel(self.model)
 
-        self.normalize_fn = normalize_fn(self.dataset)
+        self.normalize_fn = model[0]
 
         self.DWT = DWT_2D_tiny(wavename= wave)
         self.IDWT = IDWT_2D_tiny(wavename= wave)
@@ -81,8 +73,8 @@ class SSAH(nn.Module):
         pos_neg_sim = torch.cat([pos_sim, hard_sim], dim=1)
         return pos_neg_sim
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
-
+    @sefi_component.attack(name="SSAH", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
+    def attack(self, inputs: torch.Tensor,ori_label) -> torch.Tensor:
         with torch.no_grad():
             inputs_fea = self.fea_extract(self.normalize_fn(inputs))
 
@@ -133,4 +125,4 @@ class SSAH(nn.Module):
             optimizer.step()
 
         adv = 0.5 * (torch.tanh(modifier.detach()) + 1)
-        return adv
+        return adv + inputs

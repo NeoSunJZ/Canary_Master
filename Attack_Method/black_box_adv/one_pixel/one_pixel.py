@@ -1,14 +1,12 @@
 import torch
 import numpy as np
-from PIL import Image
-from tqdm import tqdm
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType, ComponentType
 from Attack_Method.black_box_adv.one_pixel.differential_evolution import differential_evolution
 from torch.autograd import Variable
 import torch.nn.functional as F
-
+import math
 
 sefi_component = SEFIComponent()
 
@@ -23,10 +21,11 @@ sefi_component = SEFIComponent()
                                           "population": {"desc": "初始权衡常数，用于调整扰动大小的相对重要性和分类的置信度", "type": "INT", "def": "1e-2"},
                                           "max_iter": {"desc": "最大迭代次数(整数)", "type": "INT", "def": "100"},
                                           "pixels": {"desc": "改变像素的数量", "type": "INT", "def": "1"},
+                                          "mini_batch": {"desc": "最大同时预测数", "type": "INT", "def": "16"},
                                       })
 class OnePixel():
     def __init__(self, model, run_device, max_iter=100, clip_min=-3, clip_max=3, pixels=1, population=400, attack_type='UNTARGETED',
-                 tlabel=-1):
+                 tlabel=-1, mini_batch=16):
         self.model = model  # 待攻击的白盒模型
         self.clip_min = clip_min  # 像素值的下限
         self.clip_max = clip_max  # 像素值的上限（这与当前图片范围有一定关系，建议0-255，因为对于无穷约束来将不会因为clip原因有一定损失）
@@ -36,6 +35,7 @@ class OnePixel():
         self.population = population
         self.max_iter = max_iter
         self.pixels = pixels
+        self.mini_batch = mini_batch
 
     @sefi_component.attack(name="One_Pixel", is_inclass=True, support_model=["vision_transformer"])
     def attack(self, img, ori_labels):
@@ -51,12 +51,12 @@ class OnePixel():
 
         if self.attack_type == 'UNTARGETED':
             predict_fn = lambda xs: _predict_classes(
-                xs, img, ori_labels[0], self.model, False)
+                xs, img, ori_labels[0], self.model, False, self.mini_batch)
             callback_fn = lambda x, convergence: _attack_success(
                 x, img, ori_labels[0], self.model, False, False)
         else:
             predict_fn = lambda xs: _predict_classes(
-                xs, img, self.tlabel, self.model, True)
+                xs, img, self.tlabel, self.model, True, self.mini_batch)
             callback_fn = lambda x, convergence: _attack_success(
                 x, img, self.tlabel, self.model, True, False)
 
@@ -106,12 +106,15 @@ def _perturb_image(xs, img):
     return imgs
 
 
-def _predict_classes(xs, img, target_class, net, minimize=True):
+def _predict_classes(xs, img, target_class, net, minimize=True, mini_batch=16):
     imgs_perturbed = _perturb_image(xs, img.clone())
     with torch.no_grad():
-        input = Variable(imgs_perturbed).cuda()
-        predictions = F.softmax(net(input), dim=1).data.cpu().numpy()[:, target_class]
-
+        inputs = Variable(imgs_perturbed).cuda()
+        iters = math.ceil(imgs_perturbed.size(0) / mini_batch)
+        predictions = np.array([])
+        for i in range(iters):
+            inp = inputs[mini_batch * i: mini_batch * (i + 1), :, :, :]
+            predictions = np.append(predictions, F.softmax(net(inp), dim=1).data.cpu().numpy()[:, target_class])
     return predictions if minimize else 1 - predictions
 
 
