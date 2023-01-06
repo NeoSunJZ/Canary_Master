@@ -37,9 +37,6 @@ class PNA_NIM():
 
     @sefi_component.attack(name="PNA_NIM", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
-        print("进去之前")
-        print(img.size())
-        print(img)
         loss_ = torch.nn.CrossEntropyLoss()
 
         ori_label = np.array(ori_label)
@@ -87,7 +84,4 @@ class PNA_NIM():
             # 限制图像像素范围
             img.data = torch.clamp(img.data, self.clip_min, self.clip_max)
 
-        print("出来之后")
-        print(img)
-        print(img.size())
         return img
