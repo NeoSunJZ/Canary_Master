@@ -31,7 +31,7 @@ class PNA_NIM():
         return (mask * grad_in[0][:],)
 
 
-    @sefi_component.attack(name="PNA_NIM", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
+    @sefi_component.attack(name="PNA_NIM", is_inclass=True, support_model=[], attack_type="BLACK_BOX")
     def attack(self, img, ori_label):
         loss_ = torch.nn.CrossEntropyLoss()
 
