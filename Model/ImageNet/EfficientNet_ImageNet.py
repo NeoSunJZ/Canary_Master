@@ -18,7 +18,7 @@ def create_model(run_device):
     return efficientnet_model.eval()
 
 
-@sefi_component.util(util_type="target_layers_getter", util_target="model", name="ResNet(ImageNet)")
+@sefi_component.util(util_type="target_layers_getter", util_target="model", name="EfficientNet(ImageNet)")
 def target_layers_getter(model):
     target_layers = [model[1].features]
-    return target_layers
+    return target_layers, None

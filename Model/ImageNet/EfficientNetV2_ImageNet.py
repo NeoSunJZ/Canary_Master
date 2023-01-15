@@ -20,3 +20,9 @@ def create_model(run_device):
         norm_layer,
         models.efficientnet_v2_s(weights=EfficientNet_V2_S_Weights.IMAGENET1K_V1)).to(run_device).eval()
     return efficientnet_model.eval()
+
+
+@sefi_component.util(util_type="target_layers_getter", util_target="model", name="EfficientNetV2(ImageNet)")
+def target_layers_getter(model):
+    target_layers = [model[2].features]
+    return target_layers, None

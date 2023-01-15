@@ -1,10 +1,9 @@
 import torch
 from torch import nn
-from torchvision import models
-from torchvision.models import DenseNet161_Weights
 from torchvision.transforms import Normalize
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
+from Model.ImageNet.densenet.densenet_fix import densenet161_fix, DenseNet161_Weights
 
 sefi_component = SEFIComponent()
 
@@ -15,6 +14,12 @@ def create_model(run_device):
     norm_layer = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229,0.224,0.225])
     densenet_model = nn.Sequential(
         norm_layer,
-        models.densenet161(weights=DenseNet161_Weights.IMAGENET1K_V1)
+        densenet161_fix(weights=DenseNet161_Weights.IMAGENET1K_V1)
     ).to(run_device).eval()
     return densenet_model.eval()
+
+
+@sefi_component.util(util_type="target_layers_getter", util_target="model", name="DenseNet(ImageNet)")
+def target_layers_getter(model):
+    target_layers = [model[1].features]
+    return target_layers, None

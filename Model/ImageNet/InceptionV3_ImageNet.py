@@ -17,3 +17,9 @@ def create_model(run_device):
         norm_layer,
         models.inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)).to(run_device).eval()
     return inception_model.eval()
+
+
+@sefi_component.util(util_type="target_layers_getter", util_target="model", name="InceptionV3(ImageNet)")
+def target_layers_getter(model):
+    target_layers = [model[1].Mixed_7c]
+    return target_layers, None

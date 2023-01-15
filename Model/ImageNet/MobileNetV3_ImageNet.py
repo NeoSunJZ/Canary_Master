@@ -21,7 +21,5 @@ def create_model(run_device):
 
 @sefi_component.util(util_type="target_layers_getter", util_target="model", name="MobileNetV3(ImageNet)")
 def target_layers_getter(model):
-    print(model[1])
     target_layers = [model[1].features[-1]]
-    print(target_layers)
-    return target_layers
+    return target_layers, None

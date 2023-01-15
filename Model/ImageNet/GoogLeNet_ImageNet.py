@@ -17,3 +17,9 @@ def create_model(run_device):
         norm_layer,
         models.googlenet(weights=GoogLeNet_Weights.IMAGENET1K_V1)).to(run_device).eval()
     return googlenet_model.eval()
+
+
+@sefi_component.util(util_type="target_layers_getter", util_target="model", name="GoogLeNet(ImageNet)")
+def target_layers_getter(model):
+    target_layers = [model[1].inception5b]
+    return target_layers, None

@@ -19,3 +19,30 @@ def create_model(run_device):
         norm_layer,
         models.vit_b_32(weights=ViT_B_32_Weights.IMAGENET1K_V1)).to(run_device).eval()
     return vit_model.eval()
+
+
+@sefi_component.util(util_type="target_layers_getter", util_target="model", name="ViT(ImageNet)")
+def target_layers_getter(model):
+    class ReshapeTransform:
+        def __init__(self):
+            input_size = [224, 224]
+            patch_size = [32, 32]
+            self.h = input_size[0] // patch_size[0]
+            self.w = input_size[1] // patch_size[1]
+
+        def __call__(self, x):
+            # remove cls token and reshape
+            # [batch_size, num_tokens, token_dim]
+            result = x[:, 1:, :].reshape(x.size(0),
+                                         self.h,
+                                         self.w,
+                                         x.size(2))
+
+            # Bring the channels to the first dimension,
+            # like in CNNs.
+            # [batch_size, H, W, C] -> [batch, C, H, W]
+            result = result.permute(0, 3, 1, 2)
+            return result
+
+    target_layers = [model[2].encoder.layers[-1].ln_1]
+    return target_layers, ReshapeTransform()

@@ -18,3 +18,9 @@ def create_model(run_device):
         models.convnext_base(weights=ConvNeXt_Base_Weights.IMAGENET1K_V1)
     ).to(run_device).eval()
     return alexnet_model.eval()
+
+
+@sefi_component.util(util_type="target_layers_getter", util_target="model", name="ConvNext(ImageNet)")
+def target_layers_getter(model):
+    target_layers = [model[1].features]
+    return target_layers, None

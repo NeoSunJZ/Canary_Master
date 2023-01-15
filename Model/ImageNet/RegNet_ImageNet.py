@@ -22,4 +22,4 @@ def create_model(run_device):
 @sefi_component.util(util_type="target_layers_getter", util_target="model", name="RegNet(ImageNet)")
 def target_layers_getter(model):
     target_layers = [model[1].trunk_output]
-    return target_layers
+    return target_layers, None
