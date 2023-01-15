@@ -7,7 +7,6 @@ class ActivationsAndGradients:
     registering gradients from targeted intermediate layers """
 
     def __init__(self, target_layers, reshape_transform):
-        # self.model = model
         self.gradients = []
         self.activations = []
         self.reshape_transform = reshape_transform
@@ -28,21 +27,14 @@ class ActivationsAndGradients:
 
     def save_gradient(self, module, grad_input, grad_output):
         # Gradients are computed in reverse order
-        grad = grad_output[0]
+        grad = grad_output[0].clone()
         if self.reshape_transform is not None:
             grad = self.reshape_transform(grad)
         self.gradients = [grad.cpu().detach()] + self.gradients
 
 
 class GradCAM:
-    def __init__(self,
-                 # model,
-                 # target_layers,
-                 # reshape_transform=None
-                 activations_and_grads):
-        # self.model = model.eval()
-        # self.target_layers = target_layers
-        # self.reshape_transform = reshape_transform
+    def __init__(self, activations_and_grads):
         self.activations_and_grads = activations_and_grads
 
     """ Get a vector of weights for every channel in the target layer.

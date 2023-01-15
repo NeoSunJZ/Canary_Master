@@ -22,8 +22,9 @@ class InferenceDetector:
 
         # 注册Model的HOOK钩子以使用GRAD-CRM分析可解释性
         target_layers_getter = model_component.get("target_layers_getter")
+        target_layers, reshape_transform = target_layers_getter(self.model)
         if target_layers_getter is not None:
-            self.activations_and_grads = ActivationsAndGradients(target_layers=target_layers_getter(self.model), reshape_transform=None)
+            self.activations_and_grads = ActivationsAndGradients(target_layers=target_layers, reshape_transform=reshape_transform)
 
         # 预测器
         self.inference_detector = model_component.get("inference_detector")
