@@ -11,8 +11,8 @@ from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentCo
 sefi_component = SEFIComponent()
 
 
-@sefi_component.attacker_class(attack_name="BoundaryAttack", perturbation_budget_var_name=None)
-@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="BoundaryAttack",
+@sefi_component.attacker_class(attack_name="BA", perturbation_budget_var_name=None)
+@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="BA",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
                                           "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"},{"value": "UNTARGETED", "name": "非靶向"}], "required": "true"},
@@ -46,7 +46,7 @@ class BoundaryAttack:
         self.step_adaptation = step_adaptation  # 步长乘以或除以的因子 浮点型
         self.update_stats_every_k = update_stats_every_k  # 整型
 
-    @sefi_component.attack(name="BoundaryAttack", is_inclass=True, support_model=[])
+    @sefi_component.attack(name="BA", is_inclass=True, support_model=[])
     def attack(self, imgs, ori_labels, tlabels=None):
         batch_size = imgs.shape[0]
         tlabels = np.repeat(self.tlabel, batch_size) if tlabels is None else tlabels

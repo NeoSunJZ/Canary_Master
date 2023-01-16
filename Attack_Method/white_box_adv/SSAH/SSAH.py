@@ -23,8 +23,9 @@ sefi_component = SEFIComponent()
                                       })
 
 class SSAH(nn.Module):
-    def __init__(self, model,run_device, num_iteration: int = 150,learning_rate: float = 0.001,
-                 m: float = 0.2,alpha: float = 1,lambda_lf: float = 0.1,wave: str = 'haar',) -> None:
+    def __init__(self, model, run_device, attack_type='UNTARGETED', clip_min=0, clip_max=1, epsilon=None,
+                 num_iteration: int = 150, learning_rate: float = 0.001,
+                 m: float = 0.2, alpha: float = 1, lambda_lf: float = 0.1, wave: str = 'haar') -> None:
         super(SSAH, self).__init__()
         self.model= nn.Sequential(*list(model.children())[1:]).to(run_device)
         self.device = run_device
@@ -74,7 +75,7 @@ class SSAH(nn.Module):
         return pos_neg_sim
 
     @sefi_component.attack(name="SSAH", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
-    def attack(self, inputs: torch.Tensor,ori_label) -> torch.Tensor:
+    def attack(self, inputs: torch.Tensor, ori_labels, tlabels=None) -> torch.Tensor:
         with torch.no_grad():
             inputs_fea = self.fea_extract(self.normalize_fn(inputs))
 
