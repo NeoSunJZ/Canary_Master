@@ -43,7 +43,6 @@ class VMI_FGSM():
         variance = 0
         # 迭代攻击
         for iter in range(self.T):
-            print(iter)
             # 记录总输出，求和形式
             output = 0
             # 模型预测
