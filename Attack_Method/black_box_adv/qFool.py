@@ -74,15 +74,6 @@ class qFool():
         elif self.attack_type == 'TARGETED':
             r, n, label_orig, label_pert, pert_image = self.targeted()
 
-        # xadv = self.inverse_transform(pert_image)
-        # xpertinv = self.inverse_transform(r)
-
-        # plt.figure()
-        # plt.imshow(xadv)
-        # plt.title(str_label_pert)
-        # plt.figure()
-        # plt.imshow(xpertinv)
-        # plt.show()
 
         mse = torch.linalg.norm(r) / self.input_dim
         # print("mse: ", mse)

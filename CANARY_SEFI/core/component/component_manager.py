@@ -17,6 +17,10 @@ class ComponentManager:
         self.attack_method_list = {}
         self.dataset_list = {}
 
+    def add_all(self, sefi_component_list):
+        for sefi_component in sefi_component_list:
+            self.add(sefi_component)
+
     def add(self, sefi_component):
         self.model_list = add_dict(self.model_list, sefi_component.models)
         self.attack_method_list = add_dict(self.attack_method_list, sefi_component.attack_methods)

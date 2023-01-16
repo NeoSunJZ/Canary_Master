@@ -86,15 +86,6 @@ def inference_detector_4_img_batch(inference_model_name, model_args, img_proc_ar
             grayscale_cams_with_true_labels = None
             grayscale_cams_with_inference_labels = None
 
-        # print(grayscale_cams.shape)
-        # grayscale_cam = grayscale_cam[0, :]
-        # print(grayscale_cam.shape)
-        # img = inference_detector.img_reverse_processor(inference_detector.img,[])[0] / 255.0
-        # visualization = show_cam_on_image(img, grayscale_cam, use_rgb=True)
-        # plt.imshow(visualization)
-        # plt.show()
-
-
         # batch分割
         for index in range(len(inference_labels)):
             img_log_id_list.append(img_log_ids[index])

@@ -19,7 +19,7 @@
       "path": "E:\\dataset"
     }
   },
-  "baseTemp": "G:\\Raw_Data_2\\",
+  "baseTemp": "F:\\备份\\",
   "attackConfig":{
     "MI-FGSM": {
       "no_model": false

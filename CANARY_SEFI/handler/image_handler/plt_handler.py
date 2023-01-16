@@ -1,6 +1,7 @@
 import base64
 from io import BytesIO
 
+import numpy as np
 from matplotlib import pyplot as plt
 
 from CANARY_SEFI.handler.image_handler.img_crm_hander import show_cam_on_image
@@ -22,7 +23,7 @@ def img_diff_plt_builder(original_img, adversarial_img):
 
     ax_3 = figure.add_subplot(133)
     ax_3.set_title('Adversarial-Original')
-    ax_3.imshow(get_img_diff(original_img, adversarial_img), cmap=plt.cm.gray)
+    ax_3.imshow(get_img_diff(original_img, np.clip(adversarial_img, 0, 255).astype(np.int8)), cmap=plt.cm.gray)
     ax_3.margins(0, 0)
     ax_3.axis('off')
 

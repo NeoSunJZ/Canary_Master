@@ -11,7 +11,11 @@ pandas~=1.4.2
 matplotlib~=3.5.2
 pillow~=7.1.2
 scikit-learn~=1.1.1
-cleverhans
-foolbox
+cleverhans~=4.0.0
+foolbox~=3.3.3
 flask_cors
 flask_socketio
+argparse~=1.4.0
+eagerpy~=0.30.0
+scipy~=1.8.1
+PyWavelets
