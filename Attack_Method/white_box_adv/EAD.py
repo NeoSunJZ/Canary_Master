@@ -19,12 +19,12 @@ sefi_component = SEFIComponent()
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
                                           "binary_search_steps": {"desc": "执行二分搜索时找到扰动范数和分类置信度之间的最佳权衡常数的次数", "type": "INT", "def": "9"},
                                           "steps": {"desc": "更新步骤数", "type": "INT"},
-                                          "initial_stepsize": {"desc": "每个二进制搜索步骤中的优化步骤数", "type": "FLOAT","def": "1e-2"},
-                                          "confidence": {"desc": "每个二进制搜索步骤中的优化步骤数", "type": "FLOAT", "def": "0.0"},
+                                          "initial_stepsize": {"desc": "每个二进制搜索步骤中的优化步骤数", "type": "FLOAT", "def": "1e-2"},
+                                          "confidence": {"desc": "将示例标记为对抗性的把握。控制示例和决策边界之间的差距", "type": "FLOAT", "def": "0.0"},
                                           "initial_const": {"desc": "初始权衡常数，用于调整扰动大小的相对重要性和分类的置信度", "type": "FLOAT", "def": "1e-3"},
-                                          "regularization": {"desc": "每个二进制搜索步骤中的优化步骤数", "type": "FLOAT", "def": "1e-2"},
-                                          "decision_rule": {"desc": "每个二进制搜索步骤中的优化步骤数", "type": "STRING", "def": "EN"},
-                                          "abort_early": {"desc": "每个二进制搜索步骤中的优化步骤数", "type": "BOOLEAN", "def": "True"},
+                                          "regularization": {"desc": "控制L1正则化", "type": "FLOAT", "def": "1e-2"},
+                                          "decision_rule": {"desc": "选择最佳对抗性示例所依据的规则。它可以最小化L1或ElasticNet距离。", "type": "STRING", "def": "EN"},
+                                          "abort_early": {"desc": "设置为TRUE时样本中一旦出现对抗性后将立即停止内部搜索。", "type": "BOOLEAN", "def": "True"},
                                       })
 class EADAttack:
     def __init__(self, model, run_device, attack_type='UNTARGETED', tlabel=1, clip_min=0, clip_max=1, epsilon=16/255,
