@@ -3,7 +3,7 @@ from colorama import Fore
 from CANARY_SEFI.core.function.basic.dataset_function import dataset_single_image_reader, \
     adv_dataset_single_image_reader
 from CANARY_SEFI.handler.image_handler.img_utils import get_img_cosine_similarity, img_size_uniform_fix
-from CANARY_SEFI.handler.image_handler.plt_handler import cam_diff_plt_builder, show_plt
+from CANARY_SEFI.handler.image_handler.plt_handler import cam_diff_fig_builder, show_plt
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
@@ -174,7 +174,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                                                   attack_info.get("atk_perturbation_budget"))
                 model_name = ori_img_inference_log["inference_model"]
                 ori_img, adv_img = img_size_uniform_fix(ori_img, adv_img)
-                cam_result_plt = cam_diff_plt_builder((ori_img, adv_img), true_class_cams, inference_class_cams,
+                cam_result_plt = cam_diff_fig_builder((ori_img, adv_img), true_class_cams, inference_class_cams,
                                                       info=(
                                                           model_name, atk_name, ori_img_id, adv_img_file_id, ori_label,
                                                           ori_inference_label, adv_inference_label
@@ -227,6 +227,9 @@ def attack_adv_example_da_and_cost_analyzer_and_evaluation_handler(attack_info, 
         # 获取消耗时间
         analyzer_log["CT"].append(adv_example_file_log["cost_time"])
         # 获取查询次数
+        # 老版本数据无此项目，需要None改成0
+        adv_example_file_log["query_num_forward"] = 0 if adv_example_file_log["query_num_forward"] is None else adv_example_file_log["query_num_forward"]
+        adv_example_file_log["query_num_backward"] = 0 if adv_example_file_log["query_num_backward"] is None else adv_example_file_log["query_num_backward"]
         analyzer_log["QN_F"].append(adv_example_file_log["query_num_forward"])
         analyzer_log["QN_B"].append(adv_example_file_log["query_num_backward"])
 
