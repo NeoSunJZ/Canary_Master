@@ -1,7 +1,6 @@
-from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-from CANARY_SEFI.evaluator.logger.inference_test_data_handler import get_inference_test_data_by_img_id
+from CANARY_SEFI.handler.image_handler.file_memory_cache import file_memory_cache
 from CANARY_SEFI.handler.image_handler.img_utils import img_size_uniform_fix
 from CANARY_SEFI.handler.image_handler.plt_handler import cam_diff_plt_builder, show_plt, img_diff_plt_builder
 from CANARY_SEFI.task_manager import task_manager
@@ -39,23 +38,10 @@ def adv_comparative_test(atk_log, dataset_info, use_raw_nparray_data=False):
 
         adv_da_tester = AdvDisturbanceAwareTester()
 
-        ori_img_list = {}
-
         def adv_img_iterator(adv_img, adv_img_file_id, img_label):
             ori_img_id = adv_img_ori_dict[adv_img_file_id[0]]
-            # 尝试在缓存中找到原始图片
-            ori_img_data = ori_img_list.get(ori_img_id, None)
-            if ori_img_data is None:
-                ori_img_log = find_img_log_by_id(ori_img_id)
-                ori_img, ori_label = dataset_single_image_reader(dataset_info, ori_img_cursor=ori_img_log['ori_img_cursor'])
-                # 存入临时缓存
-                ori_img_list[ori_img_id] = {
-                    "ori_img": ori_img,
-                    "ori_label": ori_label,
-                }
-            else:
-                ori_img = ori_img_data.get("ori_img")
-                ori_label = ori_img_data.get("ori_label")
+            # 尝试在缓存中找到原始图片,若禁用则直接读取磁盘文件
+            ori_img, ori_label = file_memory_cache.get_ori_img(dataset_info, ori_img_id)
 
             ori, adv = img_size_uniform_fix(ori_img, adv_img[0])
             # 执行Disturbance-Aware测试
