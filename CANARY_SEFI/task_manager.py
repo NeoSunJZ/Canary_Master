@@ -17,10 +17,13 @@ class TaskManager(object):
         self.sys_log_logger = None
         self.base_temp_path = None
         self.run_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.init_status = False
 
     def init_task(self, task_token=None, show_logo=False, run_device=None):
+        if self.init_status is True:
+            raise RuntimeError("[ Logic Error ] Duplicate initialization!")
         if task_token == self.task_token and task_token is not None:
-            print("跳过初始化")
+            print("Initialization skipped!")
             return
         if show_logo:
             print_logo()
@@ -37,6 +40,8 @@ class TaskManager(object):
         self.sys_log_logger = SystemLog(self.base_temp_path)
 
         self.run_device = self.run_device if run_device is None else run_device
+
+        self.init_status = True
 
 
 task_manager = TaskManager()
