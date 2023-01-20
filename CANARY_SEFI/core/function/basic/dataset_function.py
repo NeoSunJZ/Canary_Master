@@ -3,7 +3,6 @@ import math
 import cv2
 import numpy
 import numpy as np
-from torch.utils.data import DataLoader
 
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
@@ -19,7 +18,7 @@ def get_dataset(dataset_info):
     if dataset_component is not None:
         dataset_getter = dataset_component.get("dataset_getter_handler")
     else:
-        raise Exception("[ ERROR ] No dataset loader found!")
+        raise Exception("[ Logic Error ] No dataset loader found!")
 
     dataset_path = config_manager.config.get("dataset", {}).get(dataset_info.dataset_name, {}).get("path", None)
     dataset = dataset_getter(dataset_path, dataset_info.dataset_seed, dataset_info.dataset_size)
@@ -50,6 +49,8 @@ def dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num=0):
         iterator(_img_array, img_log_id_array, _img_label_array)
         # 完成数量增加
         task_manager.sys_log_logger.update_completed_num(len(_img_array))
+
+        del _img_array, img_log_id_array, _img_label_array
 
     # Batch
     all_batch = int(math.ceil(dataset_info.dataset_size/batch_size))
@@ -87,7 +88,6 @@ def adv_dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num
     adv_img_type = dataset_info.dataset_type
     adv_img_cursor_list = dataset_info.img_cursor_list
 
-
     # Batch
     all_adv_count = dataset_info.dataset_size - completed_num
     for batch_cursor in range(int(math.ceil(all_adv_count/batch_size))):
@@ -106,18 +106,11 @@ def adv_dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num
             adv_img_array.append(adv_img)
             adv_log_id_array.append(adv_img_cursor_list[adv_cursor])
             ori_label_array.append(ori_label)
+            del adv_img, ori_label
 
         iterator(adv_img_array, adv_log_id_array, ori_label_array)
         task_manager.sys_log_logger.update_completed_num(len(adv_img_array))
-
-    # for i in range(len(adv_img_cursor_list)):
-    #     adv_file_log = find_adv_example_file_log_by_id(adv_img_cursor_list[i])
-    #
-    #     img = adv_dataset_single_image_reader(adv_file_log, adv_img_type)
-    #     iterator(img, adv_img_cursor_list[i], None)
-    #
-    #
-    #     task_manager.sys_log_logger.update_completed_num(1)
+        del adv_img_array, adv_log_id_array, ori_label_array
 
 
 def adv_dataset_single_image_reader(adv_file_log, adv_img_type):
@@ -125,8 +118,7 @@ def adv_dataset_single_image_reader(adv_file_log, adv_img_type):
     if adv_img_type == DatasetType.ADVERSARIAL_EXAMPLE_IMG:
         img = get_pic_nparray_from_temp(adv_file_path, adv_file_log["adv_img_filename"], is_numpy_array_file=False)
     elif adv_img_type == DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA:
-        img = get_pic_nparray_from_temp(adv_file_path, adv_file_log["adv_raw_nparray_filename"],
-                                           is_numpy_array_file=True)
+        img = get_pic_nparray_from_temp(adv_file_path, adv_file_log["adv_raw_nparray_filename"], is_numpy_array_file=True)
     else:
         raise ValueError("[ Logic Error ] [ READ DATASET IMG ] Wrong dataset type!")
     return img

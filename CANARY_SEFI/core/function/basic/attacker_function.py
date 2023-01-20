@@ -86,7 +86,7 @@ class AdvAttacker:
         tlabels = []
         if self.atk_args_dict['attack_type'] == "TARGETED" and self.atk_args_dict['tlabel'] is None:
             if self.n_classes is None:
-                raise ValueError(" [ Error ] Targeted Attack Method does not give valid target label parameter")
+                raise ValueError(" [ Logic Error ] Targeted Attack Method does not give valid target label parameter")
 
             for i in range(img_count):
                 # 尝试生成随机标签

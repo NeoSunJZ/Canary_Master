@@ -8,9 +8,9 @@ class Recovery:
     def __init__(self):
         self.is_recovery_mode = False
 
-    def start_recovery_mode(self, task_token):
+    def start_recovery_mode(self, task_token, show_logo=False, run_device=None):
         self.is_recovery_mode = True
-        task_manager.init_task(task_token)
+        task_manager.init_task(task_token, show_logo, run_device)
 
     def check_skip(self, participant):
         if self.is_recovery_mode is not True:

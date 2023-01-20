@@ -6,6 +6,7 @@ from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType
 
 sefi_component = SEFIComponent()
 
+
 @sefi_component.attacker_class(attack_name="MI-FGSM", perturbation_budget_var_name="epsilon")
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="MI-FGSM",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
