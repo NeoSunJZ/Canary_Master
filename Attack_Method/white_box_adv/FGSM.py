@@ -27,7 +27,7 @@ class FGSM():
     @sefi_component.attack(name="FGSM", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
         img = fast_gradient_method(model_fn=self.model,
-                                   x= img,
+                                   x=img,
                                    eps=self.epsilon,
                                    norm=np.inf,
                                    clip_min=self.clip_min,
