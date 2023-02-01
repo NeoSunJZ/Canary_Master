@@ -1,4 +1,6 @@
 import sys
+
+from CANARY_SEFI.core.function.enum.multi_db_mode_enum import MultiDatabaseMode
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.enum.transfer_attack_type_enum import TransferAttackType
 from CANARY_SEFI.core.function.helper.excepthook import excepthook
@@ -62,18 +64,26 @@ class SecurityEvaluation:
         task_manager.test_data_logger.finish()
 
     def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False):
-        self.model_inference_capability_test_and_evaluation()
-        self.adv_example_generate()
+        skip_step_list = task_manager.multi_database.get_skip_step()
+        if not skip_step_list["model_inference_capability_test_and_evaluation"]:
+            self.model_inference_capability_test_and_evaluation()
+        if not skip_step_list["adv_example_generate"]:
+            self.adv_example_generate()
+
         if not use_img_file and not use_raw_nparray_data:
             raise RuntimeError("[ Logic Error ] [ INIT TEST ] At least one format of data should be selected!")
         if use_img_file:
-            self.attack_test_and_evaluation(use_raw_nparray_data=False)
-            # 模型综合能力测试结果分析
-            model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=False)
+            if not skip_step_list["attack_test_and_evaluation"]:
+                self.attack_test_and_evaluation(use_raw_nparray_data=False)
+            if not skip_step_list["synthetical_capability_evaluation"]:
+                # 模型综合能力测试结果分析
+                model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=False)
         if use_raw_nparray_data:
-            self.attack_test_and_evaluation(use_raw_nparray_data=True)
-            # 模型综合能力测试结果分析
-            model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=True)
+            if not skip_step_list["attack_test_and_evaluation"]:
+                self.attack_test_and_evaluation(use_raw_nparray_data=True)
+            if not skip_step_list["synthetical_capability_evaluation"]:
+                # 模型综合能力测试结果分析
+                model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=True)
 
     def attack_perturbation_increment_test(self, use_img_file=True, use_raw_nparray_data=False):
         # 递增扰动生成对抗样本
