@@ -5,6 +5,7 @@ class Step(Enum):
     INIT = {'step_name': "初始化"}
 
     MODEL_INFERENCE_CAPABILITY_TEST = {'step_name': "模型预测能力测试"}
+    MODEL_INFERENCE_CAPABILITY_TEST_MIGRATED = {'step_name': "模型预测能力测试(迁移)"}
     MODEL_INFERENCE_CAPABILITY_EVALUATION = {'step_name': "模型预测能力评估"}
 
     ADV_EXAMPLE_GENERATE = {'step_name': "对抗样本生成"}

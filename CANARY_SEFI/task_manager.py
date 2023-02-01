@@ -18,6 +18,8 @@ class TaskManager(object):
         self.base_temp_path = None
         self.run_device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.init_status = False
+        # 分批次核心数据库构建模式
+        self.multi_database = None
 
     def init_task(self, task_token=None, show_logo=False, run_device=None):
         if self.init_status is True:

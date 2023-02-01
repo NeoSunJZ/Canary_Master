@@ -23,3 +23,8 @@ def find_img_log_by_id(ori_img_id):
     sql = "SELECT * FROM ori_img_log WHERE ori_img_id = ?"
     return task_manager.test_data_logger.query_log(sql, (ori_img_id,))
 
+
+def find_all_img_logs():
+    sql = "SELECT * FROM ori_img_log "
+    return task_manager.test_data_logger.query_logs(sql, ())
+

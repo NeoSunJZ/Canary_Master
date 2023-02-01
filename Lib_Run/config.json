@@ -20,6 +20,7 @@
     }
   },
   "baseTemp": "F:\\备份\\",
+  "centerDatabase": "E:\\Canary\\",
   "attackConfig":{
     "MI-FGSM": {
       "no_model": false

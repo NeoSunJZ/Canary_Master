@@ -8,16 +8,20 @@ from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 
 
 def save_inference_test_data(img_id, img_type, inference_model, inference_img_label, inference_img_conf_array,
-                             inference_cams=(None, None)):
+                             inference_cams=(None, None), use_pickle_dump=True):
     true_class_cams, inference_class_cams = inference_cams
     sql = "INSERT INTO inference_test_data (inference_test_data_id, img_id, img_type, " \
           "inference_model, inference_img_label, inference_img_conf_array, true_class_cams, inference_class_cams) " \
           "VALUES (NULL,?,?,?,?,?,?,?)"
+    if use_pickle_dump:
+        inference_img_conf_array = pickle.dumps(inference_img_conf_array)
+        true_class_cams = pickle.dumps(true_class_cams)
+        inference_class_cams = pickle.dumps(inference_class_cams)
     args = (img_id, str(img_type), str(inference_model),
             str(inference_img_label),
-            str(pickle.dumps(inference_img_conf_array)),
-            str(pickle.dumps(true_class_cams)),
-            str(pickle.dumps(inference_class_cams)))
+            str(inference_img_conf_array),
+            str(true_class_cams),
+            str(inference_class_cams))
     inference_test_data_id = task_manager.test_data_logger.insert_log(sql, args)
     if task_manager.test_data_logger.debug_log:
         msg = "[ LOGGER ] Logged. Image(ImgID:{} Type:{}) has Inferenced by Model({}). Inference result is {}. ".format(*args)
