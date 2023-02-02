@@ -8,6 +8,7 @@ from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentCo
 
 sefi_component = SEFIComponent()
 
+
 @sefi_component.attacker_class(attack_name="SPSA")
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="SPSA",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
@@ -84,5 +85,5 @@ class SPSA():
                        is_debug=False,
                        sanity_checks=False)  # 非靶向 n_classes为int类型
         else:
-            raise Exception("未知攻击方式")
+            raise RuntimeError("[ Logic Error ] Illegal target type!")
         return adv_img
