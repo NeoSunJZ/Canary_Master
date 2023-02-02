@@ -82,6 +82,8 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
 
         ori_img_log = find_img_log_by_id(ori_img_id)  # 原始图片记录
         ori_label = ori_img_log["ori_img_label"]  # 原始图片的标签
+        adv_target_label = adv_example_file_log["tlabel"]  # 定向攻击的目标label
+
         # 原始图片的预测记录(如干净样本O在M1、M2、M3、M4上进行了测试则有四条)
         ori_img_inference_log_list = get_inference_test_data_by_img_id(ori_img_id, DatasetType.NORMAL.value)
         # 确定原始样本有效性(目标模型必须是预测准确的，否则原始样本和其生成的对抗样本都无效)
@@ -127,12 +129,13 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                 if attack_test_result.get(inference_model, None) is None:
                     attack_test_result[inference_model] = {"Mc": [], "IAC": [], "RTC": [], "CAMC_A": [], "CAMC_T": []}
                 # 获取误分类数量(Mc:Misclassification)
-                if adv_inference_label != ori_label:  # 攻击是否成功
+                if adv_inference_label != (ori_label if adv_target_label == "None" else adv_target_label):  # 攻击是否成功
                     attack_test_result[inference_model]["Mc"].append(1)
                     success_flag = True
                 else:
                     attack_test_result[inference_model]["Mc"].append(0)
                     success_flag = False
+
                 # 如果对抗样本没有设置有效性，且当前处理的是目标模型（而非迁移模型），则为其设置有效性
                 if adv_img_inference_log["inference_model"] == attack_info['base_model'] and \
                         adv_example_file_log["ground_valid"] is None:
