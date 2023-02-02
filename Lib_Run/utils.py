@@ -11,7 +11,7 @@ def load_test_config(attack_config, data_config, model_config, attack_batch_conf
     config.update(params_model.config)
     config.update({"model_list": model_list})
 
-    if attack_batch_config is not None:
+    if attack_config is not None:
         params_attack = importlib.import_module('defaultConfig.attack.'+attack_config)
         attacker_list = dict()
         for attack in params_attack.object_list:
