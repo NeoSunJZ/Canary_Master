@@ -4,7 +4,7 @@ import numpy as np
 import eagerpy as ep
 
 from foolbox import TargetedMisclassification
-from Attack_Method.white_box_adv.deepfool.deepfool import L2DeepFoolAttack, LinfDeepFoolAttack
+from Attack_Method.white_box_adv.deepfool.deepfool_core import L2DeepFoolAttack, LinfDeepFoolAttack
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
 sefi_component = SEFIComponent()
