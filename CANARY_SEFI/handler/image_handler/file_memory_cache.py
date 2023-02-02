@@ -11,7 +11,6 @@ class FileMemoryCache:
     def get_ori_img(self, dataset_info, ori_img_id):
         # 若禁用内存缓存增强
         if not config_manager.config.get("system", {}).get("use_file_memory_cache", False):
-            print("AAAAAAAAAA")
             ori_img_log = find_img_log_by_id(ori_img_id)
             return dataset_single_image_reader(dataset_info, ori_img_cursor=ori_img_log['ori_img_cursor'])
 
@@ -24,11 +23,9 @@ class FileMemoryCache:
                 "ori_img": ori_img,
                 "ori_label": ori_label,
             }
-            print("BBBBBBBBBBBB")
         else:
             ori_img = ori_img_data.get("ori_img")
             ori_label = ori_img_data.get("ori_label")
-            print("CCCCCCCCCCCCC")
         return ori_img, ori_label
 
 

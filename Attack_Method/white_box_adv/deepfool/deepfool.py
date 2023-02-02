@@ -47,7 +47,7 @@ class DeepFool():
         imgs = ep.astensor(imgs)
 
         # 实例化攻击类
-        if self.p is "l-2":
+        if self.p == "l-2":
             attack = L2DeepFoolAttack(steps=self.max_iter, candidates=self.candidates, overshoot=self.overshoot, loss=self.loss)
         else:
             attack = LinfDeepFoolAttack(steps=self.max_iter, candidates=self.candidates, overshoot=self.overshoot, loss=self.loss)

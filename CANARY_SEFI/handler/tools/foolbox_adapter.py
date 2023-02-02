@@ -46,6 +46,8 @@ class FoolboxAdapter:
             target_labels = ep.astensor(torch.from_numpy(np.array(target_labels)).to(self.device))
             criterion = TargetedMisclassification(target_classes=target_labels)
             raw, clipped, is_adv = self.foolbox_attack(self.model, imgs, epsilons=epsilon, criterion=criterion)
+        else:
+            raise RuntimeError("[ Logic Error ] Illegal target type!")
 
         # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的有效性
         if self.epsilon is None:

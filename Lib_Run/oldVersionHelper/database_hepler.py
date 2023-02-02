@@ -42,4 +42,4 @@ if __name__ == "__main__":
         task_manager.test_data_logger.\
             insert_log("INSERT INTO ori_img_log (ori_img_id, ori_img_label, ori_img_cursor) VALUES (?,?,?)", log)
 
-    print("已经成功迁移!")
+    print("Successfully migrated!")

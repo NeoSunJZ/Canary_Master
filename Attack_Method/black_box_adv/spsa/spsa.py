@@ -26,8 +26,8 @@ sefi_component = SEFIComponent()
                                           "spsa_samples": {"desc": "一次评估的图片数量", "type": "INT"},
                                           "spsa_iters": {"desc": "更新前模型评估的次数（每次评估都会在不同的spsa_samples数量的输入上评估）", "type": "INT"},
                                       })
-class SPSA():
-    def __init__(self, model, run_device, clip_min=-3, clip_max=3, epsilon=0.3, norm=np.inf, attack_type='UNTARGETED',
+class SPSA:
+    def __init__(self, model, run_device, clip_min=0, clip_max=1, epsilon=16/255, norm=np.inf, attack_type='UNTARGETED',
                  tlabel=-1, nb_iter=100, early_stop_loss_threshold=None, learning_rate=0.01, delta=0.01,
                  spsa_samples=128, spsa_iters=1):
         self.model = model  # 待攻击的白盒模型
