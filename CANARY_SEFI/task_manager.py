@@ -1,8 +1,10 @@
 import os
 import random
+import shutil
 import string
 
 import torch
+from colorama import Fore
 
 from CANARY_SEFI.copyright import print_logo
 from CANARY_SEFI.core.config.config_manager import config_manager
@@ -21,14 +23,14 @@ class TaskManager(object):
         # 分批次核心数据库构建模式
         self.multi_database = None
 
-    def init_task(self, task_token=None, show_logo=False, run_device=None):
+    def init_task(self, task_token=None, show_logo=False, run_device=None, not_retain_same_token=False, logo_color=Fore.GREEN):
         if self.init_status is True:
             raise RuntimeError("[ Logic Error ] Duplicate initialization!")
         if task_token == self.task_token and task_token is not None:
             print("Initialization skipped!")
             return
         if show_logo:
-            print_logo()
+            print_logo(color=logo_color)
         if task_token is None:
             self.task_token = ''.join(random.sample(string.ascii_letters + string.digits, 8))
         else:
@@ -36,6 +38,10 @@ class TaskManager(object):
 
         self.base_temp_path = config_manager.config.get("baseTemp", "Raw_Data/") + self.task_token + "/"
         if not os.path.exists(self.base_temp_path):
+            os.makedirs(self.base_temp_path)
+        elif not_retain_same_token:
+            # 不保留生效时需要先删除再新建
+            shutil.rmtree(self.base_temp_path)
             os.makedirs(self.base_temp_path)
 
         self.test_data_logger = TestDataLogger(self.base_temp_path)
