@@ -1,260 +1,66 @@
-from typing import Union, Optional, Tuple, Any, Callable
-from typing_extensions import Literal
+import foolbox
+import torch
+import numpy as np
 import eagerpy as ep
-import logging
-from abc import ABC
-from abc import abstractmethod
 
-from foolbox.devutils import flatten
-from foolbox.devutils import atleast_kd
-
-from foolbox.models import Model
-
-from foolbox.criteria import Criterion
-
-from foolbox.distances import l2, linf
-
-from foolbox.attacks.base import MinimizationAttack
-from foolbox.attacks.base import T
-from foolbox.attacks.base import get_criterion
-from foolbox.attacks.base import raise_if_kwargs
-from foolbox.attacks.base import verify_input_bounds
+from foolbox import TargetedMisclassification
+from Attack_Method.white_box_adv.deepfool.deepfool_core import L2DeepFoolAttack, LinfDeepFoolAttack
+from CANARY_SEFI.core.component.component_decorator import SEFIComponent
+from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
+sefi_component = SEFIComponent()
 
 
-class DeepFoolAttack(MinimizationAttack, ABC):
-    """A simple and fast gradient-based adversarial attack.
+@sefi_component.attacker_class(attack_name="DeepFool", perturbation_budget_var_name=None)
+@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="DeepFool",
+                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      params={
+                                          "pixel_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
+                                          "pixel_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
+                                          "p": {"desc": "范数类型", "type": "SELECT", "selector": [{"value": "2", "name": "l-2"}, {"value": "inf", "name": "l-inf"}], "required": "true"},
+                                          "max_iter": {"desc": "最大迭代次数(整数)", "type": "INT", "def": "1000"},
+                                          "num_classes": {"desc": "模型中类的数量", "type": "INT", "required": "true"},
+                                          "overshoot": {"desc": "最大超出边界的值", "type": "FLOAT", "def": "0.02"},
+                                          "candidates": {"desc": "最大超出边界的值", "type": "INT", "def": "10"},
+                                      })
+class DeepFool():
+    def __init__(self, model, run_device, attack_type="UNTARGETED", pixel_min=0, pixel_max=1, p="l-2", overshoot=0.02, max_iter=50, candidates=10, num_classes=1000):
+        self.model = foolbox.PyTorchModel(model, bounds=(pixel_min, pixel_max), device=run_device)
+        self.attack_type = attack_type
+        self.p = p
 
-    Implements the `DeepFool`_ attack.
+        self.device = run_device
 
-    Args:
-        steps : Maximum number of steps to perform.
-        candidates : Limit on the number of the most likely classes that should
-            be considered. A small value is usually sufficient and much faster.
-        overshoot : How much to overshoot the boundary.
-        loss  Loss function to use inside the update function.
-
-
-    .. _DeepFool:
-            Seyed-Mohsen Moosavi-Dezfooli, Alhussein Fawzi, Pascal Frossard,
-            "DeepFool: a simple and accurate method to fool deep neural
-            networks", https://arxiv.org/abs/1511.04599
-
-    """
-
-    def __init__(
-        self,
-        *,
-        steps: int = 50,
-        candidates: Optional[int] = 10,
-        overshoot: float = 0.02,
-        loss: Union[Literal["logits"], Literal["crossentropy"]] = "logits",
-    ):
-        self.steps = steps
+        self.overshoot = overshoot  # 边界超出量，用作终止条件以防止类别更新
+        self.max_iter = max_iter # FoolBox的最大迭代次数
         self.candidates = candidates
-        self.overshoot = overshoot
-        self.loss = loss
+        self.loss = 'logits'
+
+        # 全局变量
+        self.classes = None
         self.p_total = None
-        self.loop_count = 1
+        self.loop_count = 0
 
+    @sefi_component.attack(name="DeepFool", is_inclass=True, support_model=[])
+    def attack(self, imgs, ori_labels, tlabels=None):
 
-    def _get_loss_fn(
-        self,
-        model: Model,
-        classes: ep.Tensor,
-    ) -> Callable[[ep.Tensor, int], Tuple[ep.Tensor, Tuple[ep.Tensor, ep.Tensor]]]:
+        ori_labels = ep.astensor(torch.from_numpy(np.array(ori_labels)).to(self.device))
+        imgs = ep.astensor(imgs)
 
-        N = len(classes)
-        rows = range(N)
-        i0 = classes[:, 0]
-
-        if self.loss == "logits":
-
-            def loss_fun(
-                x: ep.Tensor, k: int
-            ) -> Tuple[ep.Tensor, Tuple[ep.Tensor, ep.Tensor]]:
-                logits = model(x)
-                ik = classes[:, k]
-                l0 = logits[rows, i0]
-                lk = logits[rows, ik]
-                loss = lk - l0
-                return loss.sum(), (loss, logits)
-
-        elif self.loss == "crossentropy":
-
-            def loss_fun(
-                x: ep.Tensor, k: int
-            ) -> Tuple[ep.Tensor, Tuple[ep.Tensor, ep.Tensor]]:
-                logits = model(x)
-                ik = classes[:, k]
-                l0 = -ep.crossentropy(logits, i0)
-                lk = -ep.crossentropy(logits, ik)
-                loss = lk - l0
-                return loss.sum(), (loss, logits)
-
+        # 实例化攻击类
+        if self.p == "l-2":
+            attack = L2DeepFoolAttack(steps=self.max_iter, candidates=self.candidates, overshoot=self.overshoot, loss=self.loss)
         else:
-            raise ValueError(
-                f"expected loss to be 'logits' or 'crossentropy', got '{self.loss}'"
-            )
+            attack = LinfDeepFoolAttack(steps=self.max_iter, candidates=self.candidates, overshoot=self.overshoot, loss=self.loss)
 
-        return loss_fun
-
-    def run(
-        self,
-        model: Model,
-        inputs: T,
-        criterion: Union[Criterion, T],
-        *,
-        early_stop: Optional[float] = None,
-        **kwargs: Any,
-    ) -> T:
-        raise_if_kwargs(kwargs)
-        x, restore_type = ep.astensor_(inputs)
-        del inputs, kwargs
-
-        verify_input_bounds(x, model)
-
-        criterion = get_criterion(criterion)
-
-        min_, max_ = model.bounds
-
-        logits = model(x)
-        classes = logits.argsort(axis=-1).flip(axis=-1)
-        if self.candidates is None:
-            candidates = logits.shape[-1]  # pragma: no cover
+        if self.attack_type == 'UNTARGETED':
+            raw, clipped, is_adv = attack(self.model, imgs, ori_labels, epsilons=None)
+            # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的布尔值
         else:
-            candidates = min(self.candidates, logits.shape[-1])
-            if not candidates >= 2:
-                raise ValueError(  # pragma: no cover
-                    f"expected the model output to have atleast 2 classes, got {logits.shape[-1]}"
-                )
-            logging.info(f"Only testing the top-{candidates} classes")
-            classes = classes[:, :candidates]
+            criterion = TargetedMisclassification(target_classes=torch.tensor(tlabels))  # 参数为具有目标类的张量
+            raw, clipped, is_adv = attack(self.model, imgs, ori_labels, epsilons=None, criterion=criterion)
 
-        N = len(x)
-        rows = range(N)
+        adv_img = raw.raw
+        self.p_total = attack.p_total
+        self.loop_count = attack.loop_count
 
-        loss_fun = self._get_loss_fn(model, classes)
-        loss_aux_and_grad = ep.value_and_grad_fn(x, loss_fun, has_aux=True)
-
-        x0 = x
-        p_total = ep.zeros_like(x)
-        for _ in range(self.steps):
-            # let's first get the logits using k = 1 to see if we are done
-            diffs = [loss_aux_and_grad(x, 1)]
-            _, (_, logits), _ = diffs[0]
-
-            is_adv = criterion(x, logits)
-            if is_adv.all():
-                break
-
-            # then run all the other k's as well
-            # we could avoid repeated forward passes and only repeat
-            # the backward pass, but this cannot currently be done in eagerpy
-            diffs += [loss_aux_and_grad(x, k) for k in range(2, candidates)]
-
-            # we don't need the logits
-            diffs_ = [(losses, grad) for _, (losses, _), grad in diffs]
-            losses = ep.stack([lo for lo, _ in diffs_], axis=1)
-            grads = ep.stack([g for _, g in diffs_], axis=1)
-            assert losses.shape == (N, candidates - 1)
-            assert grads.shape == (N, candidates - 1) + x0.shape[1:]
-
-            # calculate the distances
-            distances = self.get_distances(losses, grads)
-            assert distances.shape == (N, candidates - 1)
-
-            # determine the best directions
-            best = distances.argmin(axis=1)
-            distances = distances[rows, best]
-            losses = losses[rows, best]
-            grads = grads[rows, best]
-            assert distances.shape == (N,)
-            assert losses.shape == (N,)
-            assert grads.shape == x0.shape
-
-            # apply perturbation
-            distances = distances + 1e-4  # for numerical stability
-            p_step = self.get_perturbations(distances, grads)
-            assert p_step.shape == x0.shape
-
-            p_total += p_step
-            # don't do anything for those that are already adversarial
-            self.p_total = (1.0 + self.overshoot) * p_total
-            self.loop_count += 1
-            x = ep.where(
-                atleast_kd(is_adv, x.ndim), x, x0 + self.p_total
-            )
-            x = ep.clip(x, min_, max_)
-
-        return restore_type(x)
-
-    @abstractmethod
-    def get_distances(self, losses: ep.Tensor, grads: ep.Tensor) -> ep.Tensor:
-        ...
-
-    @abstractmethod
-    def get_perturbations(self, distances: ep.Tensor, grads: ep.Tensor) -> ep.Tensor:
-        ...
-
-
-class L2DeepFoolAttack(DeepFoolAttack):
-    """A simple and fast gradient-based adversarial attack.
-
-    Implements the DeepFool L2 attack. [#Moos15]_
-
-    Args:
-        steps : Maximum number of steps to perform.
-        candidates : Limit on the number of the most likely classes that should
-            be considered. A small value is usually sufficient and much faster.
-        overshoot : How much to overshoot the boundary.
-        loss  Loss function to use inside the update function.
-
-    References:
-        .. [#Moos15] Seyed-Mohsen Moosavi-Dezfooli, Alhussein Fawzi, Pascal Frossard,
-            "DeepFool: a simple and accurate method to fool deep neural
-            networks", https://arxiv.org/abs/1511.04599
-
-    """
-
-    distance = l2
-
-    def get_distances(self, losses: ep.Tensor, grads: ep.Tensor) -> ep.Tensor:
-        return abs(losses) / (flatten(grads, keep=2).norms.l2(axis=-1) + 1e-8)
-
-    def get_perturbations(self, distances: ep.Tensor, grads: ep.Tensor) -> ep.Tensor:
-        return (
-            atleast_kd(
-                distances / (flatten(grads).norms.l2(axis=-1) + 1e-8),
-                grads.ndim,
-            )
-            * grads
-        )
-
-
-class LinfDeepFoolAttack(DeepFoolAttack):
-    """A simple and fast gradient-based adversarial attack.
-
-    Implements the `DeepFool`_ L-Infinity attack.
-
-    Args:
-        steps : Maximum number of steps to perform.
-        candidates : Limit on the number of the most likely classes that should
-            be considered. A small value is usually sufficient and much faster.
-        overshoot : How much to overshoot the boundary.
-        loss  Loss function to use inside the update function.
-
-
-    .. _DeepFool:
-            Seyed-Mohsen Moosavi-Dezfooli, Alhussein Fawzi, Pascal Frossard,
-            "DeepFool: a simple and accurate method to fool deep neural
-            networks", https://arxiv.org/abs/1511.04599
-
-    """
-
-    distance = linf
-
-    def get_distances(self, losses: ep.Tensor, grads: ep.Tensor) -> ep.Tensor:
-        return abs(losses) / (flatten(grads, keep=2).abs().sum(axis=-1) + 1e-8)
-
-    def get_perturbations(self, distances: ep.Tensor, grads: ep.Tensor) -> ep.Tensor:
-        return atleast_kd(distances, grads.ndim) * grads.sign()
+        return adv_img

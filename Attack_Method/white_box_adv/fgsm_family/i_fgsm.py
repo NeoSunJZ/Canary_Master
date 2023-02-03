@@ -32,13 +32,15 @@ class I_FGSM():
         self.clip_max = clip_max  # 对抗性示例组建的最大浮点值
         self.rand_init = rand_init  # 是否从随机的x开始攻击 布尔型
         self.sanity_checks = sanity_checks  # 如果为True，则包含断言 布尔型
+
         self.attack_type = attack_type  # 攻击类型：靶向 or 非靶向
-        self.tlabel = tlabel
+        self.target_labels = tlabel
         self.device = run_device if run_device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
+
         self.norm = norm
 
     @sefi_component.attack(name="I_FGSM", is_inclass=True, support_model=["vision_transformer"])
-    def attack(self, imgs, ori_labels):
+    def attack(self, imgs, ori_labels, target_labels=None):
         # 与PGD用的同一个函数，当rand_init为False时，为I_FGSM方法
         if self.attack_type == 'UNTARGETED':
             adv_img = projected_gradient_descent(model_fn=self.model,
@@ -54,9 +56,9 @@ class I_FGSM():
                                              rand_init=self.rand_init,
                                              rand_minmax=None,
                                              sanity_checks=self.sanity_checks) #非靶向 n_classes为int类型
-            #projected_gradient_descent中 'assert eps_iter <= eps, (eps_iter, eps)'
-        else:
-            y = torch.from_numpy(np.array(self.tlabel).repeat(imgs.size(0), axis=0)).to(self.device)
+        elif self.attack_type == 'TARGETED':
+            batch_size = imgs.shape[0]
+            target_labels = (np.repeat(self.target_label, batch_size)) if target_labels is None else target_labels
             adv_img = projected_gradient_descent(model_fn=self.model,
                                              x=imgs,
                                              eps=self.epsilon,
@@ -65,10 +67,12 @@ class I_FGSM():
                                              norm=self.norm,
                                              clip_min=self.clip_min,
                                              clip_max=self.clip_max,
-                                             y=y,
+                                             y=torch.from_numpy(np.array(target_labels)).to(self.device),
                                              targeted=True,
                                              rand_init=self.rand_init,
                                              rand_minmax=None,
                                              sanity_checks=self.sanity_checks) #靶向 y带有真标签的张量
 
+        else:
+            raise RuntimeError("[ Logic Error ] Illegal target type!")
         return adv_img

@@ -7,6 +7,7 @@ from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType
 
 sefi_component = SEFIComponent()
 
+
 @sefi_component.attacker_class(attack_name="JSMA", perturbation_budget_var_name=None)
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="JSMA",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
@@ -16,7 +17,7 @@ sefi_component = SEFIComponent()
                                           "pixel_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "T": {"desc": "最大迭代次数(整数)", "type": "INT", "def": "1000"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(不指定则随机指定非原始标签)", "type": "INT"}})
-class JSMA():
+class JSMA:
     def __init__(self, model, run_device, attack_type="TARGETED", T=1000, pixel_min=0.0, pixel_max=1.0, theta=0.25, tlabel=1):
         self.model = model  # 待攻击的白盒模型
         self.T = T  # 迭代攻击轮数

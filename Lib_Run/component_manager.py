@@ -25,12 +25,21 @@ from Model.ImageNet.common import sefi_component as common_imagenet
 from Model.CIFAR10.DenseNet.DenseNet_CIFAR10 import sefi_component as densenet_model_cifar10
 from Model.CIFAR10.common import sefi_component as common_cifar10
 # 攻击方案
-from Attack_Method.white_box_adv.CW import sefi_component as cw_attacker  # CW
-from Attack_Method.white_box_adv.FGM import sefi_component as fgm_attacker  # FGM
-from Attack_Method.white_box_adv.MI_FGSM import sefi_component as mi_fgsm_attacker  # MI-FGSM
+from Attack_Method.white_box_adv.cw.cw import sefi_component as cw_attacker  # CW
+from Attack_Method.white_box_adv.fgsm_family.fgm import sefi_component as fgm_attacker  # FGM
+from Attack_Method.white_box_adv.fgsm_family.fgsm import sefi_component as fgsm_attacker  # FGSM
+from Attack_Method.white_box_adv.fgsm_family.i_fgsm import sefi_component as i_fgsm_attacker  # I-FGSM
+from Attack_Method.white_box_adv.fgsm_family.pgd import sefi_component as pgd_attacker  # PGD
+from Attack_Method.white_box_adv.fgsm_family.mi_fgsm import sefi_component as mi_fgsm_attacker  # MI-FGSM
+from Attack_Method.white_box_adv.jsma.jsma import sefi_component as jsma_attacker  # JSMA
 from Attack_Method.white_box_adv.UAP import sefi_component as uap_attacker  # UAP
-from Attack_Method.white_box_adv.DeepFool import sefi_component as deepfool_attacker  # DeepFool
+from Attack_Method.white_box_adv.EAD import sefi_component as ead_attacker  # EAD
+from Attack_Method.white_box_adv.deepfool.deepfool import sefi_component as deepfool_attacker  # DeepFool
 from Attack_Method.black_box_adv.boundary_attack.boundary_attack import sefi_component as boundary_attacker  # BA
+from Attack_Method.black_box_adv.gen_attack.gen_attack import sefi_component as gen_attacker  # GA
+from Attack_Method.black_box_adv.hop_skip_jump_attack.hop_skip_jump_attack import sefi_component as hsj_attacker  # HSJA
+from Attack_Method.black_box_adv.local_search_attack.local_search_attack import sefi_component as ls_attacker  # LSA
+from Attack_Method.black_box_adv.spsa.spsa import sefi_component as sps_attacker  # SPSA
 # 数据集
 from Dataset.ImageNet2012.dataset_loader import sefi_component as imgnet2012_dataset  # IMAGENET2012
 from Dataset.CIFAR10.dataset_loader import sefi_component as cifar10_dataset  # CIFAR10
@@ -51,7 +60,9 @@ def init_component_manager():
     ]
 
     attacker_list = [
-        cw_attacker, fgm_attacker, mi_fgsm_attacker, uap_attacker, deepfool_attacker, boundary_attacker
+        cw_attacker, fgm_attacker, mi_fgsm_attacker, uap_attacker, deepfool_attacker, boundary_attacker, hsj_attacker,
+        pgd_attacker, ls_attacker, ead_attacker, gen_attacker, i_fgsm_attacker, fgsm_attacker, jsma_attacker,
+        sps_attacker
     ]
 
     dataset_list = [

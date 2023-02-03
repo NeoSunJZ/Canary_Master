@@ -1,15 +1,12 @@
 import torch
-import numpy as np
 
-import foolbox as fb
-import eagerpy as ep
-from Attack_Method.black_box_adv.genattack.GenAttack import GenAttack
-
+from Attack_Method.black_box_adv.gen_attack.gen_attack_core import GenAttack as FoolboxGenAttack
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
-from foolbox.criteria import TargetedMisclassification
+from CANARY_SEFI.handler.tools.foolbox_adapter import FoolboxAdapter
 
 sefi_component = SEFIComponent()
+
 
 @sefi_component.attacker_class(attack_name="GA")
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="GA",
@@ -30,48 +27,19 @@ class GenAttack:
     def __init__(self, model, run_device, attack_type='TARGETED', tlabel=1, clip_min=0, clip_max=1, epsilon=None,
                  step=1000, population=10, mutation_probability=0.1, mutation_range=0.15, sampling_temperature=0.3,
                  reduced_dims=None):
-        self.model = fb.PyTorchModel(model.to(run_device), bounds=(clip_min, clip_max), device=run_device)
-        self.device = run_device
-        self.clip_min = clip_min
-        self.clip_max = clip_max
-        self.epsilon = epsilon
-        self.tlabel = tlabel
-        self.step = step
-        self.population = population
-        self.mutation_probability = mutation_probability
-        self.mutation_range = mutation_range
-        self.sampling_temperature =sampling_temperature
-        self.channel_axis = 1
-        self.reduced_dims = reduced_dims
 
+        attack = FoolboxGenAttack(steps=step, population=population,
+                                  mutation_range=mutation_range, mutation_probability=mutation_probability,
+                                  sampling_temperature=sampling_temperature,
+                                  channel_axis=1,
+                                  reduced_dims=reduced_dims)
 
-    @sefi_component.attack(name="GenAttack", is_inclass=True, support_model=[], attack_type="BLACK_BOX")
+        self.foolbox_adapter = FoolboxAdapter(model=model, foolbox_attack=attack,
+                                              attack_target=["TARGETED"], required_epsilon=True)
+
+        run_device = run_device if run_device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.foolbox_adapter.init_args(run_device, attack_type, tlabel, clip_min, clip_max, epsilon)
+
+    @sefi_component.attack(name="GA", is_inclass=True, support_model=[], attack_type="BLACK_BOX")
     def attack(self, imgs, ori_labels, tlabels=None):
-        batch_size = imgs.shape[0]
-        tlabels = np.repeat(self.tlabel, batch_size) if tlabels is None else tlabels
-
-        # 转为PyTorch变量
-        tlabels = ep.astensor(torch.from_numpy(np.array(tlabels)).to(self.device))
-        ori_labels = ep.astensor(torch.from_numpy(np.array(ori_labels)).to(self.device))
-        imgs = ep.astensor(imgs)
-
-        # 实例化攻击类
-        attack = GenAttack(steps=self.step,
-                           population=self.population,
-                           mutation_range=self.mutation_range,
-                           mutation_probability=self.mutation_probability,
-                           sampling_temperature=self.sampling_temperature,
-                           channel_axis=self.channel_axis,
-                           reduced_dims=self.reduced_dims)
-        criterion = TargetedMisclassification(target_classes=torch.tensor(tlabels).to(self.device))  # 参数为具有目标类的张量
-
-        # raw正常攻击产生的对抗样本，clipped通过epsilons剪裁生成的对抗样本，is_adv每个样本的布尔值
-
-        # 由EagerPy张量转化为Native张量
-        if self.epsilon is None:
-            raw, clipped, isadv = attack(self.model, imgs, criterion, epsilons=16/255)
-            adv_img = raw.raw
-        else:
-            raw, clipped, isadv = attack(self.model, imgs, criterion, epsilons=self.epsilon)
-            adv_img = clipped.raw
-        return adv_img
+        return self.foolbox_adapter.attack(imgs=imgs, ori_labels=ori_labels, target_labels=tlabels)

@@ -4,7 +4,7 @@ from torchvision.transforms import Resize
 from tqdm import tqdm
 from torch.autograd import Variable
 
-from Attack_Method.white_box_adv.DeepFool import DeepFool
+from Attack_Method.white_box_adv.deepfool.deepfool import DeepFool
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
 
