@@ -127,14 +127,21 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                 inference_model = adv_img_inference_log["inference_model"]
                 # 初始化每个模型的测试结果统计
                 if attack_test_result.get(inference_model, None) is None:
-                    attack_test_result[inference_model] = {"Mc": [], "IAC": [], "RTC": [], "CAMC_A": [], "CAMC_T": []}
+                    attack_test_result[inference_model] = {"Mc": [], "TAS": [], "IAC": [], "RTC": [], "CAMC_A": [], "CAMC_T": []}
                 # 获取误分类数量(Mc:Misclassification)
-                if adv_inference_label != (ori_label if adv_target_label == "None" else adv_target_label):  # 攻击是否成功
+                if adv_inference_label != ori_label:  # 攻击是否成功
                     attack_test_result[inference_model]["Mc"].append(1)
                     success_flag = True
                 else:
                     attack_test_result[inference_model]["Mc"].append(0)
                     success_flag = False
+
+                # 定向攻击成功率(TAS:Targeted Attack Success)
+                if adv_target_label != "None":
+                    if str(adv_inference_label) == str(adv_target_label):
+                        attack_test_result[inference_model]["TAS"].append(1)
+                    else:
+                        attack_test_result[inference_model]["TAS"].append(0)
 
                 # 如果对抗样本没有设置有效性，且当前处理的是目标模型（而非迁移模型），则为其设置有效性
                 if adv_img_inference_log["inference_model"] == attack_info['base_model'] and \
@@ -177,16 +184,21 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                                                   attack_info.get("atk_perturbation_budget"))
                 model_name = ori_img_inference_log["inference_model"]
                 ori_img, adv_img = img_size_uniform_fix(ori_img, adv_img)
-                cam_result_plt = cam_diff_fig_builder((ori_img, adv_img), true_class_cams, inference_class_cams,
-                                                      info=(
-                                                          model_name, atk_name, ori_img_id, adv_img_file_id, ori_label,
-                                                          ori_inference_label, adv_inference_label
-                                                      ))
-
-                show_plt(cam_result_plt)
+                # cam_result_plt = cam_diff_fig_builder((ori_img, adv_img), true_class_cams, inference_class_cams,
+                #                                       info=(
+                #                                           model_name, atk_name, ori_img_id, adv_img_file_id, ori_label,
+                #                                           ori_inference_label, adv_inference_label
+                #                                       ))
+                #
+                # show_plt(cam_result_plt)
 
     for inference_model in attack_test_result:
         MR = calc_average(attack_test_result[inference_model]["Mc"])
+        # 仅定向攻击使用该测评量
+        if len(attack_test_result[inference_model]["TAS"])>0:
+            # TASR: Targeted Attack Success Rate
+            TASR = calc_average(attack_test_result[inference_model]["TAS"])
+            MR = "{}/{}".format(MR, TASR)  # 存储时和MR存储在一起
         AIAC = calc_average(attack_test_result[inference_model]["IAC"])
         ARTC = calc_average(attack_test_result[inference_model]["RTC"])
         ACAMC_A = calc_average(attack_test_result[inference_model]["CAMC_A"])
