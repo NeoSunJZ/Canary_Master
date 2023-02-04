@@ -2,8 +2,8 @@ from colorama import Fore, Style
 from tqdm import tqdm
 
 
-def print_logo():
-    tqdm.write(Fore.GREEN + "\n")
+def print_logo(color=Fore.GREEN):
+    tqdm.write(color + "\n")
     tqdm.write(" POWERED BY")
     tqdm.write("\n")
     tqdm.write(" ███████╗ ███████╗ ███████╗ ██╗")
