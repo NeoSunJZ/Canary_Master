@@ -1,8 +1,5 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-from torchvision import datasets, transforms
 import numpy as np
 from scipy.optimize import fmin_l_bfgs_b
 import eagerpy as ep
