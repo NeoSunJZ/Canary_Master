@@ -18,9 +18,10 @@ sefi_component = SEFIComponent()
                                           "epsilon": {"desc": "对抗样本与原始输入图片的最大变化", "type": "INT", "required": "true", "def": "0.03"},
                                       })
 class PNA_SIM():
-    def __init__(self, model, run_device, clip_min=0, clip_max=1, T=50, epsilon=0.03):
+    def __init__(self, model, run_device, attack_type='UNTARGETED', clip_min=0, clip_max=1, T=50, epsilon=0.03):
         self.model = model
         self.device = run_device
+        self.attack_type = attack_type
         self.clip_min = clip_min
         self.clip_max = clip_max
         self.T = T
