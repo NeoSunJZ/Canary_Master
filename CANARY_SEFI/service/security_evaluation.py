@@ -64,7 +64,7 @@ class SecurityEvaluation:
         task_manager.test_data_logger.finish()
 
     def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False):
-        skip_step_list = task_manager.multi_database.get_skip_step()
+        skip_step_list, finish_callback = task_manager.multi_database.get_skip_step()
         if not skip_step_list["model_inference_capability_test_and_evaluation"]:
             self.model_inference_capability_test_and_evaluation()
         if not skip_step_list["adv_example_generate"]:
@@ -84,6 +84,8 @@ class SecurityEvaluation:
             if not skip_step_list["synthetical_capability_evaluation"]:
                 # 模型综合能力测试结果分析
                 model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=True)
+        # 流程结束回调
+        finish_callback()
 
     def attack_perturbation_increment_test(self, use_img_file=True, use_raw_nparray_data=False):
         # 递增扰动生成对抗样本
