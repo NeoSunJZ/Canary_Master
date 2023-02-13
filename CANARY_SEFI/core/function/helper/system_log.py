@@ -4,9 +4,10 @@ import sqlite3
 import time
 from CANARY_SEFI.core.function.enum.step_enum import Step
 from CANARY_SEFI.core.function.helper.task_thread import task_thread
+from CANARY_SEFI.handler.tools.sqlite_db_logger import SqliteDBLogger
 
 
-class SystemLog:
+class SystemLog(SqliteDBLogger):
 
     def __init__(self, base_temp_path):
         # 检查是否存在数据库文件
@@ -14,24 +15,15 @@ class SystemLog:
             os.makedirs(base_temp_path + "database/")
         full_path = base_temp_path + "database/system_logger.db"
 
-        if not os.path.exists(full_path):
-            self.conn = sqlite3.connect(full_path, check_same_thread=False)
-            self.init_database()
-        else:
-            self.conn = sqlite3.connect(full_path, check_same_thread=False)
+        conn = sqlite3.connect(full_path, check_same_thread=False)
+        SqliteDBLogger.__init__(self, conn)
 
-        self.conn.row_factory = self.dict_factory
+        if not os.path.exists(full_path):
+            self.init_database()
 
         self.system_log_id = None
         self.step = None
         self.step_sequence = 0
-
-    @staticmethod
-    def dict_factory(cursor, row):
-        data = {}
-        for idx, col in enumerate(cursor.description):
-            data[col[0]] = row[idx]
-        return data
 
     def init_database(self):
         cursor = self.conn.cursor()
