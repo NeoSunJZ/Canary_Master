@@ -1,11 +1,7 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-from torchvision import datasets, transforms
 import numpy as np
 from scipy.optimize import fmin_l_bfgs_b
-
 import eagerpy as ep
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
@@ -18,25 +14,24 @@ sefi_component = SEFIComponent()
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="L_BFGS",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "bounds_min": {"desc": "变量下界", "type": "FLOAT", "required": "true", "def": "0.0"},
-                                          "bounds_max": {"desc": "变量上界", "type": "FLOAT", "required": "true", "def": "1.0"},
-                                          "epsilon": {"desc": "", "type": "FLOAT", "required": "true", "def": "0.01"},
+                                          "clip_min": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true", "def": "0.0"},
+                                          "clip_max": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true", "def": "1.0"},
                                           "steps": {"desc": "最大迭代次数", "type": "INT", "required": "true", "def": "10"},
                                           "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"}, {"value": "UNTARGETED", "name": "非靶向"}], "required": "true", "def": "UNTARGETED"},
                                           "attack_target": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT", "required": "true", "def": "None"},
                                       })
 class L_BFGS():
-    def __init__(self, model, run_device, bounds_min=0.0, bounds_max=1.0, epsilon=0.01, steps=10, attack_type="UNTARGETED", attack_target=None,):
+    def __init__(self, model, run_device, clip_min=0.0, clip_max=1.0, steps=10, attack_type="UNTARGETED", tlabel=None,):
         self._adv = None  # 对抗样本
         self.model = model  # 模型
         self.device = run_device  # 设备
-        self.bounds_min = bounds_min
-        self.bounds_max = bounds_max
-        self.bounds = bounds_min, bounds_max
-        self.epsilon = epsilon
+        self.bounds_min = clip_min
+        self.bounds_max = clip_max
+        self.bounds = clip_min, clip_max
         self.steps = steps
         self.attack_type = attack_type
-        self.attack_target = 1 if attack_target == None else attack_target
+        self.attack_target = 1 if tlabel == None else tlabel
+        self.epsilon = 0.1
         self._output = None
 
     def __call__(self, data, target, real_target):
@@ -44,7 +39,7 @@ class L_BFGS():
         self.target = torch.tensor([target]).to(self.device)
         self.real_target = real_target.to(self.device)
         # 初始化变量c
-        c = self.epsilon
+        c = 1
         x0 = self.data.clone().cpu().numpy().flatten().astype(float)
         # 线搜索算法
         for i in range(30):
@@ -54,6 +49,7 @@ class L_BFGS():
             if is_adversary:
                 # print('扰动成功', c)
                 break
+
         if not is_adversary:
             print('扰动失败 ')
             return self._adv
@@ -70,7 +66,7 @@ class L_BFGS():
             else:
                 c_low = c_half
                 if c_high - c_low <= self.epsilon:
-                    # print('出现特殊情况')
+                    # print('出现特殊情况,参数更新时，由扰动成功转化为扰动失败')
                     self._lbfgsb(x0, old_c, self.steps)  # 有可能在优化参数c的过程，参数更新时，由扰动成功转化为扰动失败，且此时已经达到最优点，无法进行更新，需要将上一步扰动成功的进行保存数值
         # print('最优的c:', c_half)
 
@@ -112,19 +108,25 @@ class L_BFGS():
         output = self.model(adv)
         adv_label = output.max(1, keepdim=True)[1]
         # print('pre_label = {}, adv_label={}'.format(self.real_target, adv_label))
-        self._adv = adv
+
+        if self._adv is None:
+            self._adv = adv
+
         self._output = output
         if self.attack_type == "UNTARGETED":
             if self.real_target.item() != adv_label.item():  # 扰动成功，返回值，注意此时为非目标扰动
+                self._adv = adv
                 return True
             else:
                 return False
         elif self.attack_type == "TARGETED":
-            return adv_label.item() == self.target.item()  # 使用这个指定为目标扰动
+            if adv_label.item() == self.target.item():  # 使用这个指定为目标扰动
+                self._adv = adv
+                return True
+            else:
+                return False
         else:
             print("attack_type输入错误\n")
-
-
 
     @sefi_component.attack(name="L_BFGS", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
@@ -140,7 +142,9 @@ class L_BFGS():
             self.__call__(one_img, torch.tensor(self.attack_target), one_label)
             adv = self._adv
             adv_numpy = adv.detach().cpu().numpy()
-            img_adv[i] = img_adv[0]
+            img_adv[i] = torch.from_numpy(adv_numpy)
+
+        img_adv = img_adv.to(self.device)
 
         return img_adv
 
