@@ -3,8 +3,9 @@ from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 
 
-def save_model_capability_indicator_data(model_name, clear_acc, clear_f1, clear_conf,
-                                         logger=task_manager.test_data_logger):
+def save_model_capability_indicator_data(model_name, clear_acc, clear_f1, clear_conf, logger=None):
+    if logger is None:
+        logger = task_manager.test_data_logger
     sql = "REPLACE INTO model_inference_capability_indicator_data (model_name, clear_acc, clear_f1, clear_conf) " \
           "VALUES (?,?,?,?)"
     args = (str(model_name), clear_acc, clear_f1, clear_conf)
@@ -28,8 +29,10 @@ def get_model_capability_indicator_data(model_name):
 # ACAMC_T: average G-CAM Change (True-class)
 def save_attack_deflection_capability_indicator_data(atk_name, base_model, inference_model, adv_example_file_type,
                                                      MR, AIAC, ARTC, ACAMC_A, ACAMC_T, atk_perturbation_budget=None,
-                                                     logger=task_manager.test_data_logger):
-
+                                                     logger=None):
+    if logger is None:
+        logger = task_manager.test_data_logger
+    print(logger)
     sql = "REPLACE INTO attack_deflection_capability_indicator_data (atk_name, base_model, atk_perturbation_budget, " \
           "inference_model, adv_example_file_type, MR, AIAC, ARTC, ACAMC_A, ACAMC_T) VALUES (?,?,?,?,?,?,?,?,?,?)"
     args = (str(atk_name), str(base_model), atk_perturbation_budget, str(inference_model), str(adv_example_file_type),
@@ -61,7 +64,9 @@ def get_attack_deflection_capability_indicator_data_by_attack_name(atk_name):
 # ALMS: average low-level metrics similarity
 def save_attack_adv_example_da_indicator_data(atk_name, base_model, adv_example_file_type,
                                               AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS, atk_perturbation_budget=None,
-                                              logger=task_manager.test_data_logger):
+                                              logger=None):
+    if logger is None:
+        logger = task_manager.test_data_logger
     sql = "REPLACE INTO attack_adv_example_da_indicator_data " \
           "(atk_name, base_model, atk_perturbation_budget, adv_example_file_type, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS) " \
           "VALUES (?,?,?,?,?,?,?,?,?,?,?)"
@@ -81,7 +86,9 @@ def save_attack_adv_example_da_indicator_data(atk_name, base_model, adv_example_
 # AQN_F: average query number (forward)
 # AQN_B = average query number (backward)
 def save_attack_adv_example_cost_indicator_data(atk_name, base_model, ACT, AQN_F, AQN_B, atk_perturbation_budget=None,
-                                                logger=task_manager.test_data_logger):
+                                                logger=None):
+    if logger is None:
+        logger = task_manager.test_data_logger
     sql = "REPLACE INTO attack_adv_example_cost_indicator_data " \
           "(atk_name, base_model, atk_perturbation_budget, ACT, AQN_F, AQN_B) " \
           "VALUES (?,?,?,?,?,?)"
