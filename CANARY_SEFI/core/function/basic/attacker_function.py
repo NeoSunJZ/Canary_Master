@@ -15,7 +15,7 @@ from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_
 
 
 class AdvAttacker:
-    def __init__(self, atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info=None, run_device=None):
+    def __init__(self, atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info=None, batch_size=None, run_device=None):
         self.atk_component = SEFI_component_manager.attack_method_list.get(atk_name)
         # 攻击处理参数JSON转DICT
         self.atk_args_dict = build_dict_with_json_args(self.atk_component, "attack", atk_args, run_device)
@@ -23,7 +23,10 @@ class AdvAttacker:
         no_model = config_manager.config.get("attackConfig", {}).get(atk_name, {}).get("no_model", False)
 
         # 增加模型访问统计
-        self.query_num = None
+        self.query_num = {
+            "backward": 0,
+            "forward": 0,
+        }
         if no_model is not True:
             self.atk_args_dict['model'] = get_model(model_name, model_args, run_device, self)
         model_component = SEFI_component_manager.model_list.get(model_name)
@@ -49,7 +52,12 @@ class AdvAttacker:
             self.atk_init = self.atk_component.get('attack_init', None)
             # 初始化类
             if self.atk_init is not None and dataset_info is not None:
-                self.atk_init(self.attacker_class, self.init_with_dataset(dataset_info, self.img_preprocessor, self.img_proc_args_dict) )
+                self.atk_init(
+                    self.attacker_class,
+                    self.init_with_dataset(dataset_info, self.img_preprocessor, self.img_proc_args_dict),
+                    batch_size,
+                    model_name
+                )
 
             # 扰动变量名称
             self.perturbation_budget_var_name = self.atk_component.get('attacker_class').get('perturbation_budget_var_name')
@@ -146,7 +154,7 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
 
     adv_img_id_list = []
     # 构建攻击者
-    adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info, run_device)
+    adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info, batch_size, run_device)
 
     # 写入日志
     atk_perturbation_budget = atk_args[adv_attacker.perturbation_budget_var_name] \
@@ -169,7 +177,7 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
             # 保存至临时文件夹
             # 因为直接转储为PNG会导致精度丢失，产生很多奇怪的结论
             img_file_name = "adv_{}.png".format(img_log_id)
-            save_pic_to_temp(str(attack_id) + "/", img_file_name, adv_result)
+            save_pic_to_temp(str(attack_id) + "/", img_file_name, adv_result, save_as_numpy_array=False)
 
             raw_file_name = None
             if save_raw_data:

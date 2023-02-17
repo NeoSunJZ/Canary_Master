@@ -156,12 +156,14 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                     .append(ori_img_inference_log["inference_img_conf_array"][ori_label] -
                             adv_img_inference_log["inference_img_conf_array"][ori_label])
                 # 获取注意力偏移(CAMC_A:G-CAM Change(Adversarial-class)/CAMC_T: G-CAM Change(True-class))
-                attack_test_result[inference_model]["CAMC_A"] \
-                    .append(get_img_cosine_similarity(adv_img_inference_log["inference_class_cams"],
-                                                      ori_img_inference_log["inference_class_cams"]))
-                attack_test_result[inference_model]["CAMC_T"] \
-                    .append(get_img_cosine_similarity(adv_img_inference_log["true_class_cams"],
-                                                      ori_img_inference_log["true_class_cams"]))
+                CAMC_A = get_img_cosine_similarity(adv_img_inference_log["inference_class_cams"],
+                                                   ori_img_inference_log["inference_class_cams"])
+                CAMC_T = get_img_cosine_similarity(adv_img_inference_log["true_class_cams"],
+                                                   ori_img_inference_log["true_class_cams"])
+                # CAM感知为空时，不能计算余弦相似度，否则会造成严重问题
+                if CAMC_T is not None and CAMC_A is not None:
+                    attack_test_result[inference_model]["CAMC_A"].append(CAMC_A)
+                    attack_test_result[inference_model]["CAMC_T"].append(CAMC_T)
 
                 # 执行CAM可解释性偏移对比分析(必须先有推理结果才可在此测试， 否则跳过)
                 if dataset_info is not None:

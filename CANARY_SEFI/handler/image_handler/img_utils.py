@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import torch
 from numpy import average, dot, linalg
@@ -37,4 +39,6 @@ def get_img_cosine_similarity(img1, img2):
     a_norm, b_norm = norms
     # dot返回的是点积，对二维数组（矩阵）进行计算
     res = dot(a / a_norm, b / b_norm)
+    if math.isnan(res):
+        return None
     return res

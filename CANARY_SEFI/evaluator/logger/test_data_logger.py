@@ -1,28 +1,22 @@
 import os
 import sqlite3
 
-class TestDataLogger:
+from CANARY_SEFI.handler.tools.sqlite_db_logger import SqliteDBLogger
+
+
+class TestDataLogger(SqliteDBLogger):
     def __init__(self, base_temp_path):
         # 检查是否存在数据库文件
         if not os.path.exists(base_temp_path + "database/"):
             os.makedirs(base_temp_path + "database/")
         full_path = base_temp_path + "database/evaluator_logger.db"
 
+        conn = sqlite3.connect(full_path, check_same_thread=False)
+        SqliteDBLogger.__init__(self, conn)
+
         if not os.path.exists(full_path):
-            self.conn = sqlite3.connect(full_path, check_same_thread=False)
             self.init_database()
-        else:
-            self.conn = sqlite3.connect(full_path, check_same_thread=False)
 
-        self.conn.row_factory = self.dict_factory
-        self.debug_log = True
-
-    @staticmethod
-    def dict_factory(cursor, row):
-        data = {}
-        for idx, col in enumerate(cursor.description):
-            data[col[0]] = row[idx]
-        return data
 
     def init_database(self):
         cursor = self.conn.cursor()
@@ -177,35 +171,4 @@ class TestDataLogger:
                        'ALMS float)')
 
         cursor.close()
-        self.conn.commit()
-
-    def insert_log(self, sql, args):
-        cursor = self.conn.cursor()
-        cursor.execute(sql, args)
-        log_id = int(cursor.lastrowid)
-        cursor.close()
-        self.conn.commit()
-        return log_id
-
-    def query_logs(self, sql, args):
-        cursor = self.conn.cursor()
-        cursor.execute(sql, args)
-        values = cursor.fetchall()
-        cursor.close()
-        return values
-
-    def query_log(self, sql, args):
-        cursor = self.conn.cursor()
-        cursor.execute(sql, args)
-        values = cursor.fetchone()
-        cursor.close()
-        return values
-
-    def update_log(self, sql, args):
-        cursor = self.conn.cursor()
-        cursor.execute(sql, args)
-        cursor.close()
-        self.conn.commit()
-
-    def finish(self):
         self.conn.commit()

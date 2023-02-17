@@ -32,7 +32,7 @@ class CorrectnessCheck:
 
     def attack_method_correctness_test(self, start_num=0, save_adv_example=False):
         # 构建攻击者
-        adv_attacker = AdvAttacker(self.atk_name, self.atk_args, self.model_name, self.model_args, self.img_proc_args, self.dataset_info, self.run_device)
+        adv_attacker = AdvAttacker(self.atk_name, self.atk_args, self.model_name, self.model_args, self.img_proc_args, self.dataset_info, self.adv_example_generate_batch_size, self.run_device)
 
         model_component = SEFI_component_manager.model_list.get(self.model_name)
         inference_detector = model_component.get("inference_detector")
@@ -40,7 +40,7 @@ class CorrectnessCheck:
         img_reverse_processor = model_component.get("img_reverse_processor")  # 图片后处理
         img_preprocessor = model_component.get("img_preprocessor")  # 图片前处理
 
-        model = get_model(self.model_name, self.model_args, self.run_device, None)
+        model = get_model(self.model_name, self.model_args, self.run_device, model_query_logger=None)
         inference_detector_func = inference_detector.get('func')
 
         logits_ORI = []
