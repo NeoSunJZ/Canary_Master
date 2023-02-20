@@ -137,7 +137,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                     success_flag = False
 
                 # 定向攻击成功率(TAS:Targeted Attack Success)
-                if adv_target_label != "None":
+                if adv_target_label != "None" and adv_target_label is not None:
                     if str(adv_inference_label) == str(adv_target_label):
                         attack_test_result[inference_model]["TAS"].append(1)
                     else:
