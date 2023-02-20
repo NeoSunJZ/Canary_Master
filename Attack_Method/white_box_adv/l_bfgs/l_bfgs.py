@@ -30,7 +30,7 @@ class L_BFGS():
         self.bounds = clip_min, clip_max
         self.steps = steps
         self.attack_type = attack_type
-        self.attack_target = 1 if tlabel == None else tlabel
+        self.attack_target = tlabel
         self.epsilon = 0.1
         self._output = None
 
@@ -42,6 +42,7 @@ class L_BFGS():
         c = 1
         x0 = self.data.clone().cpu().numpy().flatten().astype(float)
         # 线搜索算法
+        is_adversary = False
         for i in range(30):
             c = 2 * c
             # print('c={}'.format(c))
@@ -51,7 +52,7 @@ class L_BFGS():
                 break
 
         if not is_adversary:
-            print('扰动失败 ')
+            # print('扰动失败 ')
             return self._adv
 
         # 使用二分法优化最后的参数
@@ -76,7 +77,7 @@ class L_BFGS():
 
         # 交叉熵损失
         output = self.model(adv)
-        ce = F.cross_entropy(output, self.target)
+        ce = F.cross_entropy(output, self.target.long())
         # L2
         d = torch.sum((self.data - adv) ** 2)
 
@@ -126,20 +127,23 @@ class L_BFGS():
             else:
                 return False
         else:
-            print("attack_type输入错误\n")
+            raise RuntimeError("[ Logic Error ] Illegal target type!")
 
     @sefi_component.attack(name="L_BFGS", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
-    def attack(self, img, ori_label):
+    def attack(self, img, ori_label, tlabels=None):
         img_adv = torch.zeros(img.size())
         ori_label = np.array([ori_label])
         ori_label = ep.astensor(torch.LongTensor(ori_label).to(self.device))
         ori_label = ori_label.squeeze(0).numpy()
+        length = img.size()[0]
+        tlabels = np.repeat(self.attack_target, length) if tlabels is None else tlabels
 
-        for i in range(img.size()[0]):  # 为了能跑batch
+        for i in range(length):  # 为了能跑batch
             one_img = torch.unsqueeze(img[i], dim=0)
             one_label = torch.tensor(ori_label[i])
+            one_tlabel = torch.tensor(tlabels[i])
 
-            self.__call__(one_img, torch.tensor(self.attack_target), one_label)
+            self.__call__(one_img, one_tlabel, one_label)
             adv = self._adv
             adv_numpy = adv.detach().cpu().numpy()
             img_adv[i] = torch.from_numpy(adv_numpy)
