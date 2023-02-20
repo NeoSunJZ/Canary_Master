@@ -10,13 +10,13 @@ class TestDataLogger(SqliteDBLogger):
         if not os.path.exists(base_temp_path + "database/"):
             os.makedirs(base_temp_path + "database/")
         full_path = base_temp_path + "database/evaluator_logger.db"
+        exist_db = os.path.exists(full_path)
 
         conn = sqlite3.connect(full_path, check_same_thread=False)
         SqliteDBLogger.__init__(self, conn)
 
-        if not os.path.exists(full_path):
+        if not exist_db:
             self.init_database()
-
 
     def init_database(self):
         cursor = self.conn.cursor()
