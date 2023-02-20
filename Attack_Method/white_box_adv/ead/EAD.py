@@ -15,24 +15,22 @@ sefi_component = SEFIComponent()
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="EAD",
                                       args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
                                       params={
-                                          "classes": {"desc": "模型中类的数量", "type": "INT", "required": "true"},
-
+                                          "num_classes": {"desc": "模型中类的数量", "type": "INT", "required": "true"},
                                           "clip_min": {"desc": "像素值的下限", "type": "FLOAT", "required": "true"},
                                           "clip_max": {"desc": "像素值的上限", "type": "FLOAT", "required": "true"},
-
-                                          "initial_const": {"desc": "初始权衡常数，权衡扰动范数和分类置信度在损失中的权重", "type": "FLOAT",
-                                                            "def": "1e-3"},
-
-                                          "binary_search_steps": {"desc": "二分查找最大次数(寻找扰动范数和分类置信度之间的最佳权衡常数c)",
-                                                                  "type": "INT", "def": "5"},
+                                          "init_const": {"desc": "初始权衡常数，权衡扰动范数和分类置信度在损失中的权重", "type": "FLOAT", "def": "1e-3"},
+                                          "binary_search_steps": {"desc": "二分查找最大次数(寻找扰动范数和分类置信度之间的最佳权衡常数c)", "type": "INT", "def": "5"},
                                           "lr": {"desc": "学习率", "type": "FLOAT", "def": "5e-3"},
-                                          "max_iterations": {"desc": "最大迭代次数", "type": "INT", "def": "1000"},
-
+                                          "max_iters": {"desc": "最大迭代次数", "type": "INT", "def": "1000"},
                                           "attack_type": {"desc": "攻击类型", "type": "SELECT",
                                                           "selector": [{"value": "TARGETED", "name": "靶向"},
                                                                        {"value": "UNTARGETED", "name": "非靶向"}],
                                                           "required": "true"},
-                                          "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"}})
+                                          "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"},
+                                          "kappa": {"desc": "将示例标记为对抗性的把握，控制示例和决策边界之间的差距", "type": "FLOAT", "required": "true", "def": "0.0"},
+                                          "beta": {"desc": "控制L1正则化", "type": "INT", "required": "true", "def": "1e-3"},
+                                          "EN": {"desc": "选择最佳对抗性示例所依据的规则，它可以最小化L1或ElasticNet距离", "type": "BOOL", "required": "true", "def": "True"}
+                                      })
 class EADAttack:
     def __init__(self, model, run_device, attack_type='TARGETED', tlabel=1, clip_min=0, clip_max=1, kappa=0, init_const=0.001, lr=0.02, binary_search_steps=5, max_iters=10000, beta=0.001, EN=True, num_classes=1000):
         self.model = model  # 待攻击的白盒模型
