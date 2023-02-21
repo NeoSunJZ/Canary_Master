@@ -48,11 +48,11 @@ class EADAttack:
         self.num_classes = num_classes
 
     @sefi_component.attack(name="EAD", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
-    def attack(self, imgs, ori_label):
+    def attack(self, imgs, ori_label, tlabels=None):
         ead = EAD(model=self.model, kappa=self.kappa, init_const=self.init_const, lr=self.lr, binary_search_steps=self.binary_search_steps, max_iters=self.max_iters, lower_bound=self.lower_bound, upper_bound=self.upper_bound, beta=self.beta, EN=self.EN, num_classes=self.num_classes)
         imgs = imgs.cpu().numpy()
         length = len(imgs)
-        tlabel = self.tlabel * np.ones(length, dtype=np.int)
+        tlabel = np.repeat(self.tlabel, length) if tlabels is None else tlabels
         adv_imgs = ead.batch_perturbation(imgs, tlabel, length, self.device)
         adv_imgs = torch.tensor(adv_imgs, dtype=torch.float).to(self.device)
         return adv_imgs

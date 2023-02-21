@@ -80,7 +80,7 @@ class EAD(Attack):
             optimizer_y = torch.optim.SGD([slack], lr=self.learning_rate)
             old_image = slack.clone()  # Save the previous version of new_img in the iteration
             var_const = tensor2variable(torch.FloatTensor(const_origin), device=device)
-            print("\tbinary search step {}:".format(search_for_c))
+            # print("\tbinary search step {}:".format(search_for_c))
 
             for iteration_times in range(self.max_iterations):
                 # optimize the slack variable
@@ -137,7 +137,7 @@ class EAD(Attack):
         for i in range(batch_size):
             if flag[i]:
                 cnt += 1
-        print("Success: {}".format(cnt))
+        # print("Success: {}".format(cnt))
 
         return np.array(best_perturbation)
 
@@ -156,7 +156,7 @@ class EAD(Attack):
         for index in range(number_batch):
             start = index * batch_size
             end = min((index + 1) * batch_size, len(xs))
-            print('\r===> in batch {:>2}, {:>4} ({:>4} in total) nature examples are perturbed ... '.format(index, end - start, end), end=' ')
+            # print('\r===> in batch {:>2}, {:>4} ({:>4} in total) nature examples are perturbed ... '.format(index, end - start, end), end=' ')
 
             batch_adv_images = self.perturbation(xs[start:end], ys_target[start:end], batch_size, device)
 
