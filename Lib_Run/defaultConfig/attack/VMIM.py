@@ -1,8 +1,8 @@
-name = "PNA_NIM"
-object_list = ["PNA_NIM"]
+name = "VMIM"
+object_list = ["VMI_FGSM"]
 config = {
     "attacker_config": {
-        "PNA_NIM": {
+        "VMI_FGSM": {
             "clip_min": 0,
             "clip_max": 1,
             "epsilon": 16 / 255,
@@ -12,4 +12,3 @@ config = {
         }
     }
 }
-

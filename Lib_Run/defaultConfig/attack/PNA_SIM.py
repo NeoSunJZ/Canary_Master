@@ -1,8 +1,8 @@
-name = "PNA_NIM"
-object_list = ["PNA_NIM"]
+name = "PNA_SIM"
+object_list = ["PNA_SIM"]
 config = {
     "attacker_config": {
-        "PNA_NIM": {
+        "PNA_SIM": {
             "clip_min": 0,
             "clip_max": 1,
             "epsilon": 16 / 255,

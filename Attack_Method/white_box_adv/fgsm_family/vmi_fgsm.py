@@ -17,7 +17,7 @@ sefi_component = SEFIComponent()
                                       })
 
 class VMI_FGSM():
-    def __init__(self, model, run_device, attack_type='TARGETED', tlabel=1, clip_min=0, clip_max=1, T=50, epsilon=0.03):
+    def __init__(self, model, run_device, attack_type='UNTARGETED', tlabel=None, clip_min=0, clip_max=1, T=50, epsilon=16/255):
         self.model = model  # 待攻击的白盒模型
         self.clip_min = clip_min  # 对抗性示例组件的最小浮点值
         self.clip_max = clip_max  # 对抗性示例组件的最大浮点值

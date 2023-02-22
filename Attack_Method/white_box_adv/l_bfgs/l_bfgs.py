@@ -21,7 +21,7 @@ sefi_component = SEFIComponent()
                                           "attack_target": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT", "required": "true", "def": "None"},
                                       })
 class L_BFGS():
-    def __init__(self, model, run_device, clip_min=0.0, clip_max=1.0, steps=10, attack_type="UNTARGETED", tlabel=None,):
+    def __init__(self, model, run_device, clip_min=0.0, clip_max=1.0, steps=10, attack_type="UNTARGETED", epsilon = 16 / 255, tlabel=None,):
         self._adv = None  # 对抗样本
         self.model = model  # 模型
         self.device = run_device  # 设备
@@ -31,7 +31,7 @@ class L_BFGS():
         self.steps = steps
         self.attack_type = attack_type
         self.attack_target = 1 if tlabel == None else tlabel
-        self.epsilon = 0.1
+        self.epsilon = epsilon
         self._output = None
 
     def __call__(self, data, target, real_target):
@@ -42,6 +42,7 @@ class L_BFGS():
         c = 1
         x0 = self.data.clone().cpu().numpy().flatten().astype(float)
         # 线搜索算法
+        is_adversary = False
         for i in range(30):
             c = 2 * c
             # print('c={}'.format(c))
@@ -129,7 +130,7 @@ class L_BFGS():
             print("attack_type输入错误\n")
 
     @sefi_component.attack(name="L_BFGS", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
-    def attack(self, img, ori_label):
+    def attack(self, img, ori_label, tlabel):
         img_adv = torch.zeros(img.size())
         ori_label = np.array([ori_label])
         ori_label = ep.astensor(torch.LongTensor(ori_label).to(self.device))

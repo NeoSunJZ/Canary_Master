@@ -5,8 +5,8 @@ config = {
         "MI-FGSM": {
             "pixel_min": 0,
             "pixel_max": 1,
-            "alpha": 2.5 * ((16 / 255) / 100),
-            "epsilon": 16 / 255,
+            "alpha": 2.5 * ((4 / 255) / 100),
+            "epsilon": 4 / 255,
             "T": 100,
             "attack_type": "UNTARGETED",
             "tlabel": None
