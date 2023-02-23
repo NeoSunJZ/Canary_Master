@@ -6,8 +6,7 @@ config = {
             "clip_min": 0.0,
             "clip_max": 1.0,
             "steps": 10,
-            "attack_type": 'TARGETED',
-            "tlabel": 20,
+            "attack_type": 'UNTARGETED',
         }
     }
 }
