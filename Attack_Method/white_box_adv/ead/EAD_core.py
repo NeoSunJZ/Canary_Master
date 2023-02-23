@@ -8,11 +8,11 @@ from Attack_Method.white_box_adv.ead.attack import Attack
 
 
 class EAD(Attack):
-    def __init__(self, model=None, kappa=0, init_const=0.001, lr=0.02, binary_search_steps=5, max_iters=10000, lower_bound=0.0, upper_bound=1.0,
+    def __init__(self, model=None, targeted=False, kappa=0, init_const=0.001, lr=0.02, binary_search_steps=5, max_iters=10000, lower_bound=0.0, upper_bound=1.0,
                  beta=1e-3, EN=True, num_classes=1000):
         super(EAD, self).__init__(model)
         self.model = model
-
+        self.targeted = targeted
         self.kappa = kappa * 1.0
         self.learning_rate = lr
         self.init_const = init_const
@@ -36,8 +36,15 @@ class EAD(Attack):
 
         # help function
         def attack_achieved(pre_softmax, target_class):
-            pre_softmax[target_class] -= self.kappa
-            return np.argmax(pre_softmax) == target_class
+            if self.targeted:
+                pre_softmax[target_class] -= self.kappa
+            else:
+                pre_softmax[target_class] += self.kappa
+
+            if self.targeted:
+                return np.argmax(pre_softmax) == target_class
+            else:
+                return np.argmax(pre_softmax) != target_class
 
         # help function: Iterative Shrinkage-Threshold-ing Algorithm
         def ISTA(new, old):
@@ -87,7 +94,12 @@ class EAD(Attack):
                 output_y = self.model(slack).to(device)
                 l2dist_y = torch.sum((slack - var_samples) ** 2, [1, 2, 3])
                 kappa_t = torch.FloatTensor([self.kappa] * batch_size).to(device)
-                target_loss_y = torch.max((output_y - 1e10 * targets_one_hot).max(1)[0] - (output_y * targets_one_hot).sum(1), -1 * kappa_t)
+
+                if self.targeted:
+                    target_loss_y = (output_y - 1e10 * targets_one_hot).max(1)[0] - (output_y * targets_one_hot).sum(1)
+                else:
+                    target_loss_y = (output_y * targets_one_hot).sum(1) - (output_y - 1e10 * targets_one_hot).max(1)[0]
+
                 c_loss_y = var_const * target_loss_y
                 loss_y = l2dist_y.sum() + c_loss_y.sum()
 
