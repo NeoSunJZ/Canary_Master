@@ -5,10 +5,10 @@ from component_manager import init_component_manager
 if __name__ == "__main__":
     init_component_manager()
     example_config = {
-        "dataset_size": 1000, "dataset": "ILSVRC-2012",
+        "dataset_size": 10, "dataset": "ILSVRC-2012",
         "dataset_seed": 40376958655838027,
         "attacker_list": {
-            "FGSM": [
+            "PNA_SIM": [
                 "Alexnet(ImageNet)",  # 2012 Alex & Hinton
                 "VGG(ImageNet)",  # 2014 牛津大学计算机视觉组
                 "GoogLeNet(ImageNet)",  # 2014 谷歌
@@ -37,10 +37,11 @@ if __name__ == "__main__":
             },
         },
         "attacker_config": {
-            "FGSM": {
+            "PNA_SIM": {
                 "clip_min": 0,
                 "clip_max": 1,
                 "epsilon": 16 / 255,
+                "attack_type": 'UNTARGETED',
             }
         },
     }

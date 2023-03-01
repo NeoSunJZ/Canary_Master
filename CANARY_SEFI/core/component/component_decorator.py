@@ -112,6 +112,23 @@ class SEFIComponent:
 
         return wrapper
 
+    def defense(self, name, is_inclass, support_model=[], defense_type=''):
+        target_defense_method = self.get_defense_methods(name)
+
+        def wrapper(decorated):
+            def inner(*args, **kwargs):
+                defense_method = decorated(*args, **kwargs)
+                return defense_method
+
+            target_defense_method['attack_func'] = inner
+            target_defense_method['support_model'] = support_model
+            target_defense_method['is_inclass'] = is_inclass
+            target_defense_method['attack_type'] = defense_type
+
+            return inner
+
+        return wrapper
+
     def attack_init(self, name):
         target_attack_method = self.get_attack_methods(name)
 
@@ -141,6 +158,20 @@ class SEFIComponent:
 
         return wrapper
 
+    def defense_class(self, defense_name):
+        target_defense_method = self.defense_methods.get(defense_name)
+        if target_defense_method is None:
+            self.defense_methods[defense_name] = {}
+            target_defense_method = self.defense_methods.get(defense_name)
+
+        def wrapper(decorated):
+            target_defense_method['defense_class'] = {
+                "class": decorated,
+            }
+            return decorated
+
+        return wrapper
+
     def get_models(self, name):
         target_model = self.models.get(name)
         if target_model is None:
@@ -154,6 +185,13 @@ class SEFIComponent:
             self.attack_methods[name] = {}
             target_attack_method = self.attack_methods.get(name)
         return target_attack_method
+
+    def get_defense_methods(self, name):
+        target_defense_method = self.defense_methods.get(name)
+        if target_defense_method is None:
+            self.defense_methods[name] = {}
+            target_defense_method = self.defense_methods.get(name)
+        return target_defense_method
 
     def get_datasets(self, name):
         target_datasets = self.datasets.get(name)
