@@ -12,61 +12,65 @@ sefi_component = SEFIComponent()
 
 
 @sefi_component.defense_class(defense_name="trades")
+@sefi_component.config_params_handler(handler_target=ComponentType.DEFENCE, name="trades",
+                                      args_type=ComponentConfigHandlerType.DEFENCE_PARAMS, use_default_handler=True,
+                                      params={
+
+                                      })
+
 class Trades():
-    def __int__(self):
-        pass
+    def __int__(self, lr=0.1, momentum=0.9, weight_decay=2e-4, epochs=10, device="cuda", step_size = 0.007,
+                epsilon = 0.031, num_steps = 10, beta = 6.0, log_interval = 100):
+        #defense_args_dict传到这里初始化
+        self.lr = lr
+        self.momentum = momentum
+        self.weight_decay = weight_decay
+        self.epochs = epochs
+        self.device = device
+        self.step_size = step_size
+        self.epsilon = epsilon
+        self.num_steps = num_steps
+        self.beta = beta
+        self.log_interval = log_interval
 
     @sefi_component.defense(name="trades", is_inclass=True, support_model=[])
     def defense(self, defense_model, img_preprocessor, img_reverse_processor, img_proc_args_dict, ori_dataset):
-        self.model.train()
-        base_path = "../../Model_Save/"
-        for epoch in range(1, self.args.epochs + 1):
+        defense_model.train()
+        optimizer = optim.SGD(defense_model.parameters(), lr=self.lr, momentum=self.momentum, weight_decay=self.weight_decay)
+        #ori_dataset[0] is img,[1] is label
+        datasets = img_preprocessor(ori_dataset,img_proc_args_dict)
+        for epoch in range(1, self.epochs + 1):
             # adjust learning rate for SGD
             self.adjust_learning_rate(epoch)
 
             # adversarial training
-            for batch_idx, (data, target) in enumerate(self.train_loader):
+            for batch_idx, (data, target) in enumerate(datasets):
+
                 data, target = data.to(self.device), target.to(self.device)
 
-                self.optimizer.zero_grad()
+                optimizer.zero_grad()
 
                 # calculate robust loss
-                loss = self.trades_loss(model=self.model,
+                loss = self.trades_loss(model=defense_model,
                                         x_natural=data,
                                         y=target,
-                                        optimizer=self.optimizer,
-                                        step_size=self.args.step_size,
-                                        epsilon=self.args.epsilon,
-                                        perturb_steps=self.args.num_steps,
-                                        beta=self.args.beta)
+                                        optimizer=optimizer,
+                                        step_size=self.step_size,
+                                        epsilon=self.epsilon,
+                                        perturb_steps=self.num_steps,
+                                        beta=self.beta)
                 loss.backward()
-                self.optimizer.step()
+                optimizer.step()
 
                 # print progress
-                if batch_idx % self.args.log_interval == 0:
+                if batch_idx % self.log_interval == 0:
                     print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                        epoch, batch_idx * len(data), len(self.train_loader.dataset),
-                               100. * batch_idx / len(self.train_loader), loss.item()))
-            # Save model
-            torch.save(self.model.state_dict(),
-                       os.path.join(base_path, self.args.dataset + self.args.model +
-                                    '_baseline_epoch_' + str(epoch) + '.pt'))
-            # Let us not waste space and delete the previous model
-            prev_path = os.path.join(base_path, self.args.dataset + self.args.model +
-                                     '_baseline_epoch_' + str(epoch - 1) + '.pt')
-            if os.path.exists(prev_path):
-                os.remove(prev_path)
+                        epoch, batch_idx * len(data), len(datasets),
+                               100. * batch_idx / len(datasets), loss.item()))
 
-    def trades_loss(self,
-                    model,
-                    x_natural,
-                    y,
-                    optimizer,
-                    step_size=0.003,
-                    epsilon=0.031,
-                    perturb_steps=10,
-                    beta=1.0,
-                    distance='l_inf'):
+        return defense_model.state_dict()
+
+    def trades_loss(self, model, x_natural, y, optimizer, step_size=0.003, epsilon=0.031, perturb_steps=10, beta=1.0, distance='l_inf'):
         # define KL-loss
         criterion_kl = nn.KLDivLoss(size_average=False)
         model.eval()
@@ -98,14 +102,14 @@ class Trades():
         loss = loss_natural + beta * loss_robust
         return loss
 
-    def adjust_learning_rate(self, epoch):
+    def adjust_learning_rate(self,optimizer, epoch):
         """decrease the learning rate"""
-        lr = self.args.lr
+        lr = self.lr
         if epoch >= 75:
-            lr = self.args.lr * 0.1
+            lr = self.lr * 0.1
         if epoch >= 90:
-            lr = self.args.lr * 0.01
+            lr = self.lr * 0.01
         if epoch >= 100:
-            lr = self.args.lr * 0.001
-        for param_group in self.optimizer.param_groups:
+            lr = self.lr * 0.001
+        for param_group in optimizer.param_groups:
             param_group['lr'] = lr
