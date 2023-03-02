@@ -9,6 +9,7 @@ class SEFIComponent:
     def __init__(self):
         self.models = {}
         self.attack_methods = {}
+        self.defense_methods = {}
         self.datasets = {}
         self.lock = False
 
@@ -54,6 +55,10 @@ class SEFIComponent:
             target = self.get_attack_methods(name)
             if args_type not in (ComponentConfigHandlerType.ATTACK_PARAMS, 'target_args'):
                 raise Exception("[ Config Error ] Illegal Attack Args Handler Type")
+        elif handler_target == ComponentType.DEFENSE:
+            target = self.get_defense_methods(name)
+            if args_type not in (ComponentConfigHandlerType.DEFENSE_PARAMS, 'target_args'):
+                raise Exception("[ Config Error ] Illegal Defense Args Handler Type")
 
         target[args_type.value + "_handler_params"] = params
 
@@ -120,10 +125,10 @@ class SEFIComponent:
                 defense_method = decorated(*args, **kwargs)
                 return defense_method
 
-            target_defense_method['attack_func'] = inner
+            target_defense_method['defense_func'] = inner
             target_defense_method['support_model'] = support_model
             target_defense_method['is_inclass'] = is_inclass
-            target_defense_method['attack_type'] = defense_type
+            target_defense_method['defense_type'] = defense_type
 
             return inner
 
@@ -142,6 +147,19 @@ class SEFIComponent:
 
         return wrapper
 
+    def defense_init(self, name):
+        target_defense_method = self.get_defense_methods(name)
+
+        def wrapper(decorated):
+            def inner(*args, **kwargs):
+                attack_init = decorated(*args, **kwargs)
+                return attack_init
+
+            target_defense_method['defense_init'] = inner
+            return inner
+
+        return wrapper
+
     def attacker_class(self, attack_name, attacker_class_model_var_name="model", perturbation_budget_var_name=None):
         target_attack_method = self.attack_methods.get(attack_name)
         if target_attack_method is None:
@@ -149,6 +167,7 @@ class SEFIComponent:
             target_attack_method = self.attack_methods.get(attack_name)
 
         def wrapper(decorated):
+            #print(type(decorated))
             target_attack_method['attacker_class'] = {
                 "class": decorated,
                 "attacker_class_model_var_name": attacker_class_model_var_name,
