@@ -1,5 +1,7 @@
 import copy
 import random
+import os
+import torch
 
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
@@ -23,6 +25,7 @@ class Adversarial_Trainer:
 
         # TODO 需要修改
         model_component = SEFI_component_manager.model_list.get(model_name)
+
         self.defense_model = get_model(model_name, model_args, run_device, model_query_logger=None)
         # 图片处理参数JSON转DICT
         self.img_proc_args_dict = build_dict_with_json_args(model_component, "img_processing", img_proc_args,
@@ -47,6 +50,7 @@ class Adversarial_Trainer:
         self.ori_dataset = get_dataset(dataset_info)
 
     def adv_defense_training_4_img(self):
+
         if self.defense_component.get('is_inclass') is True:
             weight = self.defense_func(self.defense_class, self.defense_model, self.img_preprocessor,
                                        self.img_reverse_processor, self.img_proc_args_dict, self.ori_dataset)
@@ -64,7 +68,17 @@ def adv_defense_4_img_batch(defense_name, defense_args, model_name, model_args, 
     # 构建防御训练器
     adv_defense = Adversarial_Trainer(defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info,
                                       run_device)
+
     weight = adv_defense.adv_defense_training_4_img()
+
+    base_path = "../../Model_Save/"
+    # Save model
+    torch.save(weight,os.path.join(base_path, + model_name + dataset_info.dataset_name +'_baseline_' + '.pt'))
+    # Let us not waste space and delete the previous model
+    prev_path = os.path.join(base_path, + model_name + dataset_info.dataset_name +'_baseline_' + '.pt')
+    if os.path.exists(prev_path):
+        os.remove(prev_path)
+
     adv_defense.destroy()
     del adv_defense
     return None
