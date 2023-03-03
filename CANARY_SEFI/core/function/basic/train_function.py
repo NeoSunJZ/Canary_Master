@@ -4,6 +4,7 @@ import os
 import torch
 import numpy as np
 
+from CANARY_SEFI.handler.model_weight_handler.weight_file_io_handler import save_weight_to_temp
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
@@ -18,7 +19,7 @@ from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_
 
 
 class Adversarial_Trainer:
-    def __init__(self, defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info=None, batch_size=1,
+    def __init__(self, defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info=None,
                  run_device=None):
         self.defense_component = SEFI_component_manager.defense_method_list.get(defense_name)
         # 攻击处理参数JSON转DICT
@@ -65,8 +66,7 @@ class Adversarial_Trainer:
             #                            self.img_reverse_processor, self.img_proc_args_dict, self.ori_dataset)
             weight = self.defense_func(self.defense_class, self.defense_model, self.img_array, self.label_array )
         else:
-            weight = self.defense_func(self.defense_args_dict, self.defense_model, self.img_preprocessor,
-                                     self.img_proc_args_dict, self.ori_dataset)
+            weight = self.defense_func(self.defense_class, self.defense_model, self.img_array, self.label_array )
         return weight
 
     def destroy(self):
@@ -74,21 +74,17 @@ class Adversarial_Trainer:
         check_cuda_memory_alloc_status(empty_cache=True)
 
 
-def adv_defense_4_img_batch(defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info, batch_size=1, run_device=None):
+def adv_defense_4_img_batch(defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info, run_device=None):
     # 构建防御训练器
     adv_defense = Adversarial_Trainer(defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info,
-                                      batch_size, run_device)
+                                      run_device)
 
     weight = adv_defense.adv_defense_training_4_img()
 
-    base_path = "Model_Save/"
     # Save model
-    torch.save(weight,os.path.join(base_path + model_name + dataset_info.dataset_name +'_baseline_' + '.pt'))
-    # Let us not waste space and delete the previous model
-    prev_path = os.path.join(base_path + model_name + dataset_info.dataset_name +'_baseline_' + '.pt')
-    if os.path.exists(prev_path):
-        os.remove(prev_path)
+    file_name = "AT_" + model_name + "_" + dataset_info.dataset_name + "_" + task_manager.task_token + ".pt"
+    save_weight_to_temp(file_path=model_name+'/', file_name=file_name, weight=weight)
 
     adv_defense.destroy()
     del adv_defense
-    return None
+    return file_name
