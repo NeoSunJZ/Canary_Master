@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -12,15 +13,15 @@ sefi_component = SEFIComponent()
 
 
 @sefi_component.defense_class(defense_name="trades")
-@sefi_component.config_params_handler(handler_target=ComponentType.DEFENCE, name="trades",
-                                      args_type=ComponentConfigHandlerType.DEFENCE_PARAMS, use_default_handler=True,
+@sefi_component.config_params_handler(handler_target=ComponentType.DEFENSE, name="trades",
+                                      args_type=ComponentConfigHandlerType.DEFENSE_PARAMS, use_default_handler=True,
                                       params={
 
                                       })
 
 class Trades():
-    def __int__(self, lr=0.1, momentum=0.9, weight_decay=2e-4, epochs=10, device="cuda", step_size = 0.007,
-                epsilon = 0.031, num_steps = 10, beta = 6.0, log_interval = 100):
+    def __init__(self, lr=0.1, momentum=0.9, weight_decay=2e-4, epochs=10, device="cuda", step_size = 0.007,
+                epsilon = 0.031, num_steps = 10, beta = 6.0, log_interval = 5):
         #defense_args_dict传到这里初始化
         self.lr = lr
         self.momentum = momentum
@@ -34,22 +35,22 @@ class Trades():
         self.log_interval = log_interval
 
     @sefi_component.defense(name="trades", is_inclass=True, support_model=[])
-    def defense(self, defense_model, img_preprocessor, img_reverse_processor, img_proc_args_dict, ori_dataset):
+    def defense(self, defense_model, imgs, labels):
         defense_model.train()
         optimizer = optim.SGD(defense_model.parameters(), lr=self.lr, momentum=self.momentum, weight_decay=self.weight_decay)
-        #ori_dataset[0] is img,[1] is label
-        datasets = img_preprocessor(ori_dataset,img_proc_args_dict)
-        for epoch in range(1, self.epochs + 1):
+        # for epoch in range(1, self.epochs + 1):
+        for epoch in range(1):
             # adjust learning rate for SGD
-            self.adjust_learning_rate(epoch)
+            self.adjust_learning_rate(optimizer,epoch)
 
             # adversarial training
-            for batch_idx, (data, target) in enumerate(datasets):
-
-                data, target = data.to(self.device), target.to(self.device)
+            for index in range(len(imgs)):
+                #print(np.array(data).shape)
+                #data = img_preprocessor(data, img_proc_args_dict)
+                data, target = imgs[index].to(self.device), labels[index].to(self.device)
 
                 optimizer.zero_grad()
-
+                print("x_natural_{}:{}".format(index,data.tolist()))
                 # calculate robust loss
                 loss = self.trades_loss(model=defense_model,
                                         x_natural=data,
@@ -62,16 +63,23 @@ class Trades():
                 loss.backward()
                 optimizer.step()
 
+                # if index==10:
+                #     with open("x_natural_10.txt",'w') as output:
+                #         output.write(str(data.tolist()))
+                #         output.close()
+
                 # print progress
-                if batch_idx % self.log_interval == 0:
+            # print("epoch:{},loss:{:.6f}".format(epoch,loss.item()))
+                if index % self.log_interval == 0:
                     print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                        epoch, batch_idx * len(data), len(datasets),
-                               100. * batch_idx / len(datasets), loss.item()))
+                        epoch, index * len(data), len(imgs),
+                               100. * index / len(imgs), loss.item()))
 
         return defense_model.state_dict()
 
     def trades_loss(self, model, x_natural, y, optimizer, step_size=0.003, epsilon=0.031, perturb_steps=10, beta=1.0, distance='l_inf'):
         # define KL-loss
+
         criterion_kl = nn.KLDivLoss(size_average=False)
         model.eval()
         batch_size = len(x_natural)
@@ -100,6 +108,7 @@ class Trades():
         loss_robust = (1.0 / batch_size) * criterion_kl(F.log_softmax(model(x_adv), dim=1),
                                                         F.softmax(model(x_natural), dim=1))
         loss = loss_natural + beta * loss_robust
+        print("输出:",logits)
         return loss
 
     def adjust_learning_rate(self,optimizer, epoch):
