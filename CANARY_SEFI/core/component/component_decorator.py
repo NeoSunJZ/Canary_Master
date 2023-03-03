@@ -152,8 +152,8 @@ class SEFIComponent:
 
         def wrapper(decorated):
             def inner(*args, **kwargs):
-                attack_init = decorated(*args, **kwargs)
-                return attack_init
+                defense_init = decorated(*args, **kwargs)
+                return defense_init
 
             target_defense_method['defense_init'] = inner
             return inner
