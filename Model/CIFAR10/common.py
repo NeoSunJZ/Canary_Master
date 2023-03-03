@@ -14,7 +14,7 @@ def img_pre_handler(img, args):
     img = img.copy().astype(np.float32)
     img /= 255.0
     img = img.transpose(2, 0, 1)
-    img = np.expand_dims(img, axis=0)
+    img = torch.from_numpy(np.expand_dims(img, axis=0))
     return img
 
 
