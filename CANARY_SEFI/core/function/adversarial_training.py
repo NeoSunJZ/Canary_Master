@@ -1,0 +1,31 @@
+import torch
+from colorama import Fore
+from tqdm import tqdm
+
+from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
+from CANARY_SEFI.core.function.basic.attacker_function import adv_attack_4_img_batch
+from CANARY_SEFI.core.function.basic.train_function import adv_defense_4_img_batch
+from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
+from CANARY_SEFI.core.function.helper.recovery import global_recovery
+from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
+
+
+def AT(dataset_info, defense_name, defense_args, model_name, model_args, img_proc_args, run_device=None):
+    with tqdm(total=dataset_info.dataset_size, desc="Adversarial Training Progress", ncols=120) as bar:
+        #TODO
+        def each_img_finish_callback(img, adv_result):
+            check_cuda_memory_alloc_status(empty_cache=True)
+            bar.update(1)
+
+        participant = "{}({})".format(defense_name, model_name)
+
+        is_skip, completed_num = global_recovery.check_skip(participant)
+        if is_skip:
+            return None
+
+        adv_defense_4_img_batch(defense_name, defense_args, model_name, model_args, img_proc_args,
+                                dataset_info,
+                                each_img_finish_callback=each_img_finish_callback,
+                                run_device=run_device)
+        check_cuda_memory_alloc_status(empty_cache=True)
+        bar.update(1)
