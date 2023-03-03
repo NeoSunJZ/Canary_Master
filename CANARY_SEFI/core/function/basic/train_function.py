@@ -2,6 +2,7 @@ import copy
 import random
 import os
 import torch
+import numpy as np
 
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
@@ -17,7 +18,7 @@ from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_
 
 
 class Adversarial_Trainer:
-    def __init__(self, defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info=None,
+    def __init__(self, defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info=None, batch_size=1,
                  run_device=None):
         self.defense_component = SEFI_component_manager.defense_method_list.get(defense_name)
         # 攻击处理参数JSON转DICT
@@ -32,8 +33,6 @@ class Adversarial_Trainer:
                                                             run_device)
         # 图片预处理
         self.img_preprocessor = model_component.get("img_preprocessor")
-        # 结果处理
-        self.img_reverse_processor = model_component.get("img_reverse_processor")
 
         self.defense_func = self.defense_component.get('defense_func')
 
@@ -42,21 +41,32 @@ class Adversarial_Trainer:
             # 构造类传入
             defense_class_builder = self.defense_component.get('defense_class').get('class')
             self.defense_class = defense_class_builder(**self.defense_args_dict)
-            # 攻击类初始化方法
+            # 防御类初始化方法
             self.defense_init = self.defense_component.get('defense_init', None)
 
         self.random = random.Random(task_manager.task_token)
 
         self.ori_dataset = get_dataset(dataset_info)
+        self.img_array = []
+        self.label_array = []
+
+    def ori_dataset_preprocess(self):
+        for (image, label) in self.ori_dataset:
+            img = self.img_preprocessor(np.array(image),self.img_proc_args_dict)
+            self.img_array.append(img)
+            label = torch.LongTensor([label])
+            self.label_array.append(label)
 
     def adv_defense_training_4_img(self):
 
+        self.ori_dataset_preprocess()
         if self.defense_component.get('is_inclass') is True:
-            weight = self.defense_func(self.defense_class, self.defense_model, self.img_preprocessor,
-                                       self.img_reverse_processor, self.img_proc_args_dict, self.ori_dataset)
+            # weight = self.defense_func(self.defense_class, self.defense_model, self.img_preprocessor,
+            #                            self.img_reverse_processor, self.img_proc_args_dict, self.ori_dataset)
+            weight = self.defense_func(self.defense_class, self.defense_model, self.img_array, self.label_array )
         else:
             weight = self.defense_func(self.defense_args_dict, self.defense_model, self.img_preprocessor,
-                                       self.img_reverse_processor, self.img_proc_args_dict, self.ori_dataset)
+                                     self.img_proc_args_dict, self.ori_dataset)
         return weight
 
     def destroy(self):
@@ -64,18 +74,18 @@ class Adversarial_Trainer:
         check_cuda_memory_alloc_status(empty_cache=True)
 
 
-def adv_defense_4_img_batch(defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info, run_device=None):
+def adv_defense_4_img_batch(defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info, batch_size=1, run_device=None):
     # 构建防御训练器
     adv_defense = Adversarial_Trainer(defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info,
-                                      run_device)
+                                      batch_size, run_device)
 
     weight = adv_defense.adv_defense_training_4_img()
 
-    base_path = "../../Model_Save/"
+    base_path = "Model_Save/"
     # Save model
-    torch.save(weight,os.path.join(base_path, + model_name + dataset_info.dataset_name +'_baseline_' + '.pt'))
+    torch.save(weight,os.path.join(base_path + model_name + dataset_info.dataset_name +'_baseline_' + '.pt'))
     # Let us not waste space and delete the previous model
-    prev_path = os.path.join(base_path, + model_name + dataset_info.dataset_name +'_baseline_' + '.pt')
+    prev_path = os.path.join(base_path + model_name + dataset_info.dataset_name +'_baseline_' + '.pt')
     if os.path.exists(prev_path):
         os.remove(prev_path)
 
