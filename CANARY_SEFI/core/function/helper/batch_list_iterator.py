@@ -26,6 +26,17 @@ class BatchListIterator:
             BatchListIterator.model_list_iterator(model_list, model_config, img_proc_config, _function)
 
     @staticmethod
+    def defense_list_iterator(defense_list, defense_config, model_config, img_proc_config, function):
+        for def_name in defense_list:
+            def_args = defense_config.get(def_name, {})
+
+            def _function(model_name, model_args, img_proc_args, run_device):
+                function(def_name, def_args, model_name, model_args, img_proc_args, run_device)
+            model_list = defense_list[def_name]
+
+            BatchListIterator.model_list_iterator(model_list, model_config, img_proc_config, _function)
+
+    @staticmethod
     def get_singleton_model_list(attacker_list):
         model_name_set = set()
         for atk_name in attacker_list:
