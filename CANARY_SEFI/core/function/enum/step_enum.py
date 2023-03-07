@@ -24,5 +24,7 @@ class Step(Enum):
 
     MODEL_SECURITY_SYNTHETICAL_CAPABILITY_EVALUATION = {'step_name': "模型综合安全能力评估"}
 
+    DEFENSE_ADVERSARIAL_TRAINING = {'step_name':"对抗训练"}
+
     def step_name(self):
         return self.value.get('step_name')
