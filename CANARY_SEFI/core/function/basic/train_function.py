@@ -20,14 +20,13 @@ from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_
 
 class Adversarial_Trainer:
     def __init__(self, defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info=None,
-                 run_device=None):
+                 each_epoch_finish_callback=None, run_device=None):
         self.defense_component = SEFI_component_manager.defense_method_list.get(defense_name)
         # 攻击处理参数JSON转DICT
         self.defense_args_dict = build_dict_with_json_args(self.defense_component, "defense", defense_args, run_device)
 
         # TODO 需要修改
         model_component = SEFI_component_manager.model_list.get(model_name)
-
         self.defense_model = get_model(model_name, model_args, run_device, model_query_logger=None)
         # 图片处理参数JSON转DICT
         self.img_proc_args_dict = build_dict_with_json_args(model_component, "img_processing", img_proc_args,
@@ -36,6 +35,7 @@ class Adversarial_Trainer:
         self.img_preprocessor = model_component.get("img_preprocessor")
 
         self.defense_func = self.defense_component.get('defense_func')
+        self.each_epoch_finish_callback = each_epoch_finish_callback
 
         # 判断攻击方法的构造模式
         if self.defense_component.get('is_inclass') is True:
@@ -46,27 +46,51 @@ class Adversarial_Trainer:
             self.defense_init = self.defense_component.get('defense_init', None)
 
         self.random = random.Random(task_manager.task_token)
-
-        self.ori_dataset = get_dataset(dataset_info)
+        #
+        # self.ori_dataset = get_dataset(dataset_info)
+        self.dataset_info = dataset_info
         self.img_array = []
         self.label_array = []
 
     def ori_dataset_preprocess(self):
         for (image, label) in self.ori_dataset:
-            img = self.img_preprocessor(np.array(image),self.img_proc_args_dict)
+            img = self.img_preprocessor(np.array(image), self.img_proc_args_dict)
             self.img_array.append(img)
             label = torch.LongTensor([label])
             self.label_array.append(label)
 
-    def adv_defense_training_4_img(self):
+    @staticmethod
+    def init_with_dataset(dataset_info, img_preprocessor, img_proc_args_dict):
+        ori_dataset = get_dataset(dataset_info)
 
-        self.ori_dataset_preprocess()
+        class PreprocessDataset:
+            def __init__(self):
+                self.ori_dataset = ori_dataset
+                self.img_preprocessor = img_preprocessor
+                self.img_proc_args_dict = img_proc_args_dict
+
+            def __getitem__(self, index):
+                img, label = self.ori_dataset.__getitem__(index)
+                img = np.array(img)
+                label = torch.LongTensor([label])
+                if self.img_preprocessor is not None:  # 图片预处理器存在
+                    img = self.img_preprocessor([img], self.img_proc_args_dict)
+                return img, label
+
+            def __len__(self):
+                return ori_dataset.__len__()
+
+        return PreprocessDataset()
+
+    def adv_defense_training_4_img(self):
+        # self.ori_dataset_preprocess()
+        dataset = self.init_with_dataset(self.dataset_info, self.img_preprocessor, self.img_proc_args_dict)
         if self.defense_component.get('is_inclass') is True:
-            # weight = self.defense_func(self.defense_class, self.defense_model, self.img_preprocessor,
-            #                            self.img_reverse_processor, self.img_proc_args_dict, self.ori_dataset)
-            weight = self.defense_func(self.defense_class, self.defense_model, self.img_array, self.label_array )
+            weight = self.defense_func(self.defense_class, self.defense_model, dataset,
+                                       self.each_epoch_finish_callback)
         else:
-            weight = self.defense_func(self.defense_class, self.defense_model, self.img_array, self.label_array )
+            weight = self.defense_func(self.defense_class, self.defense_model, self.img_array, self.label_array,
+                                       self.each_epoch_finish_callback)
         return weight
 
     def destroy(self):
@@ -74,17 +98,17 @@ class Adversarial_Trainer:
         check_cuda_memory_alloc_status(empty_cache=True)
 
 
-def adv_defense_4_img_batch(defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info, run_device=None):
+def adv_defense_4_img_batch(defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info,
+                            each_epoch_finish_callback=None, run_device=None):
     # 构建防御训练器
     adv_defense = Adversarial_Trainer(defense_name, defense_args, model_name, model_args, img_proc_args, dataset_info,
-                                      run_device)
+                                      each_epoch_finish_callback, run_device)
 
     weight = adv_defense.adv_defense_training_4_img()
-
     # Save model
     file_name = "AT_" + model_name + "_" + dataset_info.dataset_name + "_" + task_manager.task_token + ".pt"
-    save_weight_to_temp(file_path=model_name+'/', file_name=file_name, weight=weight)
-
+    save_weight_to_temp(file_path=model_name + '/', file_name=file_name, weight=weight)
+    task_manager.sys_log_logger.update_finish_status(True)
     adv_defense.destroy()
     del adv_defense
     return file_name
