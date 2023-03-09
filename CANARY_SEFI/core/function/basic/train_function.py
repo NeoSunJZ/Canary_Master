@@ -1,4 +1,5 @@
 import copy
+import math
 import random
 import os
 import torch
@@ -68,17 +69,27 @@ class Adversarial_Trainer:
                 self.ori_dataset = ori_dataset
                 self.img_preprocessor = img_preprocessor
                 self.img_proc_args_dict = img_proc_args_dict
+                self.batch_size = self.img_proc_args_dict.get('batch_size', 1)
+                self.dataset_size = dataset_info.dataset_size
 
             def __getitem__(self, index):
-                img, label = self.ori_dataset.__getitem__(index)
-                img = np.array(img)
-                label = torch.LongTensor([label])
+                imgs = []
+                labels = []
+                for num in range(index * self.batch_size,
+                                 min((index + 1) * self.batch_size, self.dataset_size)):
+                    img, label = self.ori_dataset.__getitem__(num)
+                    img = np.array(img)
+                    imgs.append(img)
+                    labels.append(label)
+
                 if self.img_preprocessor is not None:  # 图片预处理器存在
-                    img = self.img_preprocessor([img], self.img_proc_args_dict)
-                return img, label
+                    img_batch = self.img_preprocessor(imgs, self.img_proc_args_dict)
+                label_batch = torch.LongTensor(labels)
+                return img_batch, label_batch
 
             def __len__(self):
-                return ori_dataset.__len__()
+                all_batch = int(math.ceil(self.dataset_size/ self.batch_size))
+                return all_batch
 
         return PreprocessDataset()
 
