@@ -43,6 +43,7 @@ class CorrectnessCheck:
         model = get_model(self.model_name, self.model_args, self.run_device, model_query_logger=None)
         inference_detector_func = inference_detector.get('func')
 
+        ORI = []
         logits_ORI = []
         logits_ADV_O = []
         logits_ADV_NPY = []
@@ -58,6 +59,7 @@ class CorrectnessCheck:
 
         # 攻击单图片迭代函数
         def attack_iterator(imgs, img_log_ids, img_labels, save_raw_data=True):
+            ORI.extend(img_labels)
             # 原始图片预测
             img_preprocessed = img_preprocessor(imgs, self.model_args)
             logits_ORI.append(inference_detector_func(model, img_preprocessed))
@@ -123,6 +125,7 @@ class CorrectnessCheck:
             for result in results:
                 result_ADV_IMG.append(result)
 
+        print("ORI_Label:{}".format(ORI))
         print("result_ORI:{}".format(result_ORI))
         print("logits_ADV_O:{}".format(result_ADV_O))
         print("logits_ADV_NPY:{}".format(result_ADV_NPY))
@@ -130,6 +133,7 @@ class CorrectnessCheck:
 
         statistics = {
             "ADV_O_Mc": 0, "ADV_NPY_Mc": 0, "ADV_IMG_Mc": 0,
+            "ADV_O_Mc_v": 0, "ADV_NPY_Mc_v": 0, "ADV_IMG_Mc_v": 0,
         }
         for index in range(len(result_ORI)):
             if result_ORI[index] != result_ADV_O[index]:
@@ -141,3 +145,17 @@ class CorrectnessCheck:
         print("MR: ADV_O_Mc:{} ADV_NPY_Mc:{} ADV_IMG_Mc:{}".format(statistics["ADV_O_Mc"]/len(result_ORI),
                                                                    statistics["ADV_NPY_Mc"]/len(result_ORI),
                                                                    statistics["ADV_IMG_Mc"]/len(result_ORI)))
+        valid_count = 0
+        for index in range(len(result_ORI)):
+            if result_ORI[index] == ORI[index]:
+                valid_count += 1
+                if result_ORI[index] != result_ADV_O[index]:
+                    statistics["ADV_O_Mc_v"] += 1
+                if result_ORI[index] != result_ADV_NPY[index]:
+                    statistics["ADV_NPY_Mc_v"] += 1
+                if result_ORI[index] != result_ADV_IMG[index]:
+                    statistics["ADV_IMG_Mc_v"] += 1
+
+        print("MR: ADV_O_Mc_v:{} ADV_NPY_Mc_v:{} ADV_IMG_Mc_v:{}".format(statistics["ADV_O_Mc_v"]/valid_count,
+                                                                   statistics["ADV_NPY_Mc_v"]/valid_count,
+                                                                   statistics["ADV_IMG_Mc_v"]/valid_count))
