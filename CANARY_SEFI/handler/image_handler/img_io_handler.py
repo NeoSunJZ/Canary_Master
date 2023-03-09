@@ -29,8 +29,7 @@ def get_pic_base64_from_nparray(file_output):
 
 def get_pic_nparray_from_temp(file_path, file_name, is_numpy_array_file=False):
     file_name = img_file_name_handler(file_name, is_numpy_array_file)
-    full_path = "/home/zhangda/temp/pic/" + ("npy/" if is_numpy_array_file else "img/")
-    # full_path = file_path + ("npy/" if is_numpy_array_file else "img/")
+    full_path = file_path + ("npy/" if is_numpy_array_file else "img/")
     if full_path is None:
         raise RuntimeError("[ Config Error ] The dataset path is NOT FOUND, please check your config")
     if not is_numpy_array_file:
@@ -44,8 +43,7 @@ def get_pic_nparray_from_temp(file_path, file_name, is_numpy_array_file=False):
 
 def save_pic_to_temp(file_path, file_name, pic_numpy_array, save_as_numpy_array=False):
     file_name = img_file_name_handler(file_name, save_as_numpy_array)
-    full_path = "/home/zhangda/temp/pic/" + file_path + ("npy/" if save_as_numpy_array else "img/")
-    # full_path = task_manager.base_temp_path + "pic/" + file_path + ("npy/" if save_as_numpy_array else "img/")
+    full_path = task_manager.base_temp_path + "pic/" + file_path + ("npy/" if save_as_numpy_array else "img/")
     if not os.path.exists(full_path):
         os.makedirs(full_path)
 
