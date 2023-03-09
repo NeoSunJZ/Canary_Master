@@ -1,6 +1,6 @@
 config = {
     "adv_example_generate_batch_config": {
-        "EAD": {  # 3090:24G
+        "SSAH": {  # 3090:24G
             "Alexnet(ImageNet)": 150,
             "VGG(ImageNet)": 50,
             "GoogLeNet(ImageNet)": 80,
@@ -14,8 +14,8 @@ config = {
             "EfficientNetV2(ImageNet)": 20,
             "ViT(ImageNet)": 50,
             "RegNet(ImageNet)": 40,
-            "SwinTransformer(ImageNet)": 40,
-            "ConvNext(ImageNet)": 35,
+            "SwinTransformer(ImageNet)": 50,
+            "ConvNext(ImageNet)": 35
         },
     }
 }
