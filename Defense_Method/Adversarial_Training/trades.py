@@ -42,9 +42,10 @@ class Trades():
             self.adjust_learning_rate(optimizer,epoch)
 
             # adversarial training
-            for cur in dataset:
+            for index in range(len(dataset)):
+                #print(len(dataset))
                 # data, target = imgs[index].to(self.device), labels[index].to(self.device)
-                data, target = cur[0].to(self.device), cur[1].to(self.device)
+                data, target = dataset[index][0].to(self.device), dataset[index][1].to(self.device)
                 optimizer.zero_grad()
                 # calculate robust loss
                 loss = self.trades_loss(model=defense_model,
@@ -68,6 +69,7 @@ class Trades():
             each_epoch_finish_callback(epoch)
 
         return defense_model.state_dict()
+
 
     def trades_loss(self, model, x_natural, y, optimizer, step_size=0.003, epsilon=0.031, perturb_steps=10, beta=1.0, distance='l_inf'):
         # define KL-loss
