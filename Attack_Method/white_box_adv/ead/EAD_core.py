@@ -8,11 +8,11 @@ from Attack_Method.white_box_adv.ead.attack import Attack
 
 
 class EAD(Attack):
-    def __init__(self, model=None, kappa=0, init_const=0.001, lr=0.02, binary_search_steps=5, max_iters=10000, lower_bound=0.0, upper_bound=1.0,
+    def __init__(self, model=None, targeted=False, kappa=0, init_const=0.001, lr=0.02, binary_search_steps=5, max_iters=10000, lower_bound=0.0, upper_bound=1.0,
                  beta=1e-3, EN=True, num_classes=1000):
         super(EAD, self).__init__(model)
         self.model = model
-
+        self.targeted = targeted
         self.kappa = kappa * 1.0
         self.learning_rate = lr
         self.init_const = init_const
@@ -36,8 +36,15 @@ class EAD(Attack):
 
         # help function
         def attack_achieved(pre_softmax, target_class):
-            pre_softmax[target_class] -= self.kappa
-            return np.argmax(pre_softmax) == target_class
+            if self.targeted:
+                pre_softmax[target_class] -= self.kappa
+            else:
+                pre_softmax[target_class] += self.kappa
+
+            if self.targeted:
+                return np.argmax(pre_softmax) == target_class
+            else:
+                return np.argmax(pre_softmax) != target_class
 
         # help function: Iterative Shrinkage-Threshold-ing Algorithm
         def ISTA(new, old):
@@ -80,14 +87,19 @@ class EAD(Attack):
             optimizer_y = torch.optim.SGD([slack], lr=self.learning_rate)
             old_image = slack.clone()  # Save the previous version of new_img in the iteration
             var_const = tensor2variable(torch.FloatTensor(const_origin), device=device)
-            print("\tbinary search step {}:".format(search_for_c))
+            # print("\tbinary search step {}:".format(search_for_c))
 
             for iteration_times in range(self.max_iterations):
                 # optimize the slack variable
                 output_y = self.model(slack).to(device)
                 l2dist_y = torch.sum((slack - var_samples) ** 2, [1, 2, 3])
                 kappa_t = torch.FloatTensor([self.kappa] * batch_size).to(device)
-                target_loss_y = torch.max((output_y - 1e10 * targets_one_hot).max(1)[0] - (output_y * targets_one_hot).sum(1), -1 * kappa_t)
+
+                if self.targeted:
+                    target_loss_y = (output_y - 1e10 * targets_one_hot).max(1)[0] - (output_y * targets_one_hot).sum(1)
+                else:
+                    target_loss_y = (output_y * targets_one_hot).sum(1) - (output_y - 1e10 * targets_one_hot).max(1)[0]
+
                 c_loss_y = var_const * target_loss_y
                 loss_y = l2dist_y.sum() + c_loss_y.sum()
 
@@ -137,7 +149,7 @@ class EAD(Attack):
         for i in range(batch_size):
             if flag[i]:
                 cnt += 1
-        print("Success: {}".format(cnt))
+        # print("Success: {}".format(cnt))
 
         return np.array(best_perturbation)
 
@@ -156,7 +168,7 @@ class EAD(Attack):
         for index in range(number_batch):
             start = index * batch_size
             end = min((index + 1) * batch_size, len(xs))
-            print('\r===> in batch {:>2}, {:>4} ({:>4} in total) nature examples are perturbed ... '.format(index, end - start, end), end=' ')
+            # print('\r===> in batch {:>2}, {:>4} ({:>4} in total) nature examples are perturbed ... '.format(index, end - start, end), end=' ')
 
             batch_adv_images = self.perturbation(xs[start:end], ys_target[start:end], batch_size, device)
 

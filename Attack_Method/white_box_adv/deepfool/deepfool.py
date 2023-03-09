@@ -60,7 +60,7 @@ class DeepFool():
             raw, clipped, is_adv = attack(self.model, imgs, ori_labels, epsilons=None, criterion=criterion)
 
         adv_img = raw.raw
-        self.p_total = attack.p_total
+        self.p_total = attack.p_total.raw.cpu()
         self.loop_count = attack.loop_count
 
         return adv_img

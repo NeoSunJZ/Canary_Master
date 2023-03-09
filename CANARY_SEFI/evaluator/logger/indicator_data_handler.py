@@ -80,6 +80,17 @@ def save_attack_adv_example_da_indicator_data(atk_name, base_model, adv_example_
     return
 
 
+def get_attack_adv_example_da_indicator_data_by_base_model(base_model):
+    sql = "SELECT * FROM attack_adv_example_da_indicator_data WHERE base_model = ? "
+    return task_manager.test_data_logger.query_logs(sql, (base_model,))
+
+
+def get_attack_adv_example_da_indicator_data_by_attack_name(atk_name):
+    sql = "SELECT * FROM attack_adv_example_da_indicator_data WHERE atk_name = ? "
+    return task_manager.test_data_logger.query_logs(sql, (atk_name,))
+
+
+
 # 缩写释义:
 # ACT: average cost time
 # AQN_F: average query number (forward)
@@ -101,13 +112,13 @@ def save_attack_adv_example_cost_indicator_data(atk_name, base_model, ACT, AQN_F
     return
 
 
-def get_attack_adv_example_da_indicator_data_by_base_model(base_model):
-    sql = "SELECT * FROM attack_adv_example_da_indicator_data WHERE base_model = ? "
+def get_attack_adv_example_cost_indicator_data_by_base_model(base_model):
+    sql = "SELECT * FROM attack_adv_example_cost_indicator_data WHERE base_model = ? "
     return task_manager.test_data_logger.query_logs(sql, (base_model,))
 
 
-def get_attack_adv_example_da_indicator_data_by_attack_name(atk_name):
-    sql = "SELECT * FROM attack_adv_example_da_indicator_data WHERE atk_name = ? "
+def get_attack_adv_example_cost_indicator_data_by_attack_name(atk_name):
+    sql = "SELECT * FROM attack_adv_example_cost_indicator_data WHERE atk_name = ? "
     return task_manager.test_data_logger.query_logs(sql, (atk_name,))
 
 
@@ -140,19 +151,19 @@ def get_attack_capability_with_perturbation_increment_indicator_data(atk_name, b
 
 def add_model_security_synthetical_capability_log(model_name, test_adv_example_file_type,
                                                   model_ACC, model_F1, model_Conf,
-                                                  model_MR, model_AIAC, model_ARTC, model_ACT,
-                                                  model_AMD, model_AED, model_AED_HF, model_AED_LF,
-                                                  model_APCR, model_ADMS, model_ALMS):
+                                                  MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T,
+                                                  ACT, AQN_F, AQN_B,
+                                                  AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS):
     sql = "INSERT INTO model_dimension_summary (model_name, test_adv_example_file_type, " \
-          "ACC, F1, Conf, MR, AIAC, ARTC, ACT, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS) " \
-          "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+          "ACC, F1, Conf, MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, ACT, AQN_F, AQN_B, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS) " \
+          "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
     args = (model_name, test_adv_example_file_type, model_ACC, model_F1, model_Conf,
-            model_MR, model_AIAC, model_ARTC, model_ACT,
-            model_AMD, model_AED, model_AED_HF, model_AED_LF, model_APCR, model_ADMS, model_ALMS)
+            MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, ACT, AQN_F, AQN_B, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS)
     task_manager.test_data_logger.insert_log(sql, args)
     if task_manager.test_data_logger.debug_log:
-        msg = "[ LOGGER ] Logged. Model({})'s Evaluated Result (Tested Adv Example Type:{} ) :[ ACC:{} " \
-              "F1:{} Conf:{} MR:{} AIAC:{} ARTC:{} ACT:{} AMD:{} AED:{} AED_HF:{} AED_LF:{} APCR:{} ADMS:{} ALMS:{} ]".format(*args)
+        msg = "[ LOGGER ] Logged. Model({})'s Evaluated Result (Tested Adv Example Type:{} ) :[ " \
+              "ACC:{} F1:{} Conf:{} MR:{} TAS:{} AIAC:{} ARTC:{} ACAMC_A:{} ACAMC_T:{}" \
+              "ACT:{} AQN_F:{} AQN_B:{} AMD:{} AED:{} AED_HF:{} AED_LF:{} APCR:{} ADMS:{} ALMS:{} ]".format(*args)
         reporter.console_log(msg, Fore.CYAN, type="DEBUG")
     return
 
@@ -160,3 +171,22 @@ def add_model_security_synthetical_capability_log(model_name, test_adv_example_f
 def get_model_security_synthetical_capability_log(model_name):
     sql = " SELECT * FROM model_dimension_summary WHERE model_name = ? "
     return task_manager.test_data_logger.query_log(sql, (model_name,))
+
+
+def add_attack_synthetical_capability_log(attack_name, test_adv_example_file_type,
+                                                  model_ACC, model_F1, model_Conf,
+                                                  MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T,
+                                                  ACT, AQN_F, AQN_B,
+                                                  AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS):
+    sql = "INSERT INTO attack_dimension_summary (attack_name, test_adv_example_file_type, " \
+          "ACC, F1, Conf, MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, ACT, AQN_F, AQN_B, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS) " \
+          "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+    args = (attack_name, test_adv_example_file_type, model_ACC, model_F1, model_Conf,
+            MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, ACT, AQN_F, AQN_B, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS)
+    task_manager.test_data_logger.insert_log(sql, args)
+    if task_manager.test_data_logger.debug_log:
+        msg = "[ LOGGER ] Logged. Model({})'s Evaluated Result (Tested Adv Example Type:{} ) :[ " \
+              "ACC:{} F1:{} Conf:{} MR:{} TAS:{} AIAC:{} ARTC:{} ACAMC_A:{} ACAMC_T:{}" \
+              "ACT:{} AQN_F:{} AQN_B:{} AMD:{} AED:{} AED_HF:{} AED_LF:{} APCR:{} ADMS:{} ALMS:{} ]".format(*args)
+        reporter.console_log(msg, Fore.CYAN, type="DEBUG")
+    return

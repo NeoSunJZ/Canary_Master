@@ -1,5 +1,3 @@
-import time
-
 import numpy as np
 import torch
 
@@ -32,9 +30,10 @@ sefi_component = SEFIComponent()
                                           "EN": {"desc": "选择最佳对抗性示例所依据的规则，它可以最小化L1或ElasticNet距离", "type": "BOOL", "required": "true", "def": "True"}
                                       })
 class EADAttack:
-    def __init__(self, model, run_device, attack_type='TARGETED', tlabel=1, clip_min=0, clip_max=1, kappa=0, init_const=0.001, lr=0.02, binary_search_steps=5, max_iters=10000, beta=0.001, EN=True, num_classes=1000):
+    def __init__(self, model, run_device, attack_type='TARGETED', tlabel=None, clip_min=0, clip_max=1, kappa=0, init_const=0.001, lr=0.02, binary_search_steps=5, max_iters=10000, beta=0.001, EN=True, num_classes=1000):
         self.model = model  # 待攻击的白盒模型
         self.device = run_device
+        self.attack_type = attack_type
         self.lower_bound = clip_min  # 像素值的下限
         self.upper_bound = clip_max  # 像素值的上限
         self.tlabel = tlabel
@@ -47,12 +46,26 @@ class EADAttack:
         self.EN = EN
         self.num_classes = num_classes
 
+        if self.attack_type == 'TARGETED':
+            self.targeted = True
+        elif self.attack_type == 'UNTARGETED':
+            self.targeted = False
+        else:
+            raise RuntimeError("[ Logic Error ] Illegal target type!")
+
     @sefi_component.attack(name="EAD", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
-    def attack(self, imgs, ori_label):
-        ead = EAD(model=self.model, kappa=self.kappa, init_const=self.init_const, lr=self.lr, binary_search_steps=self.binary_search_steps, max_iters=self.max_iters, lower_bound=self.lower_bound, upper_bound=self.upper_bound, beta=self.beta, EN=self.EN, num_classes=self.num_classes)
+    def attack(self, imgs, ori_label, tlabels=None):
+        ead = EAD(model=self.model, targeted=self.targeted, kappa=self.kappa, init_const=self.init_const, lr=self.lr, binary_search_steps=self.binary_search_steps, max_iters=self.max_iters, lower_bound=self.lower_bound, upper_bound=self.upper_bound, beta=self.beta, EN=self.EN, num_classes=self.num_classes)
         imgs = imgs.cpu().numpy()
         length = len(imgs)
-        tlabel = self.tlabel * np.ones(length, dtype=np.int)
+
+        if self.attack_type == 'TARGETED':
+            tlabel = np.repeat(self.tlabel, length) if tlabels is None else tlabels
+        elif self.attack_type == 'UNTARGETED':
+            tlabel = ori_label
+        else:
+            raise RuntimeError("[ Logic Error ] Illegal target type!")
+
         adv_imgs = ead.batch_perturbation(imgs, tlabel, length, self.device)
         adv_imgs = torch.tensor(adv_imgs, dtype=torch.float).to(self.device)
         return adv_imgs

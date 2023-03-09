@@ -5,7 +5,7 @@ config = {
         "VMI_FGSM": {
             "clip_min": 0,
             "clip_max": 1,
-            "epsilon": 16 / 255,
+            "epsilon": 1 / 255,
             "T": 100,
             "attack_type": "UNTARGETED",
             "tlabel": None
