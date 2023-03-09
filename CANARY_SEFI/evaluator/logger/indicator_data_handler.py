@@ -32,7 +32,6 @@ def save_attack_deflection_capability_indicator_data(atk_name, base_model, infer
                                                      logger=None):
     if logger is None:
         logger = task_manager.test_data_logger
-    print(logger)
     sql = "REPLACE INTO attack_deflection_capability_indicator_data (atk_name, base_model, atk_perturbation_budget, " \
           "inference_model, adv_example_file_type, MR, AIAC, ARTC, ACAMC_A, ACAMC_T) VALUES (?,?,?,?,?,?,?,?,?,?)"
     args = (str(atk_name), str(base_model), atk_perturbation_budget, str(inference_model), str(adv_example_file_type),
