@@ -9,7 +9,7 @@ from CANARY_SEFI.core.function.inference import inference, adv_inference
 from CANARY_SEFI.core.function.generate_adv_example import build_AEs, build_AEs_with_perturbation_increment
 from CANARY_SEFI.core.function.helper.batch_list_iterator import BatchListIterator
 from CANARY_SEFI.evaluator.analyzer.synthetical_analyzer import \
-    model_security_synthetical_capability_analyzer_and_evaluation
+    model_security_synthetical_capability_analyzer_and_evaluation, attack_synthetical_capability_analyzer_and_evaluation
 from CANARY_SEFI.evaluator.analyzer.test_data_analyzer import model_inference_capability_analyzer_and_evaluation, \
     attack_deflection_capability_analyzer_and_evaluation, \
     attack_capability_with_perturbation_increment_analyzer_and_evaluation, \
@@ -125,6 +125,14 @@ def model_security_synthetical_capability_evaluation(model_list, use_raw_nparray
     task_manager.sys_log_logger.set_step(Step.MODEL_SECURITY_SYNTHETICAL_CAPABILITY_EVALUATION)
     for model_name in model_list:
         model_security_synthetical_capability_analyzer_and_evaluation(model_name, use_raw_nparray_data)
+
+
+# 攻击算法综合能力评估
+def attack_synthetical_capability_evaluation(attacker_list, use_raw_nparray_data=False):
+    # 标记当前步骤
+    task_manager.sys_log_logger.set_step(Step.ATTACK_SYNTHETICAL_CAPABILITY_EVALUATION)
+    for attack_name in attacker_list:
+        attack_synthetical_capability_analyzer_and_evaluation(attack_name, use_raw_nparray_data)
 
 
 # 生成对抗样本(扰动递增)
