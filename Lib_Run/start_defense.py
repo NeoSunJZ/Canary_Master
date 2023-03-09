@@ -10,4 +10,5 @@ if __name__ == "__main__":
 
     adv_defense_4_img_batch(defense_name="trades", defense_args={}, model_name="DenseNet(CIFAR-10)",
                             model_args={"is_pretrained":False, "no_normalize_layer":True}, img_proc_args={},
-                            dataset_info=DatasetInfo(dataset_name="CIFAR-10", dataset_seed=40376958655838027, dataset_size=100))
+                            dataset_info=DatasetInfo(dataset_name="CIFAR-10", dataset_seed=40376958655838027, dataset_size=100),
+                            run_device="cuda")
