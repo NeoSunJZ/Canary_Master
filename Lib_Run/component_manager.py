@@ -39,12 +39,15 @@ from Attack_Method.white_box_adv.jsma.jsma import sefi_component as jsma_attacke
 from Attack_Method.white_box_adv.UAP import sefi_component as uap_attacker  # UAP
 from Attack_Method.white_box_adv.EAD import sefi_component as ead_attacker  # EAD
 from Attack_Method.white_box_adv.deepfool.deepfool import sefi_component as deepfool_attacker  # DeepFool
-from Attack_Method.black_box_adv.adv_gan.adv_gan import sefi_component as adv_gan_attacker  #advGan
+from Attack_Method.black_box_adv.adv_gan.adv_gan import sefi_component as adv_gan_attacker  # advGan
 from Attack_Method.black_box_adv.boundary_attack.boundary_attack import sefi_component as boundary_attacker  # BA
 from Attack_Method.black_box_adv.gen_attack.gen_attack import sefi_component as gen_attacker  # GA
 from Attack_Method.black_box_adv.hop_skip_jump_attack.hop_skip_jump_attack import sefi_component as hsj_attacker  # HSJA
 from Attack_Method.black_box_adv.local_search_attack.local_search_attack import sefi_component as ls_attacker  # LSA
 from Attack_Method.black_box_adv.spsa.spsa import sefi_component as sps_attacker  # SPSA
+
+# 防御
+from Defense_Method.Adversarial_Training.trades import sefi_component as trades_component
 
 # 数据集
 from Dataset.ImageNet2012.dataset_loader import sefi_component as imgnet2012_dataset  # IMAGENET2012
@@ -74,5 +77,8 @@ def init_component_manager():
     dataset_list = [
         imgnet2012_dataset, cifar10_dataset
     ]
+    defense_list = [
+        trades_component
+    ]
 
-    SEFI_component_manager.add_all(imagenet_model_list + cifar_model_list + attacker_list + dataset_list)
+    SEFI_component_manager.add_all(imagenet_model_list + cifar_model_list + attacker_list + dataset_list + defense_list)
