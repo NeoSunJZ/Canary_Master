@@ -35,8 +35,6 @@ class InferenceDetector:
         self.img_proc_args_dict = build_dict_with_json_args(model_component, "img_processing", img_proc_args, run_device)
         # 图片预处理
         self.img_preprocessor = model_component.get("img_preprocessor")
-        # 图片预处理
-        self.img_reverse_processor = model_component.get("img_reverse_processor")
         # 结果处理
         self.result_postprocessor = model_component.get("result_postprocessor")
 
