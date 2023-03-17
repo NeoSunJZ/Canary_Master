@@ -37,7 +37,6 @@ from Attack_Method.white_box_adv.fgsm_family.pna_ni_fgsm import sefi_component a
 from Attack_Method.white_box_adv.fgsm_family.pna_si_fgsm import sefi_component as pna_si_fgsm_attacker  # PNA-SI-FGSM
 from Attack_Method.white_box_adv.jsma.jsma import sefi_component as jsma_attacker  # JSMA
 from Attack_Method.white_box_adv.UAP import sefi_component as uap_attacker  # UAP
-from Attack_Method.white_box_adv.EAD import sefi_component as ead_attacker  # EAD
 from Attack_Method.white_box_adv.deepfool.deepfool import sefi_component as deepfool_attacker  # DeepFool
 from Attack_Method.black_box_adv.adv_gan.adv_gan import sefi_component as adv_gan_attacker  # advGan
 from Attack_Method.black_box_adv.boundary_attack.boundary_attack import sefi_component as boundary_attacker  # BA
@@ -75,7 +74,7 @@ def init_component_manager():
 
     attacker_list = [
         cw_attacker, fgm_attacker, mi_fgsm_attacker, uap_attacker, deepfool_attacker, boundary_attacker, hsj_attacker,
-        pgd_attacker, ls_attacker, ead_attacker, gen_attacker, i_fgsm_attacker, fgsm_attacker, jsma_attacker,
+        pgd_attacker, ls_attacker, gen_attacker, i_fgsm_attacker, fgsm_attacker, jsma_attacker,
         sps_attacker, l_bfgs_attacker, adv_gan_attacker, v_mi_fgsm_attacker, pna_ni_fgsm_attacker, pna_si_fgsm_attacker
     ]
 
