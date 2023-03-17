@@ -5,12 +5,12 @@ from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo, DatasetType
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args
 from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
-from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id
+from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id, \
+    find_adv_example_file_log_by_id
 from CANARY_SEFI.handler.image_handler.img_io_handler import save_pic_to_temp
 from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
 from CANARY_SEFI.evaluator.logger.trans_info_handler import add_trans_log
 from CANARY_SEFI.evaluator.logger.trans_file_info_handler import add_adv_trans_img_file_log
-from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_log_by_atk_id_and_ori_img_id
 
 
 class Image_Transformer:
@@ -69,7 +69,7 @@ def adv_trans_4_img_batch(trans_name, trans_args, atk_log, run_device=None):
         for index in range(len(imgs)):
             imgs[index] = adv_trans.adv_trans_4_img(imgs[index])
             img_log_id = img_log_ids[index]
-            adv_img_file_log = find_adv_example_file_log_by_atk_id_and_ori_img_id(attack_id, img_log_id)
+            adv_img_file_log = find_adv_example_file_log_by_id(img_log_id)
             adv_img_file_id = adv_img_file_log['adv_img_file_id']
             if torch.is_tensor(imgs[index]):
                 imgs[index] = imgs[index].numpy()
