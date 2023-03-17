@@ -20,3 +20,4 @@ eagerpy~=0.30.0
 scipy~=1.8.1
 PyWavelets
 timm
+scikit-image==0.15.0
