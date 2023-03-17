@@ -9,7 +9,6 @@ from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_
     find_adv_example_file_log_by_id
 from CANARY_SEFI.handler.image_handler.img_io_handler import save_pic_to_temp
 from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
-from CANARY_SEFI.evaluator.logger.trans_info_handler import add_trans_log
 from CANARY_SEFI.evaluator.logger.trans_file_info_handler import add_adv_trans_img_file_log
 
 
@@ -60,10 +59,7 @@ def adv_trans_4_img_batch(trans_name, trans_args, atk_log, run_device=None):
     # 构建图片转换器
     adv_trans = Image_Transformer(trans_name, trans_args, run_device)
 
-    # 写入日志
-    trans_id = add_trans_log(attack_id, trans_name)
-
-    save_path = str(attack_id) + "/trans/" + str(trans_id) + "/"
+    save_path = str(attack_id) + "/trans/" + trans_name + "/"
 
     def trans_iterator(imgs, img_log_ids, img_labels, save_raw_data=True):
         for index in range(len(imgs)):
@@ -73,11 +69,11 @@ def adv_trans_4_img_batch(trans_name, trans_args, atk_log, run_device=None):
             adv_img_file_id = adv_img_file_log['adv_img_file_id']
             if torch.is_tensor(imgs[index]):
                 imgs[index] = imgs[index].numpy()
-            trans_file_name = "adv_trans_{}.npy".format(img_log_ids[index])
+            trans_file_name = "adv_trans_{}.npy".format(img_log_id)
             save_pic_to_temp(save_path, trans_file_name, imgs[index], save_as_numpy_array=True)
 
             # 写入日志
-            adv_trans_img_file_id = add_adv_trans_img_file_log(trans_id, attack_id, adv_img_file_id, trans_file_name)
+            adv_trans_img_file_id = add_adv_trans_img_file_log(trans_name, attack_id, adv_img_file_id, trans_file_name)
             trans_img_id_list.append(adv_trans_img_file_id)
 
     dataset_image_reader(trans_iterator, adv_dataset_info)
