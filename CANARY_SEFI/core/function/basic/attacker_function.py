@@ -1,6 +1,8 @@
 import copy
 import random
 
+from matplotlib import pyplot as plt
+
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager

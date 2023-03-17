@@ -27,7 +27,7 @@ class SSAH(nn.Module):
                  num_iteration: int = 150, learning_rate: float = 0.001,
                  m: float = 0.2, alpha: float = 1, lambda_lf: float = 0.1, wave: str = 'haar') -> None:
         super(SSAH, self).__init__()
-        self.model= nn.Sequential(*list(model.children())[1:]).to(run_device)
+        self.model = model[-1]
         self.device = run_device
         self.lr = learning_rate
         self.num_iteration = num_iteration
@@ -36,13 +36,13 @@ class SSAH(nn.Module):
         self.lambda_lf = lambda_lf
 
         self.encoder_fea = nn.Sequential(*list(self.model.children())[:-1]).to(self.device)
-        self.encoder_fea= nn.DataParallel(self.encoder_fea)
+        self.encoder_fea = nn.DataParallel(self.encoder_fea)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, 1)).to(self.device)
 
         self.normalize_fn = model[0]
 
-        self.DWT = DWT_2D_tiny(wavename= wave)
-        self.IDWT = IDWT_2D_tiny(wavename= wave)
+        self.DWT = DWT_2D_tiny(wavename=wave)
+        self.IDWT = IDWT_2D_tiny(wavename=wave)
 
     def fea_extract(self, inputs: torch.Tensor) -> torch.Tensor:
         fea = self.encoder_fea(inputs)

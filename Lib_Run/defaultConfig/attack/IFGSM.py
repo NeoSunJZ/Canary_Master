@@ -7,11 +7,11 @@ config = {
         "I_FGSM": {
             "clip_min": 0,
             "clip_max": 1,
-            "eps_iter": 2.5 * ((4 / 255) / 100),
+            "eps_iter": 2.5 * ((1 / 255) / 100),
             "nb_iter": 100,
             "norm": np.inf,
             "attack_type": "UNTARGETED",
-            "epsilon": 4 / 255,
+            "epsilon": 1 / 255,
         }
     }
 }

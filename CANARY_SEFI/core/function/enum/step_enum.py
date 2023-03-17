@@ -23,6 +23,7 @@ class Step(Enum):
     ATTACK_EVALUATION_WITH_PERTURBATION_INCREMENT = {'step_name': "攻击方法效果评估(扰动递增)"}
 
     MODEL_SECURITY_SYNTHETICAL_CAPABILITY_EVALUATION = {'step_name': "模型综合安全能力评估"}
+    ATTACK_SYNTHETICAL_CAPABILITY_EVALUATION = {'step_name': "攻击方法综合能力评估"}
 
     DEFENSE_ADVERSARIAL_TRAINING = {'step_name':"对抗训练"}
 

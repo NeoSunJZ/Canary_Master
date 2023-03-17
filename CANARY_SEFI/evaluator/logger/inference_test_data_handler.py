@@ -10,7 +10,12 @@ from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 def save_inference_test_data(img_id, img_type, inference_model, inference_img_label, inference_img_conf_array,
                              inference_cams=(None, None), use_pickle_dump=True):
     true_class_cams, inference_class_cams = inference_cams
-    sql = "INSERT INTO inference_test_data (inference_test_data_id, img_id, img_type, " \
+    sql_query = "SELECT inference_test_data_id FROM  inference_test_data WHERE img_id = ? AND img_type = ? AND inference_model = ?"
+    result = task_manager.test_data_logger.query_log(sql_query, (img_id, str(img_type), str(inference_model)))
+    if result is not None:
+        task_manager.test_data_logger.update_log("DELETE FROM inference_test_data WHERE inference_test_data_id = ?",
+                                                 (result['inference_test_data_id'],))
+    sql_insert = "INSERT INTO inference_test_data (inference_test_data_id, img_id, img_type, " \
           "inference_model, inference_img_label, inference_img_conf_array, true_class_cams, inference_class_cams) " \
           "VALUES (NULL,?,?,?,?,?,?,?)"
     if use_pickle_dump:
@@ -22,7 +27,7 @@ def save_inference_test_data(img_id, img_type, inference_model, inference_img_la
             str(inference_img_conf_array),
             str(true_class_cams),
             str(inference_class_cams))
-    inference_test_data_id = task_manager.test_data_logger.insert_log(sql, args)
+    inference_test_data_id = task_manager.test_data_logger.insert_log(sql_insert, args)
     if task_manager.test_data_logger.debug_log:
         msg = "[ LOGGER ] Logged. Image(ImgID:{} Type:{}) has Inferenced by Model({}). Inference result is {}. ".format(*args)
         if true_class_cams is not None and inference_class_cams is not None:

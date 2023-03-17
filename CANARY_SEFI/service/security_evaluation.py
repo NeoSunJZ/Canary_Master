@@ -10,7 +10,8 @@ from CANARY_SEFI.core.function.test_and_evaluation import adv_example_generate, 
     model_security_synthetical_capability_evaluation, \
     adv_example_generate_with_perturbation_increment, attack_deflection_capability_test_with_perturbation_increment, \
     attack_adv_example_da_test_with_perturbation_increment, attack_capability_evaluation_with_perturbation_increment, \
-    attack_adv_example_da_and_cost_evaluation, attack_adv_example_comparative_test
+    attack_adv_example_da_and_cost_evaluation, attack_adv_example_comparative_test, \
+    attack_synthetical_capability_evaluation
 from CANARY_SEFI.handler.json_handler.json_io_handler import save_info_to_json_file, get_info_from_json_file
 
 
@@ -76,13 +77,15 @@ class SecurityEvaluation:
             if not skip_step_list["attack_test_and_evaluation"]:
                 self.attack_test_and_evaluation(use_raw_nparray_data=False)
             if not skip_step_list["synthetical_capability_evaluation"]:
-                # 模型综合能力测试结果分析
+                # 综合能力测试结果分析
+                attack_synthetical_capability_evaluation(self.attacker_list, use_raw_nparray_data=False)
                 model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=False)
         if use_raw_nparray_data:
             if not skip_step_list["attack_test_and_evaluation"]:
                 self.attack_test_and_evaluation(use_raw_nparray_data=True)
             if not skip_step_list["synthetical_capability_evaluation"]:
-                # 模型综合能力测试结果分析
+                # 综合能力测试结果分析
+                attack_synthetical_capability_evaluation(self.attacker_list, use_raw_nparray_data=True)
                 model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=True)
         # 流程结束回调
         finish_callback()

@@ -25,7 +25,9 @@ sefi_component = SEFIComponent()
                                           "max_iter_uni": {"desc": "UAP的最大迭代次数", "type": "INT", "def": "100", "required": "true" },
                                           "max_iter_df": {"desc": "DeepFool的最大迭代次数", "type": "INT", "def": "1000", "required": "true" }})
 class UAP:
-    def __init__(self, model, pixel_min=0, pixel_max=1, num_classes=1000, xi=10 / 255.0, img_size=256, p="l-2", overshoot=0.02, delta=0.2, max_iter_df=1000, max_iter_uni=100):
+    def __init__(self, model, run_device, pixel_min=0, pixel_max=1, attack_type="UNTARGETED",
+                 num_classes=1000, xi=10 / 255.0, img_size=224, p="l-2", overshoot=0.02, delta=0.2, max_iter_df=1000, max_iter_uni=100,
+                 init_batch=50):
         self.model = model  # 待攻击的白盒模型
         self.num_classes = num_classes  # 模型中类的数量
         self.img_size = img_size
@@ -43,8 +45,9 @@ class UAP:
         self.pixel_min = pixel_min
         self.pixel_max = pixel_max
 
-        self.v = None
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.v = []
+        self.now_batch = 0
+        self.device = run_device if run_device is not None else 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
     @staticmethod
@@ -58,54 +61,65 @@ class UAP:
         return v
 
     @sefi_component.attack_init(name="UAP")
-    def universal_perturbation(self, dataset):
+    def init_attack(self, dataset, batch_size, model_name):
         print('[ UAP Attack ] p =', self.p, self.xi)
+
+        sub_dataset = []
+        for cur_img in tqdm(dataset):
+            if len(sub_dataset) < batch_size:
+                sub_dataset.append(cur_img)
+            else:
+                v = self.generate_universal_perturbation(sub_dataset)
+                self.v.append(v)
+                sub_dataset = []
+                sub_dataset.append(cur_img)
+        if len(sub_dataset) != 0:
+            v = self.generate_universal_perturbation(sub_dataset)
+            self.v.append(v)
+
+        print(len(self.v))
+        return
+
+    def generate_universal_perturbation(self, dataset):
         v = 0
         fooling_rate = 0.0
         iter = 0
+        deepfool = DeepFool(self.model, self.device,
+                            pixel_min=self.pixel_min, pixel_max=self.pixel_max,
+                            num_classes=self.num_classes, overshoot=self.overshoot,
+                            max_iter=self.max_iter_df, p=self.p)
         while fooling_rate < 1 - self.delta and iter < self.max_iter_uni:
-
-            # Go through the data set and compute the perturbation increments sequentially
-            k = 0
-            self.model.to(self.device)
             for cur_img in tqdm(dataset):
-                k += 1
-                cur_img = torch.from_numpy(cur_img[0]).to(self.device).float()  # 输入img为tensor形式
-                resize = Resize([self.img_size,self.img_size])
-                cur_img = resize(cur_img)
+                img = torch.unsqueeze(cur_img[0], dim=0)
+                ori_label = int(cur_img[1])
 
-                per_img = Variable(cur_img + torch.tensor(v).to(self.device), requires_grad = True)
-                ori_label = int(self.model(cur_img).argmax())
+                resize = Resize([self.img_size, self.img_size])
+                img = resize(img)
+
+                per_img = Variable(img + torch.tensor(v).to(self.device))
+                per_img = torch.clamp(per_img, self.pixel_min, self.pixel_max)
                 per_label = int(self.model(per_img).argmax())
+
                 if ori_label == per_label:
                     self.model.zero_grad()
-                    deepfool = DeepFool(self.model,
-                                        pixel_min=self.pixel_min,
-                                        pixel_max=self.pixel_max,
-                                        num_classes=self.num_classes,
-                                        overshoot=self.overshoot,
-                                        max_iter=self.max_iter_df,
-                                        p=self.p)
-                    deepfool.attack(per_img.data.cpu().numpy(), None)
-                    dr = deepfool.r_tot
-                    iter = deepfool.loop_i
+                    deepfool.attack(per_img, [ori_label])
+                    dr = deepfool.p_total
+                    iter = deepfool.loop_count
                     if iter < self.max_iter_df-1:
                         v = v + dr
                         v = self.lp(v, self.xi, self.p)
-
             iter = iter + 1
-
             # Perturb the dataset with computed perturbation
             fooling_sum = 0
             images_sum = 0
             with torch.no_grad():
                 for cur_img in tqdm(dataset):
-                    cur_img = torch.from_numpy(cur_img[0]).to(self.device).float()  # 输入img为tensor形式
+                    img = cur_img[0] # 输入img为tensor形式
                     resize = Resize([self.img_size, self.img_size])
-                    cur_img = resize(cur_img)
+                    img = resize(img)
 
-                    per_img = cur_img + torch.tensor(v).to(self.device)
-                    ori_label = int(self.model(cur_img).argmax())
+                    per_img = img + torch.tensor(v).to(self.device)
+                    ori_label = int(cur_img[1])
                     per_label = int(self.model(per_img).argmax())
 
                     images_sum += 1
@@ -115,14 +129,13 @@ class UAP:
                 # Compute the fooling rate
                 fooling_rate = fooling_sum / images_sum
                 print('FOOLING RATE = ', fooling_rate)
-                self.v = v
-        return self.v
+        return v
 
     @sefi_component.attack(name="UAP", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
     def attack(self, img, ori_label):
-        img = torch.from_numpy(img).to(self.device).float()
         resize = Resize([self.img_size, self.img_size])
         img = resize(img)
 
-        adv_img = img + torch.tensor(self.v).to(self.device)
-        return adv_img.data.cpu().numpy()
+        adv_img = img + torch.tensor(self.v[self.now_batch]).to(self.device)
+        self.now_batch += 1
+        return adv_img
