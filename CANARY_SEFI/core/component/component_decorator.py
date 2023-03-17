@@ -10,6 +10,7 @@ class SEFIComponent:
         self.models = {}
         self.attack_methods = {}
         self.defense_methods = {}
+        self.trans_methods = {}
         self.datasets = {}
         self.lock = False
 
@@ -59,6 +60,10 @@ class SEFIComponent:
             target = self.get_defense_methods(name)
             if args_type not in (ComponentConfigHandlerType.DEFENSE_PARAMS, 'target_args'):
                 raise Exception("[ Config Error ] Illegal Defense Args Handler Type")
+        elif handler_target == ComponentType.TRANS:
+            target = self.get_trans_methods(name)
+            if args_type not in (ComponentConfigHandlerType.TRANS_PARAMS, 'target_args'):
+                raise Exception("[ Config Error ] Illegal Trans Args Handler Type")
 
         target[args_type.value + "_handler_params"] = params
 
@@ -134,6 +139,22 @@ class SEFIComponent:
 
         return wrapper
 
+    def trans(self, name, is_inclass, trans_type=''):
+        target_trans_method = self.get_trans_methods(name)
+
+        def wrapper(decorated):
+            def inner(*args, **kwargs):
+                trans_method = decorated(*args, **kwargs)
+                return trans_method
+
+            target_trans_method['trans_func'] = inner
+            target_trans_method['is_inclass'] = is_inclass
+            target_trans_method['trans_type'] = trans_type
+
+            return inner
+
+        return wrapper
+
     def attack_init(self, name):
         target_attack_method = self.get_attack_methods(name)
 
@@ -156,6 +177,19 @@ class SEFIComponent:
                 return defense_init
 
             target_defense_method['defense_init'] = inner
+            return inner
+
+        return wrapper
+
+    def trans_init(self, name):
+        target_trans_method = self.get_trans_methods(name)
+
+        def wrapper(decorated):
+            def inner(*args, **kwargs):
+                trans_init = decorated(*args, **kwargs)
+                return trans_init
+
+            target_trans_method['trans_init'] = inner
             return inner
 
         return wrapper
@@ -191,6 +225,20 @@ class SEFIComponent:
 
         return wrapper
 
+    def trans_class(self, trans_name):
+        target_trans_method = self.trans_methods.get(trans_name)
+        if target_trans_method is None:
+            self.trans_methods[trans_name] = {}
+            target_trans_method = self.trans_methods.get(trans_name)
+
+        def wrapper(decorated):
+            target_trans_method['trans_class'] = {
+                "class": decorated,
+            }
+            return decorated
+
+        return wrapper
+
     def get_models(self, name):
         target_model = self.models.get(name)
         if target_model is None:
@@ -211,6 +259,13 @@ class SEFIComponent:
             self.defense_methods[name] = {}
             target_defense_method = self.defense_methods.get(name)
         return target_defense_method
+
+    def get_trans_methods(self, name):
+        target_trans_method = self.trans_methods.get(name)
+        if target_trans_method is None:
+            self.trans_methods[name] = {}
+            target_trans_method = self.trans_methods.get(name)
+        return target_trans_method
 
     def get_datasets(self, name):
         target_datasets = self.datasets.get(name)

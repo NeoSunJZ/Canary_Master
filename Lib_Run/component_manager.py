@@ -49,6 +49,11 @@ from Attack_Method.black_box_adv.spsa.spsa import sefi_component as sps_attacker
 # 防御
 from Defense_Method.Adversarial_Training.trades import sefi_component as trades_component
 
+# 图片预处理
+from Defense_Method.Img_Preprocess.quantize_trans import sefi_component as quantize_component
+from Defense_Method.Img_Preprocess.jpeg_trans import sefi_component as jpeg_component
+from Defense_Method.Img_Preprocess.tvm.tvm_trans import sefi_component as tvm_component
+
 # 数据集
 from Dataset.ImageNet2012.dataset_loader import sefi_component as imgnet2012_dataset  # IMAGENET2012
 from Dataset.CIFAR10.dataset_loader import sefi_component as cifar10_dataset  # CIFAR10
@@ -77,8 +82,13 @@ def init_component_manager():
     dataset_list = [
         imgnet2012_dataset, cifar10_dataset
     ]
+
     defense_list = [
         trades_component
     ]
 
-    SEFI_component_manager.add_all(imagenet_model_list + cifar_model_list + attacker_list + dataset_list + defense_list)
+    trans_list = [
+        quantize_component, jpeg_component, tvm_component
+    ]
+
+    SEFI_component_manager.add_all(imagenet_model_list + cifar_model_list + attacker_list + dataset_list + defense_list + trans_list)
