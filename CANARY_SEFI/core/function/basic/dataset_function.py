@@ -30,7 +30,7 @@ def get_dataset(dataset_info):
 def dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num=0):
 
     # 对抗样本数据集读入
-    if dataset_info.dataset_type != DatasetType.NORMAL:
+    if dataset_info.dataset_type == DatasetType.ADVERSARIAL_EXAMPLE_IMG or dataset_info.dataset_type == DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA:
         adv_dataset_image_reader(iterator, dataset_info, batch_size, completed_num)
         return
 
