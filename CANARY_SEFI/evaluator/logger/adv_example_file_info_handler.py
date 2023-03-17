@@ -71,3 +71,8 @@ def find_adv_example_file_logs_by_attack_id(attack_id):
 def find_adv_example_file_log_by_id(adv_img_file_id):
     sql = " SELECT * FROM adv_img_file_log WHERE adv_img_file_id = ? "
     return task_manager.test_data_logger.query_log(sql, (adv_img_file_id,))
+
+
+def find_adv_example_file_log_by_atk_id_and_ori_img_id(attack_id, ori_img_id):
+    sql = " SELECT * FROM adv_img_file_log WHERE attack_id = ? AND ori_img_id = ?"
+    return task_manager.test_data_logger.query_log(sql, (attack_id, ori_img_id))
