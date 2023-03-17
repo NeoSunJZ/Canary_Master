@@ -35,12 +35,6 @@ class TestDataLogger(SqliteDBLogger):
                        'atk_perturbation_budget float,'
                        'UNIQUE (atk_name, base_model, atk_type, atk_perturbation_budget))')
 
-        cursor.execute('create table if not exists trans_info_log '
-                       '(trans_id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                       'attack_id integer, '
-                       'trans_name  varchar, '
-                       'UNIQUE (trans_name, attack_id))')
-
         cursor.execute('create table if not exists adv_img_file_log '
                        '(adv_img_file_id INTEGER PRIMARY KEY AUTOINCREMENT, '
                        'attack_id integer, '
@@ -56,12 +50,12 @@ class TestDataLogger(SqliteDBLogger):
 
         cursor.execute('create table if not exists adv_trans_img_file_log '
                        '(adv_trans_img_file_id INTEGER PRIMARY KEY AUTOINCREMENT, '
-                       'trans_id integer, '
+                       'trans_name varchar, '
                        'attack_id integer, '
                        'adv_img_file_id integer, '
                        'adv_trans_img_filename varchar, '
                        'ground_valid varchar,'
-                       'UNIQUE (attack_id, trans_id, adv_img_file_id))')
+                       'UNIQUE (trans_name, adv_img_file_id))')
 
         cursor.execute('create table if not exists adv_example_da_test_data '
                        '(adv_img_file_id integer, '
