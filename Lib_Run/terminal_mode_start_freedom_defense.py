@@ -24,6 +24,9 @@ if __name__ == "__main__":
             },
         },
         "img_proc_config": {
+            "DenseNet(CIFAR-10)": {
+                "batch_size": 3
+            },
         },
     }
     task_manager.init_task(show_logo=True, run_device="cuda")
