@@ -16,11 +16,10 @@ sefi_component = SEFIComponent()
                                       params={
 
                                       })
-
 class Trades():
-    def __init__(self, lr=0.1, momentum=0.9, weight_decay=2e-4, epochs=10, run_device=None, step_size = 0.007,
-                epsilon = 0.031, num_steps = 10, beta = 6.0, log_interval = 5):
-        #defense_args_dict传到这里初始化
+    def __init__(self, lr=0.1, momentum=0.9, weight_decay=2e-4, epochs=10, run_device=None, step_size=0.007,
+                 epsilon=0.031, num_steps=10, beta=6.0, log_interval=5):
+        # defense_args_dict传到这里初始化
         self.lr = lr
         self.momentum = momentum
         self.weight_decay = weight_decay
@@ -35,15 +34,16 @@ class Trades():
     @sefi_component.defense(name="trades", is_inclass=True, support_model=[])
     def defense(self, defense_model, dataset, each_epoch_finish_callback=None):
         defense_model.train()
-        optimizer = optim.SGD(defense_model.parameters(), lr=self.lr, momentum=self.momentum, weight_decay=self.weight_decay)
+        optimizer = optim.SGD(defense_model.parameters(), lr=self.lr, momentum=self.momentum,
+                              weight_decay=self.weight_decay)
         # for epoch in range(1, self.epochs + 1):
         for epoch in range(1, self.epochs + 1):
             # adjust learning rate for SGD
-            self.adjust_learning_rate(optimizer,epoch)
+            self.adjust_learning_rate(optimizer, epoch)
 
             # adversarial training
             for index in range(len(dataset)):
-                #print(len(dataset))
+                # print(len(dataset))
                 # data, target = imgs[index].to(self.device), labels[index].to(self.device)
                 data, target = dataset[index][0].to(self.device), dataset[index][1].to(self.device)
                 optimizer.zero_grad()
@@ -70,8 +70,8 @@ class Trades():
 
         return defense_model.state_dict()
 
-
-    def trades_loss(self, model, x_natural, y, optimizer, step_size=0.003, epsilon=0.031, perturb_steps=10, beta=1.0, distance='l_inf'):
+    def trades_loss(self, model, x_natural, y, optimizer, step_size=0.003, epsilon=0.031, perturb_steps=10, beta=1.0,
+                    distance='l_inf'):
         # define KL-loss
         criterion_kl = nn.KLDivLoss(size_average=False)
         model.eval()
@@ -103,7 +103,7 @@ class Trades():
         loss = loss_natural + beta * loss_robust
         return loss
 
-    def adjust_learning_rate(self,optimizer, epoch):
+    def adjust_learning_rate(self, optimizer, epoch):
         """decrease the learning rate"""
         lr = self.lr
         if epoch >= 75:
