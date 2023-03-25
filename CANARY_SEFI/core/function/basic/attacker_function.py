@@ -1,13 +1,11 @@
 import copy
 import random
 
-from matplotlib import pyplot as plt
-
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
-from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader, get_dataset
+from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_image_reader, get_dataset
 from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import add_adv_example_file_log, \
     set_adv_example_file_cost_time, set_adv_example_file_query_num
 from CANARY_SEFI.evaluator.logger.attack_info_handler import add_attack_log
