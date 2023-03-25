@@ -1,11 +1,10 @@
 import numpy as np
 from colorama import Fore
-from tqdm.auto import tqdm
 
 from CANARY_SEFI.core.component.component_builder import get_model
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.function.basic.attacker_function import AdvAttacker
-from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
+from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_image_reader
 from CANARY_SEFI.core.function.init_dataset import init_dataset
 from CANARY_SEFI.handler.image_handler.img_io_handler import save_pic_to_temp
 from CANARY_SEFI.task_manager import task_manager
