@@ -1,18 +1,15 @@
-import numpy as np
-import torch
-from matplotlib import pyplot as plt
-
+from CANARY_SEFI.core.function.enum.test_level_enum import TestLevel
 from CANARY_SEFI.evaluator.monitor.grad_crm import ActivationsAndGradients, GradCAM
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
-from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
+from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_image_reader
 from CANARY_SEFI.evaluator.logger.inference_test_data_handler import save_inference_test_data
 from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
 
 
 class InferenceDetector:
-    def __init__(self, inference_model_name, model_args, img_proc_args, run_device=None):
+    def __init__(self, inference_model_name, model_args, img_proc_args, run_device=None, test_level=TestLevel.FULL):
 
         self.model = get_model(inference_model_name, model_args, run_device)
         if self.model is None:
@@ -21,10 +18,12 @@ class InferenceDetector:
         model_component = SEFI_component_manager.model_list.get(inference_model_name)
 
         # 注册Model的HOOK钩子以使用GRAD-CRM分析可解释性
-        target_layers_getter = model_component.get("target_layers_getter")
-        target_layers, reshape_transform = target_layers_getter(self.model)
-        if target_layers_getter is not None:
-            self.activations_and_grads = ActivationsAndGradients(target_layers=target_layers, reshape_transform=reshape_transform)
+        self.activations_and_grads = None
+        if test_level is TestLevel.FULL:
+            target_layers_getter = model_component.get("target_layers_getter")
+            if target_layers_getter is not None:
+                target_layers, reshape_transform = target_layers_getter(self.model)
+                self.activations_and_grads = ActivationsAndGradients(target_layers=target_layers, reshape_transform=reshape_transform)
 
         # 预测器
         self.inference_detector = model_component.get("inference_detector")
@@ -67,16 +66,17 @@ class InferenceDetector:
 
 
 def inference_detector_4_img_batch(inference_model_name, model_args, img_proc_args, dataset_info,
-                                   each_img_finish_callback=None, batch_size=1, completed_num=0, run_device=None):
+                                   each_img_finish_callback=None, batch_size=1, completed_num=0, run_device=None,
+                                   test_level=TestLevel.FULL):
     img_log_id_list = []
-    inference_detector = InferenceDetector(inference_model_name, model_args, img_proc_args, run_device)
+    inference_detector = InferenceDetector(inference_model_name, model_args, img_proc_args, run_device, test_level)
 
     def inference_iterator(imgs, img_log_ids, img_labels):
         # 执行预测
         result, logits = inference_detector.inference_detector_4_img(imgs)
         inference_labels, inference_conf_arrays = result[0], result[1]
 
-        if inference_detector.activations_and_grads is not None:
+        if inference_detector.activations_and_grads is not None or test_level is TestLevel.FULL:
             cam = GradCAM(activations_and_grads=inference_detector.activations_and_grads)
             grayscale_cams_with_true_labels = cam(output=logits, input_tensor=inference_detector.imgs, target_category=img_labels)
             grayscale_cams_with_inference_labels = cam(output=logits, input_tensor=inference_detector.imgs, target_category=inference_labels)
@@ -90,10 +90,13 @@ def inference_detector_4_img_batch(inference_model_name, model_args, img_proc_ar
             if each_img_finish_callback is not None:
                 each_img_finish_callback(imgs[index], inference_labels[index])
 
+            if grayscale_cams_with_true_labels is not None and grayscale_cams_with_inference_labels is not None:
+                inference_cams = (grayscale_cams_with_true_labels[index], grayscale_cams_with_inference_labels[index])
+            else:
+                inference_cams = (None, None)
             # 写入必要日志
             save_inference_test_data(img_log_ids[index], dataset_info.dataset_type.value, inference_model_name,
-                                     inference_labels[index], inference_conf_arrays[index],
-                                     (grayscale_cams_with_true_labels[index], grayscale_cams_with_inference_labels[index]))
+                                     inference_labels[index], inference_conf_arrays[index], inference_cams)
 
     dataset_image_reader(inference_iterator, dataset_info, batch_size, completed_num)
     task_manager.sys_log_logger.update_finish_status(True)
