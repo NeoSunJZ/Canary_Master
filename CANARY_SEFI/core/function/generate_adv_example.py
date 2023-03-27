@@ -9,7 +9,7 @@ from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
 
 
-def build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args, atk_batch_config, atk_perturbation_budget=None, run_device=None):
+def build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args, defense_weight_path, atk_batch_config, atk_perturbation_budget=None, run_device=None):
     with tqdm(total=dataset_info.dataset_size, desc="Adv-example Generating progress", ncols=120) as bar:
         def each_img_finish_callback(img, adv_result):
             check_cuda_memory_alloc_status(empty_cache=True)
@@ -21,7 +21,8 @@ def build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc
         is_skip, completed_num = global_recovery.check_skip(participant)
         if is_skip:
             return None
-
+        if len(model_name.split('_')) != 1:
+            model_args = defense_weight_path.get(atk_name)
         batch_size = atk_batch_config.get(atk_name, {}).get(model_name, 1)
         adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info,
                                each_img_finish_callback=each_img_finish_callback,

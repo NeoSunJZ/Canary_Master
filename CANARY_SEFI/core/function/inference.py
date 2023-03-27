@@ -6,7 +6,7 @@ from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo, DatasetType
 from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id
 
 
-def inference(dataset_info, model_name, model_args, img_proc_args, inference_batch_config, run_device=None):
+def inference(dataset_info, model_name, model_args, img_proc_args, inference_batch_config, defense_weight_path, run_device=None):
     with tqdm(total=dataset_info.dataset_size, desc="Inference Progress", ncols=120) as bar:
         def each_img_finish_callback(img, result):
             bar.update(1)
@@ -14,6 +14,8 @@ def inference(dataset_info, model_name, model_args, img_proc_args, inference_bat
         is_skip, completed_num = global_recovery.check_skip(model_name)
         if is_skip:
             return None
+        if len(model_name.split('_')) != 1:
+            model_args = defense_weight_path.get(model_name)
         batch_size = inference_batch_config.get(model_name, 1)
         inference_detector_4_img_batch(model_name, model_args, img_proc_args, dataset_info,
                                        each_img_finish_callback=each_img_finish_callback,
@@ -22,7 +24,7 @@ def inference(dataset_info, model_name, model_args, img_proc_args, inference_bat
                                        run_device=run_device)
 
 
-def adv_inference(atk_log, test_model, model_args, img_proc_args, use_raw_nparray_data=False, run_device=None):
+def adv_inference(atk_log, test_model, model_args, img_proc_args, defense_weight_path, use_raw_nparray_data=False, run_device=None):
     all_adv_log = find_adv_example_file_logs_by_attack_id(atk_log['attack_id'])
 
     adv_img_cursor_list = []
@@ -44,6 +46,8 @@ def adv_inference(atk_log, test_model, model_args, img_proc_args, use_raw_nparra
         is_skip, completed_num = global_recovery.check_skip(participant)
         if is_skip:
             return None
+        if len(test_model.split('_')) != 1:
+            model_args = defense_weight_path.get(test_model)
         inference_detector_4_img_batch(test_model, model_args, img_proc_args, adv_dataset_info,
                                        each_img_finish_callback=each_img_finish_callback, completed_num=completed_num,
                                        run_device=run_device)

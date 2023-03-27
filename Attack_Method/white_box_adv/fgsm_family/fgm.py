@@ -29,6 +29,8 @@ class FGM():
 
     @sefi_component.attack(name="FGM", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
     def attack(self, imgs, ori_labels, target_labels=None):
+        ori_label = np.array(ori_labels)
+        ori_label = torch.LongTensor(ori_label).to(self.device)
         if self.attack_type == 'UNTARGETED':
             adv_img = fast_gradient_method(model_fn=self.model,
                                        x=imgs,
@@ -36,7 +38,7 @@ class FGM():
                                        norm=2,
                                        clip_min=self.clip_min,
                                        clip_max=self.clip_max,
-                                       y=torch.from_numpy(np.array(ori_labels)).to(self.device),
+                                       y=ori_label,
                                        targeted=False)
         elif self.attack_type == 'TARGETED':
             batch_size = imgs.shape[0]

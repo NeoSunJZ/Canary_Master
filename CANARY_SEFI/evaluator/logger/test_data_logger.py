@@ -185,5 +185,19 @@ class TestDataLogger(SqliteDBLogger):
                        'ADMS float, '
                        'ALMS float)')
 
+        cursor.execute('create table if not exists defense_model_normal_inference_capability_indicator_data '
+                       '(model_name varchar PRIMARY KEY, '
+                       'CAV float, '
+                       'RRSR float, '
+                       'ConV float,'
+                       'COS float)')
+
+        cursor.execute('create table if not exists defense_model_adv_inference_capability_indicator_data '
+                       '(model_name varchar PRIMARY KEY, '
+                       'attack_name varchar, '
+                       'DCAV float, '
+                       'TCAV float)')
+
+
         cursor.close()
         self.conn.commit()

@@ -3,6 +3,30 @@ from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 
 
+def save_defense_normal_effectiveness_data(model_name, CAV, RRSR, ConV, COS, logger=None):
+    if logger is None:
+        logger = task_manager.test_data_logger
+    sql = "REPLACE INTO defense_model_normal_inference_capability_indicator_data (model_name, CAV, RRSR, ConV, COS) " \
+          "VALUES (?,?,?,?,?)"
+    args = (str(model_name), CAV, RRSR, ConV, COS)
+    logger.insert_log(sql, args)
+    if logger.debug_log:
+        msg = "[ LOGGER ] Logged. Model Indicator of Model({}) is [ CAV:{} RRSR:{} ConV:{} COS:{}].".format(*args)
+        reporter.console_log(msg, Fore.CYAN, type="DEBUG")
+    return
+
+def save_defense_adv_effectiveness_data(model_name, attack_name, DCAV, TCAV, logger=None):
+    if logger is None:
+        logger = task_manager.test_data_logger
+    sql = "REPLACE INTO defense_model_adv_inference_capability_indicator_data (model_name, attack_name, DCAV, TCAV) " \
+          "VALUES (?,?,?,?)"
+    args = (str(model_name), str(attack_name), DCAV, TCAV)
+    logger.insert_log(sql, args)
+    if logger.debug_log:
+        msg = "[ LOGGER ] Logged. Model Indicator of Model({}) is [ DCAV:{} TCAV:{}].".format(*args)
+        reporter.console_log(msg, Fore.CYAN, type="DEBUG")
+    return
+
 def save_model_capability_indicator_data(model_name, clear_acc, clear_f1, clear_conf, logger=None):
     if logger is None:
         logger = task_manager.test_data_logger
