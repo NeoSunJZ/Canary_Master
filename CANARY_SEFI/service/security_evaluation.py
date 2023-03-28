@@ -59,13 +59,13 @@ class SecurityEvaluation:
         task_manager.test_data_logger.finish()
 
     def get_defense_model_name(self, model_list):
-        new_model_list=[]
+        new_model_list = []
         for model in model_list:
             new_model_list.append(model)
-            defense_methods = self.defense_model_list.get(model,None)
+            defense_methods = self.defense_model_list.get(model, None)
             if defense_methods is not None:
                 for defense in defense_methods:
-                    new_model_list.append(model+'_'+defense)
+                    new_model_list.append(model + '_' + defense)
         return new_model_list
 
     def change_attacker_model_list(self):
@@ -73,6 +73,18 @@ class SecurityEvaluation:
         for key in self.attacker_list:
             new_attacker_dic[key] = self.get_defense_model_name(self.attacker_list[key])
         return new_attacker_dic
+
+    def attack_cross_deflection_capability_test(self, attacker_list, defense_model_list, use_raw_nparray_data):
+        new_attacker_list = {}
+        for atk_name in attacker_list:
+            for base_model in attacker_list[atk_name]:
+                for defense_name in defense_model_list[base_model]:
+                    new_attacker_list[atk_name] = [base_model, base_model + "_" + defense_name]
+                    attack_deflection_capability_test(new_attacker_list, self.model_config, self.img_proc_config,
+                                                      self.defense_weight_path,
+                                                      TransferAttackType.SELF_CROSS,
+                                                      self.transfer_attack_test_on_model_list,
+                                                      use_raw_nparray_data)
 
     def defense_test_and_evaluation(self, use_raw_nparray_data=False):
         # 干净图像预测
@@ -84,12 +96,12 @@ class SecurityEvaluation:
         adv_example_generate(self.dataset_info, attacker_list, self.attacker_config, self.model_config,
                              self.img_proc_config, self.defense_weight_path, self.adv_example_generate_batch_config)
         # 对抗样本预测（有迁移）
-        attack_deflection_capability_test(attacker_list, self.model_config, self.img_proc_config, self.defense_weight_path,
-                                          TransferAttackType.SELF_CROSS, self.transfer_attack_test_on_model_list,
-                                          use_raw_nparray_data)
+        self.attack_cross_deflection_capability_test(self.attacker_list, self.defense_model_list, use_raw_nparray_data)
         # 防御有效性评估
-        defense_model_normal_inference_capability_evaluation(self.dataset_info, self.model_list, self.defense_model_list)
-        defense_model_adv_inference_capability_evaluation(self.attacker_list, self.attacker_config, self.model_config, self.img_proc_config,
+        defense_model_normal_inference_capability_evaluation(self.dataset_info, self.model_list,
+                                                             self.defense_model_list)
+        defense_model_adv_inference_capability_evaluation(self.attacker_list, self.attacker_config, self.model_config,
+                                                          self.img_proc_config,
                                                           self.defense_model_list, use_raw_nparray_data)
         task_manager.test_data_logger.finish()
 
