@@ -41,7 +41,6 @@ class SecurityEvaluation:
 
         self.inference_batch_config = config.get("inference_batch_config", {})
         self.adv_example_generate_batch_config = config.get("adv_example_generate_batch_config", {})
-        self.defense_weight_path = config.get("defense_weight_path", {})
         self.defense_model_list = config.get("defense_model_list", None)
 
     def adv_example_generate(self):
@@ -81,7 +80,6 @@ class SecurityEvaluation:
                 for defense_name in defense_model_list[base_model]:
                     new_attacker_list[atk_name] = [base_model, base_model + "_" + defense_name]
                     attack_deflection_capability_test(new_attacker_list, self.model_config, self.img_proc_config,
-                                                      self.defense_weight_path,
                                                       TransferAttackType.SELF_CROSS,
                                                       self.transfer_attack_test_on_model_list,
                                                       use_raw_nparray_data)
@@ -90,11 +88,11 @@ class SecurityEvaluation:
         # 干净图像预测
         model_list = self.get_defense_model_name(self.model_list)
         model_inference_capability_test(self.dataset_info, model_list, self.model_config, self.img_proc_config,
-                                        self.inference_batch_config, self.defense_weight_path)
+                                        self.inference_batch_config)
         # 生成对抗样本
         attacker_list = self.change_attacker_model_list()
         adv_example_generate(self.dataset_info, attacker_list, self.attacker_config, self.model_config,
-                             self.img_proc_config, self.defense_weight_path, self.adv_example_generate_batch_config)
+                             self.img_proc_config, self.adv_example_generate_batch_config)
         # 对抗样本预测（有迁移）
         self.attack_cross_deflection_capability_test(self.attacker_list, self.defense_model_list, use_raw_nparray_data)
         # 防御有效性评估

@@ -23,7 +23,7 @@ from CANARY_SEFI.evaluator.logger.attack_info_handler import find_attack_log_by_
 
 # 生成对抗样本
 def adv_example_generate(dataset_info, attacker_list, attacker_config, model_config, img_proc_config,
-                         defense_weight_path, adv_example_generate_batch_config):
+                         adv_example_generate_batch_config):
     # 标记当前步骤
     task_manager.sys_log_logger.set_step(Step.ADV_EXAMPLE_GENERATE)
 
@@ -31,7 +31,7 @@ def adv_example_generate(dataset_info, attacker_list, attacker_config, model_con
         msg = "[Device {}] Generating Adv Example By Attack Method {} on(base) Model {}.".format(run_device, atk_name,
                                                                                                  model_name)
         reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
-        build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args, defense_weight_path,
+        build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc_args,
                   atk_batch_config=adv_example_generate_batch_config, run_device=run_device)
 
     BatchListIterator.attack_list_iterator(attacker_list, attacker_config, model_config, img_proc_config, function)
@@ -117,8 +117,7 @@ def attack_deflection_capability_evaluation(attacker_list, dataset_info=None, us
 
 
 # 模型推理能力测试
-def model_inference_capability_test(dataset_info, model_list, model_config, img_proc_config, inference_batch_config,
-                                    defense_weight_path):
+def model_inference_capability_test(dataset_info, model_list, model_config, img_proc_config, inference_batch_config):
     # 标记当前步骤
     task_manager.sys_log_logger.set_step(Step.MODEL_INFERENCE_CAPABILITY_TEST)
 
@@ -126,7 +125,7 @@ def model_inference_capability_test(dataset_info, model_list, model_config, img_
         # 模型基线测试
         msg = "Inferencing Img Label by Model {}".format(model_name)
         reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
-        inference(dataset_info, model_name, model_args, img_proc_args, inference_batch_config, defense_weight_path,
+        inference(dataset_info, model_name, model_args, img_proc_args, inference_batch_config,
                   run_device=run_device)
 
     BatchListIterator.model_list_iterator(model_list, model_config, img_proc_config, function)

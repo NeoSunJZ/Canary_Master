@@ -6,7 +6,7 @@ from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo, DatasetType
 from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id
 
 
-def inference(dataset_info, model_name, model_args, img_proc_args, inference_batch_config, defense_weight_path, run_device=None):
+def inference(dataset_info, model_name, model_args, img_proc_args, inference_batch_config, run_device=None):
     with tqdm(total=dataset_info.dataset_size, desc="Inference Progress", ncols=120) as bar:
         def each_img_finish_callback(img, result):
             bar.update(1)
@@ -14,8 +14,6 @@ def inference(dataset_info, model_name, model_args, img_proc_args, inference_bat
         is_skip, completed_num = global_recovery.check_skip(model_name)
         if is_skip:
             return None
-        if len(model_name.split('_')) != 1:
-            model_args = defense_weight_path.get(model_name)
         batch_size = inference_batch_config.get(model_name, 1)
         inference_detector_4_img_batch(model_name, model_args, img_proc_args, dataset_info,
                                        each_img_finish_callback=each_img_finish_callback,
