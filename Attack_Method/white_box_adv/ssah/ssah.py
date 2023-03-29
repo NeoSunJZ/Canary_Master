@@ -13,7 +13,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="SSAH", perturbation_budget_var_name=None)
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="SSAH",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                           "num_iteration": {"desc": "迭代次数", "type": "INT", "def": "150"},
                                           "learning_rate": {"desc": "学习率", "type": "FLOAT", "def": "0.001"},

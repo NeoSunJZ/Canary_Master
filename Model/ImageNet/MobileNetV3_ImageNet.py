@@ -5,6 +5,7 @@ from torchvision.models import MobileNet_V3_Large_Weights
 from torchvision.transforms import Normalize
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
+from CANARY_SEFI.core.component.component_enum import SubComponentType, ComponentType
 
 sefi_component = SEFIComponent()
 
@@ -19,7 +20,7 @@ def create_model(run_device):
     return mobilenet_model.eval()
 
 
-@sefi_component.util(util_type="target_layers_getter", util_target="model", name="MobileNetV3(ImageNet)")
+@sefi_component.util(util_type=SubComponentType.MODEL_TARGET_LAYERS_GETTER, util_target=ComponentType.MODEL, name="MobileNetV3(ImageNet)")
 def target_layers_getter(model):
     target_layers = [model[1].features[-1]]
     return target_layers, None

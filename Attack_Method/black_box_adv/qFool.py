@@ -13,7 +13,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="qFool", perturbation_budget_var_name=None)
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="LocalSearchAttack",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                           "clip_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "clip_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
@@ -57,8 +58,8 @@ class qFool():
             self.target = im_target
             self.target_label = torch.from_numpy(np.array(self.tlabel)).to(self.device)
 
-    @sefi_component.attack(name="qFool", is_inclass=True, support_model=["vision_transformer"])
-    def attack(self, imgs, ori_labels):
+    @sefi_component.attack(name="qFool", is_inclass=True, support_model=[])
+    def attack(self, imgs, ori_labels, tlabels=None):
         self.image = imgs
         self.input_shape = self.image.cpu().numpy().shape
         input_dim = 1

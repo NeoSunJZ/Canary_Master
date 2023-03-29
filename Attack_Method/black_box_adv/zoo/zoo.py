@@ -16,7 +16,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="ZOO", perturbation_budget_var_name="epsilon")
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="ZOO",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                           "epsilon": {"desc": "扰动大小", "type": "FLOAT", "def": "0.2"},
                                           "clip_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
