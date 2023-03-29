@@ -12,7 +12,7 @@ sefi_component = SEFIComponent()
 
 @sefi_component.defense_class(defense_name="trades")
 @sefi_component.config_params_handler(handler_target=ComponentType.DEFENSE, name="trades",
-                                      args_type=ComponentConfigHandlerType.DEFENSE_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.DEFENSE_CONFIG_PARAMS, use_default_handler=True,
                                       params={
 
                                       })
