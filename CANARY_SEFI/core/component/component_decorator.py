@@ -64,12 +64,12 @@ class SEFIComponent:
             target[ModelComponentAttributeType.CONFIG_PARAMS] = params
         elif handler_target == ComponentType.DEFENSE:
             target = self.get_defense_methods(name)
-            if handler_type not in (ComponentConfigHandlerType.DEFENSE_PARAMS,):
+            if handler_type not in (ComponentConfigHandlerType.DEFENSE_CONFIG_PARAMS,):
                 raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target,
                                                       error_type=handler_type)
         elif handler_target == ComponentType.TRANS:
             target = self.get_trans_methods(name)
-            if handler_type not in (ComponentConfigHandlerType.TRANS_PARAMS,):
+            if handler_type not in (ComponentConfigHandlerType.TRANS_CONFIG_PARAMS,):
                 raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target,
                                                       error_type=handler_type)
 
@@ -246,7 +246,7 @@ class SEFIComponent:
         return wrapper
 
     def defense_class(self, defense_name):
-        target_defense_method = self.defense_methods.get(defense_name)
+        target_defense_method = self.defense_methods.get(defense_name, default=None, allow_not_exist=True)
         if target_defense_method is None:
             self.defense_methods[defense_name] = {}
             target_defense_method = self.defense_methods.get(defense_name)
@@ -260,7 +260,7 @@ class SEFIComponent:
         return wrapper
 
     def trans_class(self, trans_name):
-        target_trans_method = self.trans_methods.get(trans_name)
+        target_trans_method = self.trans_methods.get(trans_name, default=None, allow_not_exist=True)
         if target_trans_method is None:
             self.trans_methods[trans_name] = {}
             target_trans_method = self.trans_methods.get(trans_name)
@@ -292,14 +292,14 @@ class SEFIComponent:
         return target_attack_method
 
     def get_defense_methods(self, name):
-        target_defense_method = self.defense_methods.get(name)
+        target_defense_method = self.defense_methods.get(name, default=None, allow_not_exist=True)
         if target_defense_method is None:
             self.defense_methods[name] = {}
             target_defense_method = self.defense_methods.get(name)
         return target_defense_method
 
     def get_trans_methods(self, name):
-        target_trans_method = self.trans_methods.get(name)
+        target_trans_method = self.trans_methods.get(name, default=None, allow_not_exist=True)
         if target_trans_method is None:
             self.trans_methods[name] = {}
             target_trans_method = self.trans_methods.get(name)
