@@ -3,6 +3,7 @@ import os
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from Attack_Method.black_box_adv.tremba.fcn import Imagenet_Encoder, Imagenet_Decoder
 from Attack_Method.black_box_adv.tremba.utils import MarginLoss
@@ -70,7 +71,7 @@ def train_generator(run_device, nets, net_name_list, dataset, batch_size, epochs
                 if is_target:
                     success[j] += int((torch.argmax(logits, dim=1) == label).sum())
                 else:
-                    success[j] += int((torch.argmax(logits, dim=1) == label).sum())
+                    success[j] += int((torch.argmax(logits, dim=1) != label).sum())
 
         test_loss = [loss_avg[i] / len(dataset_loader) for i in range(len(loss_avg))]
         test_successes = [success[i] / len(dataset_loader.dataset) for i in range(len(success))]
@@ -80,17 +81,15 @@ def train_generator(run_device, nets, net_name_list, dataset, batch_size, epochs
 
         return test_success
 
-
-    best_success = 0.0
-    for epoch in range(epochs):
+    for epoch in tqdm(range(epochs)):
         scheduler_G.step()
         train()
         torch.cuda.empty_cache()
         if epoch % 10 == 0:
             with torch.no_grad():
                 test_success = test()
+                print("epoch {}, Current success: {}".format(epoch, test_success))
         if not os.path.exists(weight_save_path):
             os.makedirs(weight_save_path)
 
         torch.save(model.state_dict(), os.path.join(weight_save_path, weight_save_name))
-        print("epoch {}, Current success: {}, Best success: {}".format(epoch, test_success, best_success))

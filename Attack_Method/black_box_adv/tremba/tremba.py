@@ -1,3 +1,5 @@
+import os.path
+
 import torch
 import numpy as np
 from torch import nn
@@ -6,18 +8,19 @@ from torch.autograd import Variable
 from Attack_Method.black_box_adv.tremba.fcn import Imagenet_Encoder, Imagenet_Decoder
 from Attack_Method.black_box_adv.tremba.train_generator import train_generator
 from Attack_Method.black_box_adv.tremba.utils import Function
-from CANARY_SEFI.core.component.component_builder import get_model
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
 from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType, ComponentType
+from CANARY_SEFI.core.component.default_component.model_getter import get_model
+from CANARY_SEFI.task_manager import task_manager
 
 sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="TREMBA", perturbation_budget_var_name="epsilon")
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="TREMBA",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS, use_default_handler=True,
                                       params={})
 class TREMBA():
-    def __init__(self, model, run_device, nlabels=1000, epsilon=0.03, attack_type='UNTARGETED', weight_save_name=None):
+    def __init__(self, model, run_device, nlabels=1000, epsilon=0.03, attack_type='UNTARGETED'):
         self.run_device = run_device
         self.model = model
 
@@ -26,7 +29,7 @@ class TREMBA():
         self.epsilon = epsilon
         self.margin = 5.0
         self.sample_size = 20
-        self.num_iters = 2500
+        self.num_iters = 200
         self.sigma = 1.0
         self.lr = 5.0
         self.lr_min = 0.1
@@ -37,36 +40,28 @@ class TREMBA():
         self.batch_size = 32
 
         # 训练
-        self.net_name_list = [
-                      "VGG(ImageNet)",
-                      "GoogLeNet(ImageNet)",
-                      "ResNet(ImageNet)",
-                      "SqueezeNet(ImageNet)"]
-        self.train_batch_size = 32
-        self.train_epochs = 500
+        self.train_epochs = 200
         self.train_learning_rate_G = 0.01
         self.train_momentum_G = 0.9
         self.train_schedule_G = 10
-        self.train_gamma_G = 0.5
+        self.train_gamma_G = 0.75
         self.train_margin = 200.0
         self.train_target_class = None
 
-        self.weight_save_path = "Attack_Method/black_box_adv/tremba/G_weight/"
-        self.weight_save_name = weight_save_name
-        self.weight = None if self.weight_save_name is None else \
-            torch.load(self.weight_save_path + self.weight_save_name, map_location=self.run_device)
+        self.weight_save_path = task_manager.base_temp_path + "weight/attack/tremba/"
+        self.weight_save_name = None
+        self.weight = None
 
     @sefi_component.attack_init(name="TREMBA")
-    def universal_perturbation(self, dataset):
+    def train(self, dataset_info, dataset_loader, batch_size, model_name):
+        self.weight_save_name = "Imagenet_{}_{}.pt" \
+            .format(model_name, "untarget" if not self.is_target else "target_{}".format(self.train_target_class))
+        if os.path.exists(self.weight_save_path + self.weight_save_name):
+            self.weight = torch.load(self.weight_save_path + self.weight_save_name, map_location=self.run_device)
         if self.weight is None:
-            nets = []
-            for net_name in self.net_name_list:
-                nets.append(get_model(net_name, {}, self.run_device))
-            self.weight_save_name = "Imagenet_{}_{}.pt"\
-                .format("_".join(self.net_name_list),
-                        "untarget" if not self.is_target else "target_{}".format(self.train_target_class))
-            train_generator(self.run_device, nets, self.net_name_list, dataset,
-                            self.train_batch_size, self.train_epochs,
+            net = [get_model(model_name, {}, self.run_device)]
+            train_generator(self.run_device, net, [model_name], dataset_loader(dataset_info),
+                            batch_size, self.train_epochs,
                             self.train_learning_rate_G, self.train_momentum_G,
                             self.train_schedule_G, self.train_gamma_G,
                             self.train_margin, self.is_target, self.train_target_class, self.epsilon,
@@ -76,7 +71,7 @@ class TREMBA():
             print("Already has weight!")
 
     @sefi_component.attack(name="TREMBA", is_inclass=True, support_model=[], attack_type="BLACK_BOX")
-    def attack(self, img, ori_label):
+    def attack(self, imgs, ori_labels):
         encoder_weight = {}
         decoder_weight = {}
         for key, val in self.weight.items():
@@ -97,15 +92,20 @@ class TREMBA():
         F = Function(self.model, self.batch_size, self.margin, self.nlabels, self.is_target)
 
         if self.is_target:
-            label = self.target_class
+            labels = np.repeat(self.train_target_class, imgs.shape[0])
         else:
-            label = ori_label
+            labels = ori_labels
 
-        with torch.no_grad():
-            success, adv = self.EmbedBA(F, encoder, decoder, img[0], label[0])
-        adv = torch.unsqueeze(adv, dim=0)
-        print(adv.shape)
-        return adv
+        adv_images = None
+        for i in range(imgs.shape[0]):
+            with torch.no_grad():
+                success, adv = self.EmbedBA(F, encoder, decoder, imgs[i], labels[i])
+                adv_img = torch.unsqueeze(adv, dim=0)
+                if adv_images is None:
+                    adv_images = adv_img
+                else:
+                    adv_images = torch.cat((adv_images, adv_img), dim=0)
+        return adv_images
 
 
     def EmbedBA(self, function, encoder, decoder, image, label, latent=None):
