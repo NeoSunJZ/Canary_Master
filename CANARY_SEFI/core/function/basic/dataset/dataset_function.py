@@ -3,27 +3,14 @@ import math
 import numpy
 import numpy as np
 
+from CANARY_SEFI.core.component.default_component.dataset_getter import get_dataset
 from CANARY_SEFI.core.function.basic.dataset.adv_dataset_function import adv_dataset_image_reader
 from CANARY_SEFI.core.function.basic.dataset.memory_cache import memory_cache
 from CANARY_SEFI.core.function.basic.dataset.tools import limit_img_size
 from CANARY_SEFI.task_manager import task_manager
-from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 from CANARY_SEFI.evaluator.logger.img_file_info_handler import add_img_log, find_img_log_by_id
-
-
-def get_dataset(dataset_info):
-    dataset_component = SEFI_component_manager.dataset_list.get(dataset_info.dataset_name)
-    if dataset_component is not None:
-        dataset_getter = dataset_component.get("dataset_getter_handler")
-    else:
-        raise Exception("[ Logic Error ] No dataset loader found!")
-
-    dataset_path = config_manager.config.get("dataset", {}).get(dataset_info.dataset_name, {}).get("path", None)
-    dataset = dataset_getter(dataset_path, dataset_info.dataset_seed, dataset_info.dataset_size)
-    return dataset
-
 
 # 传入dataset_size，根据dataset_size划分数据集子集，并读入全部的子集（特别的，全部读入则传入数据集原始大小即可）
 # 不再提供默认的数据集读入程序
