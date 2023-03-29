@@ -10,7 +10,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="FGSM")
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="FGSM",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                           "clip_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "clip_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},

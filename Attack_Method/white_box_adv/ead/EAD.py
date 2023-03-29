@@ -11,7 +11,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="EAD", perturbation_budget_var_name=None)
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="EAD",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                           "num_classes": {"desc": "模型中类的数量", "type": "INT", "required": "true"},
                                           "clip_min": {"desc": "像素值的下限", "type": "FLOAT", "required": "true"},

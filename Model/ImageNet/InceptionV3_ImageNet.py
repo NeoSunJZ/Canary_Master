@@ -5,6 +5,7 @@ from torchvision.models import Inception_V3_Weights
 from torchvision.transforms import Normalize
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
+from CANARY_SEFI.core.component.component_enum import SubComponentType, ComponentType
 
 sefi_component = SEFIComponent()
 
@@ -19,7 +20,7 @@ def create_model(run_device):
     return inception_model.eval()
 
 
-@sefi_component.util(util_type="target_layers_getter", util_target="model", name="InceptionV3(ImageNet)")
+@sefi_component.util(util_type=SubComponentType.MODEL_TARGET_LAYERS_GETTER, util_target=ComponentType.MODEL, name="InceptionV3(ImageNet)")
 def target_layers_getter(model):
     target_layers = [model[1].Mixed_7c]
     return target_layers, None

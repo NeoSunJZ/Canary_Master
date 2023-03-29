@@ -18,7 +18,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="AdvGan")
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="AdvGan",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                           "model_num_labels": {"desc": "模型中类的数量", "type": "INT", "required": "true", "def": "1000"},
                                           "image_nc": {"desc": "训练数据中图像的channel数", "type": "INT", "required": "true", "def": "3"},
