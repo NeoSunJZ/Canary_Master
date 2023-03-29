@@ -9,7 +9,7 @@ sefi_component = SEFIComponent()
 
 @sefi_component.trans_class(trans_name="quantize")
 @sefi_component.config_params_handler(handler_target=ComponentType.TRANS, name="quantize",
-                                      args_type=ComponentConfigHandlerType.TRANS_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.TRANS_CONFIG_PARAMS, use_default_handler=True,
                                       params={
                                       })
 class Transform():

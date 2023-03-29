@@ -1,10 +1,12 @@
 import numpy as np
 import torch
 
+from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType, SubComponentType, \
+    TransComponentAttributeType
 from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo, DatasetType
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
-from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args
-from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
+from CANARY_SEFI.core.component.default_component.params_handler import build_dict_with_json_args
+from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_image_reader
 from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id, \
     find_adv_example_file_log_by_id
 from CANARY_SEFI.handler.image_handler.img_io_handler import save_pic_to_temp
@@ -18,20 +20,21 @@ class Image_Transformer:
         self.trans_args = trans_args
         self.trans_component = SEFI_component_manager.trans_method_list.get(trans_name)
         # 攻击处理参数JSON转DICT
-        self.trans_args_dict = build_dict_with_json_args(self.trans_component, "trans", trans_args, run_device)
-        self.trans_func = self.trans_component.get("trans_func")
+        self.trans_args_dict = build_dict_with_json_args(self.trans_component, ComponentConfigHandlerType.TRANS_CONFIG_PARAMS,
+                                                         trans_args, run_device)
+        self.trans_func = self.trans_component.get(SubComponentType.TRANS_FUNC)
 
         # 判断转换方法的构造模式
-        if self.trans_component.get('is_inclass') is True:
+        if self.trans_component.get(TransComponentAttributeType.IS_INCLASS) is True:
             # 构造类传入
-            trans_class_builder = self.trans_component.get('trans_class').get('class')
+            trans_class_builder = self.trans_component.get(SubComponentType.TRANS_CLASS)
             self.trans_class = trans_class_builder(**self.trans_args_dict)
             # 转换类初始化方法
-            self.trans_init = self.trans_component.get('trans_init', None)
+            self.trans_init = self.trans_component.get(SubComponentType.TRANS_INIT, None)
 
     def adv_trans_4_img(self, img):
         # TODO 修改
-        if self.trans_component.get('is_inclass') is True:
+        if self.trans_component.get(TransComponentAttributeType.IS_INCLASS) is True:
             img_trans = self.trans_func(self.trans_class, img)
         else:
             img_trans = self.trans_func(self.trans_class, img)
