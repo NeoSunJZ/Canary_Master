@@ -22,6 +22,10 @@ class SubComponentType(Enum):
     TRANS_CLASS = "trans_class"
     TRANS_INIT = "trans_init"
 
+    DEFENSE_FUNC = "defense_func"
+    DEFENSE_CLASS = "defense_class"
+    DEFENSE_INIT = "defense_init"
+
     CONFIG_PARAMS_HANDLER = "_config_params_handler"
 
     IMG_PREPROCESSOR = "img_preprocessor"
@@ -43,6 +47,12 @@ class AttackComponentAttributeType(Enum):
     MODEL_VAR_NAME = "model_var_name"
     PERTURBATION_BUDGET_VAR_NAME = "perturbation_budget_var_name"
 
+
+class DefenseComponentAttributeType(Enum):
+    CONFIG_PARAMS = "config_params"
+    SUPPORT_MODEL = "support_model"
+    IS_INCLASS = "is_inclass"
+    DEFENSE_TYPE = "defense_type"
 
 class TransComponentAttributeType(Enum):
     CONFIG_PARAMS = "config_params"

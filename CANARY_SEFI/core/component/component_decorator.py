@@ -2,7 +2,8 @@ import torch
 
 from CANARY_SEFI.core.component.component_dict import ComponentDict, ComponentDictType
 from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType, SubComponentType, \
-    ModelComponentAttributeType, AttackComponentAttributeType
+    ModelComponentAttributeType, AttackComponentAttributeType, TransComponentAttributeType, \
+    DefenseComponentAttributeType
 from CANARY_SEFI.core.component.component_exception import ParamsHandlerComponentTypeError, ComponentReturnTypeError, \
     UtilComponentTypeError, ComponentTypeError
 
@@ -164,10 +165,10 @@ class SEFIComponent:
                 defense_method = decorated(*args, **kwargs)
                 return defense_method
 
-            target_defense_method['defense_func'] = inner
-            target_defense_method['support_model'] = support_model
-            target_defense_method['is_inclass'] = is_inclass
-            target_defense_method['defense_type'] = defense_type
+            target_defense_method[SubComponentType.DEFENSE_FUNC] = inner
+            target_defense_method[DefenseComponentAttributeType.SUPPORT_MODEL] = support_model
+            target_defense_method[DefenseComponentAttributeType.IS_INCLASS] = is_inclass
+            target_defense_method[DefenseComponentAttributeType.DEFENSE_TYPE] = defense_type
 
             return inner
 
@@ -181,9 +182,9 @@ class SEFIComponent:
                 trans_method = decorated(*args, **kwargs)
                 return trans_method
 
-            target_trans_method['trans_func'] = inner
-            target_trans_method['is_inclass'] = is_inclass
-            target_trans_method['trans_type'] = trans_type
+            target_trans_method[SubComponentType.TRANS_FUNC] = inner
+            target_trans_method[TransComponentAttributeType.IS_INCLASS] = is_inclass
+            target_trans_method[TransComponentAttributeType.TRANS_TYPE] = trans_type
 
             return inner
 
@@ -210,7 +211,7 @@ class SEFIComponent:
                 defense_init = decorated(*args, **kwargs)
                 return defense_init
 
-            target_defense_method['defense_init'] = inner
+            target_defense_method[SubComponentType.DEFENSE_INIT] = inner
             return inner
 
         return wrapper
@@ -223,7 +224,7 @@ class SEFIComponent:
                 trans_init = decorated(*args, **kwargs)
                 return trans_init
 
-            target_trans_method['trans_init'] = inner
+            target_trans_method[SubComponentType.TRANS_INIT] = inner
             return inner
 
         return wrapper
@@ -252,9 +253,7 @@ class SEFIComponent:
             target_defense_method = self.defense_methods.get(defense_name)
 
         def wrapper(decorated):
-            target_defense_method['defense_class'] = {
-                "class": decorated,
-            }
+            target_defense_method[SubComponentType.DEFENSE_CLASS] = decorated
             return decorated
 
         return wrapper
@@ -266,9 +265,7 @@ class SEFIComponent:
             target_trans_method = self.trans_methods.get(trans_name)
 
         def wrapper(decorated):
-            target_trans_method['trans_class'] = {
-                "class": decorated,
-            }
+            target_trans_method[SubComponentType.TRANS_CLASS] = decorated
             return decorated
 
         return wrapper
@@ -294,14 +291,18 @@ class SEFIComponent:
     def get_defense_methods(self, name):
         target_defense_method = self.defense_methods.get(name, default=None, allow_not_exist=True)
         if target_defense_method is None:
-            self.defense_methods[name] = {}
+            self.defense_methods[name] = ComponentDict({},
+                                                       dict_type=ComponentDictType.SubComponentDict,
+                                                       component_type=ComponentType.DEFENSE, component_name=name)
             target_defense_method = self.defense_methods.get(name)
         return target_defense_method
 
     def get_trans_methods(self, name):
         target_trans_method = self.trans_methods.get(name, default=None, allow_not_exist=True)
         if target_trans_method is None:
-            self.trans_methods[name] = {}
+            self.trans_methods[name] = ComponentDict({},
+                                                     dict_type=ComponentDictType.SubComponentDict,
+                                                     component_type=ComponentType.TRANS, component_name=name)
             target_trans_method = self.trans_methods.get(name)
         return target_trans_method
 
