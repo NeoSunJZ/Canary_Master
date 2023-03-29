@@ -1,8 +1,10 @@
+from CANARY_SEFI.core.component.component_enum import SubComponentType, ComponentConfigHandlerType
 from CANARY_SEFI.core.function.enum.test_level_enum import TestLevel
 from CANARY_SEFI.evaluator.monitor.grad_crm import ActivationsAndGradients, GradCAM
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
-from CANARY_SEFI.core.component.component_builder import build_dict_with_json_args, get_model
+from CANARY_SEFI.core.component.default_component.params_handler import build_dict_with_json_args
+from CANARY_SEFI.core.component.default_component.model_getter import get_model
 from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_image_reader
 from CANARY_SEFI.evaluator.logger.inference_test_data_handler import save_inference_test_data
 from CANARY_SEFI.handler.tools.cuda_memory_tools import check_cuda_memory_alloc_status
@@ -12,35 +14,31 @@ class InferenceDetector:
     def __init__(self, inference_model_name, model_args, img_proc_args, run_device=None, test_level=TestLevel.FULL):
 
         self.model = get_model(inference_model_name, model_args, run_device)
-        if self.model is None:
-            # 未找到指定的Model
-            raise RuntimeError("[ Config Error ] No model find, please check MODEL NAME")
+
         model_component = SEFI_component_manager.model_list.get(inference_model_name)
 
         # 注册Model的HOOK钩子以使用GRAD-CRM分析可解释性
         self.activations_and_grads = None
         if test_level is TestLevel.FULL:
-            target_layers_getter = model_component.get("target_layers_getter")
+            target_layers_getter = model_component.get(SubComponentType.MODEL_TARGET_LAYERS_GETTER)
             if target_layers_getter is not None:
                 target_layers, reshape_transform = target_layers_getter(self.model)
                 self.activations_and_grads = ActivationsAndGradients(target_layers=target_layers, reshape_transform=reshape_transform)
 
         # 预测器
-        self.inference_detector = model_component.get("inference_detector")
-        if self.inference_detector is None:
-            # 未找到指定的预测器
-            raise RuntimeError("[ Config Error ] Model find but inference detector is not existed ,please check your config")
+        self.inference_detector = model_component.get(SubComponentType.MODEL_INFERENCE_DETECTOR)
         # 图片处理参数JSON转DICT
-        self.img_proc_args_dict = build_dict_with_json_args(model_component, "img_processing", img_proc_args, run_device)
+        self.img_proc_args_dict = build_dict_with_json_args(model_component,
+                                                            ComponentConfigHandlerType.IMG_PROCESS_CONFIG_PARAMS,
+                                                            img_proc_args, run_device)
         # 图片预处理
-        self.img_preprocessor = model_component.get("img_preprocessor")
+        self.img_preprocessor = model_component.get(SubComponentType.IMG_PREPROCESSOR)
         # 结果处理
-        self.result_postprocessor = model_component.get("result_postprocessor")
+        self.result_postprocessor = model_component.get(SubComponentType.RESULT_POSTPROCESSOR)
 
         self.imgs = None
 
     def inference_detector_4_img(self, ori_imgs):
-        inference_detector_func = self.inference_detector.get('func')
 
         # 图片预处理
         self.imgs = ori_imgs
@@ -53,7 +51,7 @@ class InferenceDetector:
 
         # 预测(关闭预测时torch的梯度，因为预测无需反向传播)
         self.model.eval()
-        logits = inference_detector_func(self.model, self.imgs)
+        logits = self.inference_detector(self.model, self.imgs)
         self.model.zero_grad()
 
         if self.result_postprocessor is not None:
