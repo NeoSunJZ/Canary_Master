@@ -191,11 +191,11 @@ class MultiDatabase:
                 skip_step_list["adv_example_generate"] = True
                 skip_step_list["attack_test_and_evaluation"] = True
 
-                if self.multi_database_config.get("sub_database_token_list", None) is None:
-                    # 提供了子数据库sub_database_token_list，证明不是首次初始化，直接不执行模型推理能力测试与评估
+                if self.multi_database_config.get("not_init", False):
+                    # 非首次初始化，直接不执行模型推理能力测试与评估
                     skip_step_list["model_inference_capability_test_and_evaluation"] = True
                 else:
-                    # 未提供子数据库sub_database_token_list，证明是首次初始化，直接不执行综合能力评估
+                    # 首次初始化，直接不执行综合能力评估
                     skip_step_list["synthetical_capability_evaluation"] = True
             else:
                 # 子库

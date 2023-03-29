@@ -52,10 +52,10 @@ def img_post_handler(adv, args):
 def result_post_handler(result, args):
     probs = F.softmax(result).detach().cpu().numpy()[0]
     pred = np.argmax(probs)
-    return pred, prob
+    return pred, probs
 
 
-@sefi_component.inference_detector(model_name="DenseNet(CIFAR-10)", support_type="numpy_array", return_type="label_string")
+@sefi_component.util(util_type="inference_detector", util_target="model", name="DenseNet(CIFAR-10)")
 def inference_detector(model, img):
     img_temp = Variable(torch.from_numpy(img).to(device).float())
     model.eval()

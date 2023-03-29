@@ -13,7 +13,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="UAP")
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="UAP",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                           "pixel_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "pixel_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
@@ -84,11 +85,13 @@ class UAP:
         v = 0
         fooling_rate = 0.0
         iter = 0
+        fooling_rate_without_growth = 0
         deepfool = DeepFool(self.model, self.device,
                             pixel_min=self.pixel_min, pixel_max=self.pixel_max,
                             num_classes=self.num_classes, overshoot=self.overshoot,
                             max_iter=self.max_iter_df, p=self.p)
-        while fooling_rate < 1 - self.delta and iter < self.max_iter_uni:
+        while fooling_rate_without_growth < 3 and fooling_rate < 1 - self.delta and iter < self.max_iter_uni:
+            print(fooling_rate_without_growth)
             for cur_img in tqdm(dataset):
                 img = torch.unsqueeze(cur_img[0], dim=0)
                 ori_label = int(cur_img[1])
@@ -106,8 +109,8 @@ class UAP:
                     dr = deepfool.p_total
                     iter = deepfool.loop_count
                     if iter < self.max_iter_df-1:
-                        v = v + dr
-                        v = self.lp(v, self.xi, self.p)
+                        v_temp = v + dr
+                        v_temp = self.lp(v_temp, self.xi, self.p)
             iter = iter + 1
             # Perturb the dataset with computed perturbation
             fooling_sum = 0
@@ -118,7 +121,7 @@ class UAP:
                     resize = Resize([self.img_size, self.img_size])
                     img = resize(img)
 
-                    per_img = img + torch.tensor(v).to(self.device)
+                    per_img = img + torch.tensor(v_temp).to(self.device)
                     ori_label = int(cur_img[1])
                     per_label = int(self.model(per_img).argmax())
 
@@ -127,7 +130,13 @@ class UAP:
                         fooling_sum += 1
 
                 # Compute the fooling rate
-                fooling_rate = fooling_sum / images_sum
+                fooling_rate_now = fooling_sum / images_sum
+                if fooling_rate_now > fooling_rate:
+                    fooling_rate = fooling_rate_now
+                    v = v_temp
+                    fooling_rate_without_growth = 0
+                else:
+                    fooling_rate_without_growth += 1
                 print('FOOLING RATE = ', fooling_rate)
         return v
 

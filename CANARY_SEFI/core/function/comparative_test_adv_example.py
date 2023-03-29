@@ -1,10 +1,9 @@
 from tqdm import tqdm
 
-from CANARY_SEFI.handler.image_handler.file_memory_cache import file_memory_cache
+from CANARY_SEFI.core.function.basic.dataset.dataset_function import get_ori_img
 from CANARY_SEFI.handler.image_handler.img_utils import img_size_uniform_fix
-from CANARY_SEFI.handler.image_handler.plt_handler import img_diff_fig_builder, show_plt, get_base64_by_fig
 from CANARY_SEFI.task_manager import task_manager
-from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
+from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_image_reader
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo, DatasetType
 from CANARY_SEFI.evaluator.logger.adv_example_da_test_data_handler import save_adv_example_da_test_data
@@ -40,7 +39,7 @@ def adv_comparative_test(atk_log, dataset_info, use_raw_nparray_data=False):
         def adv_img_iterator(adv_img, adv_img_file_id, img_label):
             ori_img_id = adv_img_ori_dict[adv_img_file_id[0]]
             # 尝试在缓存中找到原始图片,若禁用则直接读取磁盘文件
-            ori_img, ori_label = file_memory_cache.get_ori_img(dataset_info, ori_img_id)
+            ori_img, ori_label = get_ori_img(dataset_info, ori_img_id)
 
             ori, adv = img_size_uniform_fix(ori_img, adv_img[0])
             # 执行Disturbance-Aware测试

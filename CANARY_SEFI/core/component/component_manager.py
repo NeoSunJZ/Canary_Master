@@ -1,23 +1,24 @@
-from copy import deepcopy
-
-
-def add_dict(dict_1, dict_2):
-    dic = deepcopy(dict_1)
-    for key in dict_2.keys():
-        if key in dic:
-            dic[key].update(dict_2[key])
-        else:
-            dic[key] = dict_2[key]
-    return dic
+from CANARY_SEFI.core.component.component_dict import ComponentDict, add_dict, ComponentDictType
+from CANARY_SEFI.core.component.component_enum import ComponentType
 
 
 class ComponentManager:
     def __init__(self):
-        self.model_list = {}
-        self.attack_method_list = {}
-        self.dataset_list = {}
-        self.defense_method_list = {}
-        self.trans_method_list = {}
+        self.model_list = ComponentDict({},
+                                        dict_type=ComponentDictType.ComponentDict,
+                                        component_type=ComponentType.MODEL)
+        self.attack_method_list = ComponentDict({},
+                                                dict_type=ComponentDictType.ComponentDict,
+                                                component_type=ComponentType.ATTACK)
+        self.dataset_list = ComponentDict({},
+                                          dict_type=ComponentDictType.ComponentDict,
+                                          component_type=ComponentType.DATASET)
+        self.defense_method_list = ComponentDict({},
+                                                 dict_type=ComponentDictType.ComponentDict,
+                                                 component_type=ComponentType.DEFENSE)
+        self.trans_method_list = ComponentDict({},
+                                               dict_type=ComponentDictType.ComponentDict,
+                                               component_type=ComponentType.TRANS)
 
     def add_all(self, sefi_component_list):
         for sefi_component in sefi_component_list:

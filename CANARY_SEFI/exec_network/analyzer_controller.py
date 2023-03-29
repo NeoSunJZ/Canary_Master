@@ -12,7 +12,7 @@ from CANARY_SEFI.evaluator.logger.indicator_data_handler import get_model_securi
 from CANARY_SEFI.evaluator.logger.inference_test_data_handler import get_clean_inference_test_data_with_img_info, \
     get_adv_inference_test_data_with_adv_info
 from CANARY_SEFI.handler.image_handler.img_io_handler import get_pic_nparray_from_temp, get_pic_base64_from_nparray
-from CANARY_SEFI.handler.image_handler.img_utils import show_img_diff
+from CANARY_SEFI.handler.image_handler.img_utils import get_img_diff
 from CANARY_SEFI.handler.json_handler.json_io_handler import get_info_from_json_file
 
 api = Blueprint('analyzer_api', __name__)

@@ -10,7 +10,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="JSMA", perturbation_budget_var_name=None)
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="JSMA",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                           "theta": {"desc": "扰动大小", "type": "FLOAT"},
                                           "pixel_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},

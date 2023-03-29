@@ -9,7 +9,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="MI-FGSM", perturbation_budget_var_name="epsilon")
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="MI-FGSM",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                           "alpha": {"desc": "攻击算法的学习率(每轮攻击步长)", "type": "FLOAT", "def": "5e-3"},
                                           "epsilon": {"desc": "扰动大小", "type": "FLOAT"},

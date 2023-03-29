@@ -1,11 +1,11 @@
 import numpy as np
 from colorama import Fore
-from tqdm.auto import tqdm
 
-from CANARY_SEFI.core.component.component_builder import get_model
+from CANARY_SEFI.core.component.component_enum import SubComponentType
 from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
+from CANARY_SEFI.core.component.default_component.model_getter import get_model
 from CANARY_SEFI.core.function.basic.attacker_function import AdvAttacker
-from CANARY_SEFI.core.function.basic.dataset_function import dataset_image_reader
+from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_image_reader
 from CANARY_SEFI.core.function.init_dataset import init_dataset
 from CANARY_SEFI.handler.image_handler.img_io_handler import save_pic_to_temp
 from CANARY_SEFI.task_manager import task_manager
@@ -35,13 +35,12 @@ class CorrectnessCheck:
         adv_attacker = AdvAttacker(self.atk_name, self.atk_args, self.model_name, self.model_args, self.img_proc_args, self.dataset_info, self.adv_example_generate_batch_size, self.run_device)
 
         model_component = SEFI_component_manager.model_list.get(self.model_name)
-        inference_detector = model_component.get("inference_detector")
-        result_postprocessor = model_component.get("result_postprocessor")
-        img_reverse_processor = model_component.get("img_reverse_processor")  # 图片后处理
-        img_preprocessor = model_component.get("img_preprocessor")  # 图片前处理
+        inference_detector_func = model_component.get(SubComponentType.MODEL_INFERENCE_DETECTOR)
+        result_postprocessor = model_component.get(SubComponentType.RESULT_POSTPROCESSOR)
+        img_reverse_processor = model_component.get(SubComponentType.IMG_REVERSE_PROCESSOR)  # 图片后处理
+        img_preprocessor = model_component.get(SubComponentType.IMG_PREPROCESSOR)  # 图片前处理
 
         model = get_model(self.model_name, self.model_args, self.run_device, model_query_logger=None)
-        inference_detector_func = inference_detector.get('func')
 
         ORI = []
         logits_ORI = []
@@ -98,7 +97,6 @@ class CorrectnessCheck:
         del adv_attacker
 
         # 处理结论
-        inference_detector_func = inference_detector.get('func')
 
         result_ORI = []
         result_ADV_O = []

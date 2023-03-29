@@ -5,6 +5,7 @@ from torchvision.models import EfficientNet_V2_S_Weights
 from torchvision.transforms import Normalize, Resize
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
+from CANARY_SEFI.core.component.component_enum import SubComponentType, ComponentType
 
 sefi_component = SEFIComponent()
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -22,7 +23,7 @@ def create_model(run_device):
     return efficientnet_model.eval()
 
 
-@sefi_component.util(util_type="target_layers_getter", util_target="model", name="EfficientNetV2(ImageNet)")
+@sefi_component.util(util_type=SubComponentType.MODEL_TARGET_LAYERS_GETTER, util_target=ComponentType.MODEL, name="EfficientNetV2(ImageNet)")
 def target_layers_getter(model):
     target_layers = [model[2].features]
     return target_layers, None

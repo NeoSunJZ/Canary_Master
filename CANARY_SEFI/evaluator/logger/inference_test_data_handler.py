@@ -20,8 +20,10 @@ def save_inference_test_data(img_id, img_type, inference_model, inference_img_la
                  "VALUES (NULL,?,?,?,?,?,?,?)"
     if use_pickle_dump:
         inference_img_conf_array = pickle.dumps(inference_img_conf_array)
-        true_class_cams = pickle.dumps(true_class_cams)
-        inference_class_cams = pickle.dumps(inference_class_cams)
+        if true_class_cams is not None:
+            true_class_cams = pickle.dumps(true_class_cams)
+        if inference_class_cams is not None:
+            inference_class_cams = pickle.dumps(inference_class_cams)
     args = (img_id, str(img_type), str(inference_model),
             str(inference_img_label),
             str(inference_img_conf_array),
@@ -33,6 +35,8 @@ def save_inference_test_data(img_id, img_type, inference_model, inference_img_la
             *args)
         if true_class_cams is not None and inference_class_cams is not None:
             msg += "G-CAM(Gradient-weighted Class Activation Mapping): Ready"
+        else:
+            msg += "G-CAM(Gradient-weighted Class Activation Mapping): Offline"
         reporter.console_log(msg, Fore.CYAN, type="DEBUG")
     return inference_test_data_id
 

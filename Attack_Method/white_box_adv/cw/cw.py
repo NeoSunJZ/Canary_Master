@@ -12,7 +12,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="CW", perturbation_budget_var_name=None)
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="CW",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                           "classes": {"desc": "模型中类的数量", "type": "INT", "required": "true"},
 

@@ -13,7 +13,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.attacker_class(attack_name="BA", perturbation_budget_var_name=None)
 @sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="BA",
-                                      args_type=ComponentConfigHandlerType.ATTACK_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                           "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"},{"value": "UNTARGETED", "name": "非靶向"}], "required": "true"},
                                           "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "ARRAY_INT"},

@@ -17,7 +17,7 @@ def adversarial_example_analyzer_log_handler(attack_deflection_capability_indica
                                              attack_adv_example_da_indicator_data,
                                              attack_adv_example_cost_indicator_data):
     adversarial_example_analyzer_log = {
-        "Mc": [], "TAS": [], "AIAC": [], "ARTC": [], "ACAMC_A": [], "ACAMC_T": [], "ACT": [], "AQN_F": [],
+        "MR": [], "TAS": [], "AIAC": [], "ARTC": [], "ACAMC_A": [], "ACAMC_T": [], "ACT": [], "AQN_F": [],
         "AQN_B": [], "AMD": [], "AED": [], "AED_HF": [], "AED_LF": [], "APCR": [], "ADMS": [], "ALMS": []
     }
     for log in attack_deflection_capability_indicator_data:

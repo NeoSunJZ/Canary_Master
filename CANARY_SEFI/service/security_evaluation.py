@@ -2,6 +2,7 @@ import sys
 
 from CANARY_SEFI.core.function.enum.multi_db_mode_enum import MultiDatabaseMode
 from CANARY_SEFI.evaluator.analyzer.inference_data_analyzer import defense_normal_effectiveness_analyzer_and_evaluation
+from CANARY_SEFI.core.function.enum.test_level_enum import TestLevel
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.enum.transfer_attack_type_enum import TransferAttackType
 from CANARY_SEFI.core.function.helper.excepthook import excepthook
@@ -103,11 +104,13 @@ class SecurityEvaluation:
                                                           self.defense_model_list, use_raw_nparray_data)
         task_manager.test_data_logger.finish()
 
-    def attack_test_and_evaluation(self, use_raw_nparray_data=False):
+
+    def attack_test_and_evaluation(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
         # 攻击偏转能力测试
         attack_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config,
+                                          self.inference_batch_config,
                                           self.transfer_attack_test_mode, self.transfer_attack_test_on_model_list,
-                                          use_raw_nparray_data)
+                                          use_raw_nparray_data, transfer_test_level)
         # 攻击方法推理偏转效果/模型注意力偏转效果评估
         attack_deflection_capability_evaluation(self.attacker_list, self.dataset_info, use_raw_nparray_data)
         # 攻击方法生成对抗样本综合对比测试(图像相似性/模型注意力差异对比/像素差异对比)
@@ -116,7 +119,7 @@ class SecurityEvaluation:
         attack_adv_example_da_and_cost_evaluation(self.attacker_list, use_raw_nparray_data)
         task_manager.test_data_logger.finish()
 
-    def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False):
+    def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
         skip_step_list, finish_callback = task_manager.multi_database.get_skip_step()
         if not skip_step_list["model_inference_capability_test_and_evaluation"]:
             self.model_inference_capability_test_and_evaluation()
@@ -127,18 +130,18 @@ class SecurityEvaluation:
             raise RuntimeError("[ Logic Error ] [ INIT TEST ] At least one format of data should be selected!")
         if use_img_file:
             if not skip_step_list["attack_test_and_evaluation"]:
-                self.attack_test_and_evaluation(use_raw_nparray_data=False)
+                self.attack_test_and_evaluation(use_raw_nparray_data=False, transfer_test_level=transfer_test_level)
             if not skip_step_list["synthetical_capability_evaluation"]:
                 # 综合能力测试结果分析
                 attack_synthetical_capability_evaluation(self.attacker_list, use_raw_nparray_data=False)
-                model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=False)
+                # model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=False)
         if use_raw_nparray_data:
             if not skip_step_list["attack_test_and_evaluation"]:
-                self.attack_test_and_evaluation(use_raw_nparray_data=True)
+                self.attack_test_and_evaluation(use_raw_nparray_data=True, transfer_test_level=transfer_test_level)
             if not skip_step_list["synthetical_capability_evaluation"]:
                 # 综合能力测试结果分析
                 attack_synthetical_capability_evaluation(self.attacker_list, use_raw_nparray_data=True)
-                model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=True)
+                # model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=True)
         # 流程结束回调
         finish_callback()
 

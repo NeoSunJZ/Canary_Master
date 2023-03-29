@@ -14,11 +14,11 @@ def print_logo(color=Fore.GREEN):
     tqdm.write(" ╚══════╝ ╚══════╝ ╚═╝      ╚═╝")
     tqdm.write("\n")
     tqdm.write(" Security Evaluation Fast Integration Framework")
-    tqdm.write(" V20230131.beta F.1.4 \n")
+    tqdm.write(" V20230328.beta 内部代号[1][2.0.1] \n")
 
     tqdm.write(" Copyright 2022 BIT ")
     tqdm.write(" Design By Jiazheng Sun")
-    tqdm.write(" Contributor: Li Chen \ Chenxiao Xia \ Rong Huang \ DongLi Tan \ Zhi Qu \n")
+    tqdm.write(" Contributor: Li Chen \ Chenxiao Xia \ Zhang DA \ Xiong Wenqi \ Rong Huang \ DongLi Tan \ Zhi Qu \n")
     tqdm.write(" Licensed under the Apache License, Version 2.0 (the 'License')      ")
     tqdm.write(" you may not use this file except in compliance with the License.    ")
     tqdm.write(" You may obtain a copy of the License at ")

@@ -8,6 +8,7 @@ from torchvision.models import Swin_S_Weights
 from torchvision.transforms import Normalize
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
+from CANARY_SEFI.core.component.component_enum import SubComponentType, ComponentType
 
 sefi_component = SEFIComponent()
 
@@ -22,7 +23,7 @@ def create_model(run_device):
     return swin_s_model.eval()
 
 
-@sefi_component.util(util_type="target_layers_getter", util_target="model", name="SwinTransformer(ImageNet)")
+@sefi_component.util(util_type=SubComponentType.MODEL_TARGET_LAYERS_GETTER, util_target=ComponentType.MODEL, name="SwinTransformer(ImageNet)")
 def target_layers_getter(model):
     class ResizeTransform:
         def __init__(self):
