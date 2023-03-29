@@ -23,8 +23,7 @@ def inference(dataset_info, model_name, model_args, img_proc_args, inference_bat
                                        run_device=run_device)
 
 
-
-def adv_inference(atk_log, test_model, model_args, img_proc_args, defense_weight_path, inference_batch_config,
+def adv_inference(atk_log, test_model, model_args, img_proc_args, inference_batch_config,
                   use_raw_nparray_data=False, run_device=None,
                   test_level=TestLevel.FULL):
     all_adv_log = find_adv_example_file_logs_by_attack_id(atk_log['attack_id'])
@@ -48,8 +47,6 @@ def adv_inference(atk_log, test_model, model_args, img_proc_args, defense_weight
         is_skip, completed_num = global_recovery.check_skip(participant)
         if is_skip:
             return None
-        if len(test_model.split('_')) != 1:
-            model_args = defense_weight_path.get(test_model)
 
         batch_size = inference_batch_config.get(test_model, 1)
         inference_detector_4_img_batch(test_model, model_args, img_proc_args, adv_dataset_info,

@@ -66,7 +66,7 @@ def get_inference_test_data_by_img_id(img_id, img_type):
 
 def get_inference_test_data_by_img_id_and_model(img_id, img_type, inference_model):
     sql = "SELECT * FROM inference_test_data WHERE img_type = ? AND img_id = ? AND inference_model = ?"
-    return handle_result(task_manager.test_data_logger.query_logs(sql, (str(img_type), img_id, str(inference_model,))))
+    return handle_result(task_manager.test_data_logger.query_logs(sql, (str(img_type), img_id, str(inference_model))))
 
 
 def get_clean_inference_test_data_with_img_info(inference_model):

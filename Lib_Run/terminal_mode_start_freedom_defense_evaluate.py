@@ -22,7 +22,7 @@ if __name__ == "__main__":
         ],
         "model_config": {
             "DenseNet(CIFAR-10)_TRADES": {
-                "pretrained_file": "E:\PythonProject\Canary_Master\Model\CIFAR10\DenseNet\weight\densenet161.pt"
+                "pretrained_file": "E:\github_clone_workspace\Canary_Master\Model\CIFAR10\DenseNet\weight\densenet161.pt"
             }
         },
         "img_proc_config": {
@@ -45,6 +45,6 @@ if __name__ == "__main__":
         },
 
     }
-    task_manager.init_task(show_logo=True, run_device="cuda")
+    task_manager.init_task(show_logo=True,  task_token='aTsu61po', run_device="cuda")
     security_evaluation = SecurityEvaluation(example_config)
     security_evaluation.defense_test_and_evaluation(use_raw_nparray_data=True)

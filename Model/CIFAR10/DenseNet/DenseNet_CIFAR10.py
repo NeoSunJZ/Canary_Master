@@ -3,6 +3,7 @@ from torch import nn
 from torchvision.transforms import Normalize
 
 from CANARY_SEFI.core.component.component_decorator import SEFIComponent
+from CANARY_SEFI.core.component.component_enum import SubComponentType
 from Model.CIFAR10.DenseNet.densenet import densenet161
 
 sefi_component = SEFIComponent()
@@ -21,7 +22,7 @@ def create_model(is_pretrained=True, pretrained_file=None, no_normalize_layer=Fa
     return densenet_model
 
 
-@sefi_component.util(util_type="target_layers_getter", util_target="model", name="DenseNet(CIFAR-10)")
+@sefi_component.util(util_type=SubComponentType.MODEL_TARGET_LAYERS_GETTER, util_target="model", name="DenseNet(CIFAR-10)")
 def target_layers_getter(model):
     target_layers = [model[1].features]
     return target_layers, None

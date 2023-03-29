@@ -22,7 +22,7 @@ class DefenseEvaluation:
         self.img_proc_config = config.get("img_proc_config", None)
 
     def adv_defense_training(self):
-        # 生成对抗样本与对抗样本质量分析
+        # 对抗防御训练
         adv_defense_training(self.dataset_info, self.defense_list, self.defense_config, self.model_config,
                              self.img_proc_config)
         task_manager.test_data_logger.finish()

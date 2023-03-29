@@ -164,7 +164,7 @@ class DenseNet(nn.Module):
 
     def forward(self, x):
         features = self.features(x)
-        out = F.relu(features, inplace=True)
+        out = F.relu(features, inplace=False)
         out = F.adaptive_avg_pool2d(out, (1, 1)).view(features.size(0), -1)
         out = self.classifier(out)
         return out

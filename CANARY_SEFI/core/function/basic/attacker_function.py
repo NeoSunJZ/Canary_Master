@@ -163,7 +163,7 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
 
     adv_img_id_list = []
     # 构建攻击者
-    adv_attacker = AdvAttacker(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info, batch_size, run_device)
+    adv_attacker = AdvAttacker(atk_name, atk_args, model_name.split("_")[0], model_args, img_proc_args, dataset_info, batch_size, run_device)
 
     # 写入日志
     atk_perturbation_budget = atk_args[adv_attacker.perturbation_budget_var_name] \

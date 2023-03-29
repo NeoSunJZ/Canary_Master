@@ -96,7 +96,8 @@ def defense_adv_effectiveness_analyzer_and_evaluation(atk_name, defense_name, ba
     DCAV = defense_adv_inference_acc - normal_adv_inference_acc
     TCAV = normal_trasfer_defense_acc - normal_adv_inference_acc
 
-    save_defense_adv_effectiveness_data(model_name=base_model+"_"+defense_name, attack_name=atk_name, DCAV=DCAV, TCAV=TCAV)
+    save_defense_adv_effectiveness_data(model_name=base_model + "_" + defense_name, attack_name=atk_name, DCAV=DCAV,
+                                        TCAV=TCAV)
     # 增加计数
     task_manager.sys_log_logger.update_completed_num(1)
     task_manager.sys_log_logger.update_finish_status(True)
