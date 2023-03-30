@@ -2,6 +2,7 @@ from tqdm import tqdm
 
 from CANARY_SEFI.core.function.basic.dataset.dataset_function import get_ori_img
 from CANARY_SEFI.handler.image_handler.img_utils import img_size_uniform_fix
+from CANARY_SEFI.handler.image_handler.plt_handler import img_diff_fig_builder, get_base64_by_fig
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_image_reader
 from CANARY_SEFI.core.function.helper.recovery import global_recovery

@@ -104,6 +104,19 @@ class TestDataLogger(SqliteDBLogger):
                        'ACAMC_T float, '
                        'UNIQUE (atk_name, base_model, atk_perturbation_budget, inference_model, adv_example_file_type))')
 
+        cursor.execute('create table if not exists trans_deflection_capability_indicator_data '
+                       '(atk_name varchar, '
+                       'base_model varchar, '
+                       'trans_name varchar, '
+                       'inference_model varchar, '
+                       'trans_file_type varchar, '  # 防御样本文件类型 IMG文件可能导致真实误差，NP文件不会转换类型因而没有误差，但并不真实
+                       'MR float, '
+                       'AIAC float, '
+                       'ARTC float, '
+                       'ACAMC_A float, '
+                       'ACAMC_T float, '
+                       'UNIQUE (atk_name, base_model, trans_name, inference_model, trans_file_type))')
+
         # 缩写释义:
         # ACT: average cost time
         # AQN_F: average query number (Forward)

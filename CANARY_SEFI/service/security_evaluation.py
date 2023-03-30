@@ -14,7 +14,8 @@ from CANARY_SEFI.core.function.test_and_evaluation import adv_example_generate, 
     attack_adv_example_da_test_with_perturbation_increment, attack_capability_evaluation_with_perturbation_increment, \
     attack_adv_example_da_and_cost_evaluation, attack_adv_example_comparative_test, \
     attack_synthetical_capability_evaluation, \
-    defense_model_adv_inference_capability_evaluation, defense_model_normal_inference_capability_evaluation
+    defense_model_adv_inference_capability_evaluation, defense_model_normal_inference_capability_evaluation, \
+    trans_deflection_capability_test, trans_deflection_capability_evaluation
 from CANARY_SEFI.handler.json_handler.json_io_handler import save_info_to_json_file, get_info_from_json_file
 
 
@@ -88,7 +89,7 @@ class SecurityEvaluation:
                                                       use_raw_nparray_data,
                                                       transfer_test_level)
 
-    def defense_test_and_evaluation(self, use_raw_nparray_data=False,transfer_test_level=TestLevel.FULL):
+    def defense_test_and_evaluation(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.FULL):
         # 干净图像预测
         model_list = self.get_defense_model_name(self.model_list)
         model_inference_capability_test(self.dataset_info, model_list, self.model_config, self.img_proc_config,
@@ -98,7 +99,8 @@ class SecurityEvaluation:
         adv_example_generate(self.dataset_info, attacker_list, self.attacker_config, self.model_config,
                              self.img_proc_config, self.adv_example_generate_batch_config)
         # 对抗样本预测（有迁移）
-        self.attack_cross_deflection_capability_test(self.attacker_list, self.defense_model_list, use_raw_nparray_data, transfer_test_level)
+        self.attack_cross_deflection_capability_test(self.attacker_list, self.defense_model_list, use_raw_nparray_data,
+                                                     transfer_test_level)
         # 防御有效性评估
         defense_model_normal_inference_capability_evaluation(self.dataset_info, self.model_list,
                                                              self.defense_model_list)
@@ -179,6 +181,17 @@ class SecurityEvaluation:
             attack_capability_evaluation_with_perturbation_increment(self.attacker_list, self.dataset_info,
                                                                      use_raw_nparray_data=True)
 
+        task_manager.test_data_logger.finish()
+
+    def trans_test_and_evaluation(self, use_raw_nparray_data=True, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
+
+        # 防御样本攻击偏转能力测试
+        trans_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config,
+                                         self.inference_batch_config,
+                                         self.transfer_attack_test_mode, self.transfer_attack_test_on_model_list,
+                                         use_raw_nparray_data, transfer_test_level)
+        # 防御样本攻击方法推理偏转效果/模型注意力偏转效果评估
+        trans_deflection_capability_evaluation(self.attacker_list, self.dataset_info, use_raw_nparray_data)
         task_manager.test_data_logger.finish()
 
 # sys.excepthook = excepthook
