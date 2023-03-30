@@ -16,7 +16,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.trans_class(trans_name="jpeg")
 @sefi_component.config_params_handler(handler_target=ComponentType.TRANS, name="jpeg",
-                                      handler_type=ComponentConfigHandlerType.TRANS_CONFIG_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.TRANS_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                       })
 class Transform():
@@ -42,4 +43,6 @@ def _jpeg_compression(im):
     im.save(savepath, "JPEG", quality=75)
     im = Image.open(savepath)
     im = ToTensor()(im)
+    im = im.permute(1, 2, 0)
+    im *= 255
     return im
