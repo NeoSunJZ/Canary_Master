@@ -2,6 +2,7 @@ from tqdm import tqdm
 
 from CANARY_SEFI.core.function.basic.dataset.dataset_function import get_ori_img
 from CANARY_SEFI.handler.image_handler.img_utils import img_size_uniform_fix
+from CANARY_SEFI.handler.image_handler.plt_handler import img_diff_fig_builder, figure_show_handler
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_image_reader
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
@@ -26,9 +27,8 @@ def adv_comparative_test(atk_log, dataset_info, use_raw_nparray_data=False):
 
     with tqdm(total=adv_dataset_info.dataset_size, desc="Adv-example Disturbance-aware Test Progress", ncols=120) as bar:
         participant = "{}({})".format(atk_log['atk_name'], atk_log['base_model'])
-        if atk_log['atk_perturbation_budget'] != "None":
-            participant = "{}({})(e-{})".format(atk_log['atk_name'], atk_log['base_model'],
-                                                   str(round(float(atk_log['atk_perturbation_budget']), 5)))
+        if atk_log['atk_perturbation_budget'] != "None" or atk_log['atk_perturbation_budget'] is not None:
+            participant += "(e-{})".format(str(round(float(atk_log['atk_perturbation_budget']), 5)))
         participant += "(RAW)" if use_raw_nparray_data else "(IMG)"
         is_skip, completed_num = global_recovery.check_skip(participant)
         if is_skip:
@@ -46,7 +46,9 @@ def adv_comparative_test(atk_log, dataset_info, use_raw_nparray_data=False):
             adv_da_test_result = adv_da_tester.test_all(ori, adv)
             # 执行像素差异对比分析
             diff_fig = img_diff_fig_builder(ori, adv)
-            get_base64_by_fig(diff_fig)
+            figure_show_handler(diff_fig,
+                                file_path="comparative_analyze_result/",
+                                file_name="adv_{}(Attack{})_diff".format(adv_img_file_id, participant))
 
             # 写入日志
             save_adv_example_da_test_data(adv_img_file_id[0], adv_dataset_info.dataset_type.value, adv_da_test_result)

@@ -1,8 +1,10 @@
 from colorama import Fore
+from tqdm import tqdm
 
 from CANARY_SEFI.core.function.basic.dataset.adv_dataset_function import adv_dataset_single_image_reader
 from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_single_image_reader
 from CANARY_SEFI.handler.image_handler.img_utils import get_img_cosine_similarity, img_size_uniform_fix
+from CANARY_SEFI.handler.image_handler.plt_handler import cam_diff_fig_builder, figure_show_handler
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
@@ -75,7 +77,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
 
     adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG.value
 
-    for adv_example_file_log in all_adv_example_file_log:
+    for adv_example_file_log in tqdm(all_adv_example_file_log, desc="Adv-example Inference Result Analyze Progress"):
         ori_img_id = adv_example_file_log["ori_img_id"]  # 原始图片ID(干净样本O)
         adv_img_file_id = adv_example_file_log["adv_img_file_id"]  # 对抗样本ID(干净样本O通过在M1上的攻击产生对抗样本A)
 
@@ -92,106 +94,119 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
             if ori_img_inference_log["inference_model"] == attack_info['base_model']:
                 is_valid = ori_img_inference_log["inference_img_label"] == ori_label
         if not is_valid:
-            msg = "Adv Example(ImgID {}) is not VALID (due to the original img inference error), has been abandoned.".format(
+            msg = "Adv Example(ImgID {}) is not VALID (due to the original img inference error (ON GENERATE MODEL)), has been abandoned.".format(
                 adv_img_file_id)
             reporter.console_log(msg, Fore.GREEN, save_db=False, send_msg=False, show_task=True,
                                  show_step_sequence=True)
+
             continue
 
         # 对抗样本的预测记录(如对抗样本A在M1、M2、M3、M4上进行了测试则有四条)
         adv_img_inference_log_list = get_inference_test_data_by_img_id(adv_img_file_id, adv_example_file_type)
-
-        # 遍历对抗样本推理记录
-        for adv_img_inference_log in adv_img_inference_log_list:
-            # 遍历干净样本推理记录
-            for ori_img_inference_log in ori_img_inference_log_list:
-                # 寻找两个记录中模型一致的(在同一个模型上进行的测试)，不一致的跳过即可
-                if adv_img_inference_log["inference_model"] != ori_img_inference_log["inference_model"]:
-                    continue
-
-                # A在M1的预测对应O在M1的预测\A在M2的预测对应O在M2的预测\以此类推
-                # 由于A是由干净样本O通过在M1上的攻击产生，A在非M1的预测都是转移测试
-                ori_inference_label = ori_img_inference_log["inference_img_label"]  # 原始图片预测的标签
-                adv_inference_label = adv_img_inference_log["inference_img_label"]  # 对抗图片预测的标签
-
-                if adv_img_inference_log["inference_model"] != attack_info['base_model']:
-                    if ori_inference_label != ori_label:
-                        # 已经判断在目标模型上的准确性，此处无需再判断
-                        # 原始图片必须在测试模型(转移模型)上也预测准确(不准确的直接无效处理)
+        with tqdm(total=len(adv_img_inference_log_list),
+                  desc="Adv-example Inference Result Analyze Progress (Per Inference Model)", ncols=120) as bar:
+            # 遍历对抗样本推理记录
+            for adv_img_inference_log in adv_img_inference_log_list:
+                # 遍历干净样本推理记录
+                for ori_img_inference_log in ori_img_inference_log_list:
+                    # 寻找两个记录中模型一致的(在同一个模型上进行的测试)，不一致的跳过即可
+                    if adv_img_inference_log["inference_model"] != ori_img_inference_log["inference_model"]:
                         continue
-                    test_on_base_model = True
-                else:
-                    test_on_base_model = False
 
-                inference_model = adv_img_inference_log["inference_model"]
-                # 初始化每个模型的测试结果统计
-                if attack_test_result.get(inference_model, None) is None:
-                    attack_test_result[inference_model] = {"Mc": [], "TAS": [], "IAC": [], "RTC": [], "CAMC_A": [], "CAMC_T": []}
-                # 获取误分类数量(Mc:Misclassification)
-                if adv_inference_label != ori_label:  # 攻击是否成功
-                    attack_test_result[inference_model]["Mc"].append(1)
-                    success_flag = True
-                else:
-                    attack_test_result[inference_model]["Mc"].append(0)
-                    success_flag = False
+                    # A在M1的预测对应O在M1的预测\A在M2的预测对应O在M2的预测\以此类推
+                    # 由于A是由干净样本O通过在M1上的攻击产生，A在非M1的预测都是转移测试
+                    ori_inference_label = ori_img_inference_log["inference_img_label"]  # 原始图片预测的标签
+                    adv_inference_label = adv_img_inference_log["inference_img_label"]  # 对抗图片预测的标签
 
-                # 定向攻击成功率(TAS:Targeted Attack Success)
-                if adv_target_label != "None" and adv_target_label is not None:
-                    if str(adv_inference_label) == str(adv_target_label):
-                        attack_test_result[inference_model]["TAS"].append(1)
+                    if adv_img_inference_log["inference_model"] != attack_info['base_model']:
+                        if ori_inference_label != ori_label:
+                            # 已经判断在目标模型上的准确性，此处无需再判断
+                            # 原始图片必须在测试模型(转移模型)上也预测准确(不准确的直接无效处理)
+                            msg = "Adv Example(ImgID {}) is not VALID (due to the original img inference error (ON TEST MODEL)), has been temporarily abandoned.".format(
+                                adv_img_file_id)
+                            reporter.console_log(msg, Fore.GREEN, save_db=False, send_msg=False, show_task=True,
+                                                 show_step_sequence=True)
+                            bar.update(1)
+                            continue
+                        test_on_base_model = False
                     else:
-                        attack_test_result[inference_model]["TAS"].append(0)
+                        test_on_base_model = True
 
-                # 如果对抗样本没有设置有效性，且当前处理的是目标模型（而非迁移模型），则为其设置有效性
-                if adv_img_inference_log["inference_model"] == attack_info['base_model'] and \
-                        adv_example_file_log["ground_valid"] is None:
-                    set_adv_example_file_ground_valid(adv_img_file_id, success_flag)
+                    inference_model = adv_img_inference_log["inference_model"]
+                    # 初始化每个模型的测试结果统计
+                    if attack_test_result.get(inference_model, None) is None:
+                        attack_test_result[inference_model] = {"Mc": [], "TAS": [], "IAC": [], "RTC": [], "CAMC_A": [], "CAMC_T": []}
+                    # 获取误分类数量(Mc:Misclassification)
+                    if adv_inference_label != ori_label:  # 攻击是否成功
+                        attack_test_result[inference_model]["Mc"].append(1)
+                        success_flag = True
+                    else:
+                        attack_test_result[inference_model]["Mc"].append(0)
+                        success_flag = False
 
-                # 获取置信偏移(IAC:Increase adversarial-class confidence/RTC:Reduction true-class confidence)
-                attack_test_result[inference_model]["IAC"] \
-                    .append(adv_img_inference_log["inference_img_conf_array"][adv_inference_label] -
-                            ori_img_inference_log["inference_img_conf_array"][adv_inference_label])
-                attack_test_result[inference_model]["RTC"] \
-                    .append(ori_img_inference_log["inference_img_conf_array"][ori_label] -
-                            adv_img_inference_log["inference_img_conf_array"][ori_label])
-                # 获取注意力偏移(CAMC_A:G-CAM Change(Adversarial-class)/CAMC_T: G-CAM Change(True-class))
-                CAMC_A = get_img_cosine_similarity(adv_img_inference_log["inference_class_cams"],
-                                                   ori_img_inference_log["inference_class_cams"])
-                CAMC_T = get_img_cosine_similarity(adv_img_inference_log["true_class_cams"],
-                                                   ori_img_inference_log["true_class_cams"])
-                # CAM感知为空时，不能计算余弦相似度，否则会造成严重问题
-                if CAMC_T is not None and CAMC_A is not None:
-                    attack_test_result[inference_model]["CAMC_A"].append(CAMC_A)
-                    attack_test_result[inference_model]["CAMC_T"].append(CAMC_T)
+                    # 定向攻击成功率(TAS:Targeted Attack Success)
+                    if adv_target_label != "None" and adv_target_label is not None:
+                        if str(adv_inference_label) == str(adv_target_label):
+                            attack_test_result[inference_model]["TAS"].append(1)
+                        else:
+                            attack_test_result[inference_model]["TAS"].append(0)
 
-                # 执行CAM可解释性偏移对比分析(必须先有推理结果才可在此测试， 否则跳过)
-                if dataset_info is not None:
-                    ori_img, _ = dataset_single_image_reader(dataset_info, ori_img_cursor=ori_img_log['ori_img_cursor'])
-                    adv_img = adv_dataset_single_image_reader(adv_example_file_log,
-                                                              DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA
-                                                              if use_raw_nparray_data else
-                                                              DatasetType.ADVERSARIAL_EXAMPLE_IMG)
-                else:
-                    ori_img, adv_img = None, None
+                    # 如果对抗样本没有设置有效性，且当前处理的是目标模型（而非迁移模型），则为其设置有效性
+                    if adv_img_inference_log["inference_model"] == attack_info['base_model'] and \
+                            adv_example_file_log["ground_valid"] is None:
+                        set_adv_example_file_ground_valid(adv_img_file_id, success_flag)
 
-                cam_adv = adv_img_inference_log.get("true_class_cams")
-                cam_ori = ori_img_inference_log.get("true_class_cams")
-                true_class_cams = (cam_ori, cam_adv)
-                cam_adv = adv_img_inference_log.get("inference_class_cams")
-                cam_ori = ori_img_inference_log.get("inference_class_cams")
-                inference_class_cams = (cam_ori, cam_adv)
+                    # 获取置信偏移(IAC:Increase adversarial-class confidence/RTC:Reduction true-class confidence)
+                    attack_test_result[inference_model]["IAC"] \
+                        .append(adv_img_inference_log["inference_img_conf_array"][adv_inference_label] -
+                                ori_img_inference_log["inference_img_conf_array"][adv_inference_label])
+                    attack_test_result[inference_model]["RTC"] \
+                        .append(ori_img_inference_log["inference_img_conf_array"][ori_label] -
+                                adv_img_inference_log["inference_img_conf_array"][ori_label])
+                    # 获取注意力偏移(CAMC_A:G-CAM Change(Adversarial-class)/CAMC_T: G-CAM Change(True-class))
+                    CAMC_A = get_img_cosine_similarity(adv_img_inference_log["inference_class_cams"],
+                                                       ori_img_inference_log["inference_class_cams"])
+                    CAMC_T = get_img_cosine_similarity(adv_img_inference_log["true_class_cams"],
+                                                       ori_img_inference_log["true_class_cams"])
+                    # CAM感知为空时，不能计算余弦相似度，否则会造成严重问题
+                    if CAMC_T is not None and CAMC_A is not None:
+                        attack_test_result[inference_model]["CAMC_A"].append(CAMC_A)
+                        attack_test_result[inference_model]["CAMC_T"].append(CAMC_T)
 
-                atk_name = "{}({}):(e-{})".format(attack_info.get("atk_name"), attack_info.get("base_model"),
-                                                  attack_info.get("atk_perturbation_budget"))
-                model_name = ori_img_inference_log["inference_model"]
-                ori_img, adv_img = img_size_uniform_fix(ori_img, adv_img)
-                # cam_result_plt = cam_diff_fig_builder((ori_img, adv_img), true_class_cams, inference_class_cams,
-                #                                       info=(
-                #                                           model_name, atk_name, ori_img_id, adv_img_file_id, ori_label,
-                #                                           ori_inference_label, adv_inference_label
-                #                                       ))
-                #
-                # show_plt(cam_result_plt)
+                    # 执行CAM可解释性偏移对比分析
+                    cam_adv = adv_img_inference_log.get("true_class_cams")
+                    cam_ori = ori_img_inference_log.get("true_class_cams")
+                    true_class_cams = (cam_ori, cam_adv)
+                    cam_adv = adv_img_inference_log.get("inference_class_cams")
+                    cam_ori = ori_img_inference_log.get("inference_class_cams")
+                    inference_class_cams = (cam_ori, cam_adv)
+                    # (必须先有推理结果才可在此测试， 否则跳过)
+                    if true_class_cams[0] is None or true_class_cams[1] is None or inference_class_cams[0] is None or inference_class_cams[1] is None:
+                        continue
+                    if dataset_info is not None:
+                        ori_img, _ = dataset_single_image_reader(dataset_info, ori_img_cursor=ori_img_log['ori_img_cursor'])
+                        adv_img = adv_dataset_single_image_reader(adv_example_file_log,
+                                                                  DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA
+                                                                  if use_raw_nparray_data else
+                                                                  DatasetType.ADVERSARIAL_EXAMPLE_IMG)
+                    else:
+                        ori_img, adv_img = None, None
+
+                    atk_name = "{}({})".format(attack_info.get("atk_name"), attack_info.get("base_model"))
+                    if attack_info.get("atk_perturbation_budget") != 'None' or attack_info.get("atk_perturbation_budget") is not None:
+                        atk_name + ":(e-{})".format(str(round(float(attack_info.get("atk_perturbation_budget")), 5)))
+
+                    model_name = ori_img_inference_log["inference_model"]
+                    ori_img, adv_img = img_size_uniform_fix(ori_img, adv_img)
+                    cam_result_plt = cam_diff_fig_builder((ori_img, adv_img), true_class_cams, inference_class_cams,
+                                                          info=(
+                                                              model_name, atk_name, ori_img_id, adv_img_file_id, ori_label,
+                                                              ori_inference_label, adv_inference_label
+                                                          ))
+                    figure_show_handler(cam_result_plt,
+                                        file_path="Grad-CAM_analyze_result/",
+                                        file_name="adv_{}(Attack{})(InferenceModel{})".format(adv_img_file_id, model_name, atk_name))
+                bar.update(1)
 
     for inference_model in attack_test_result:
         MR = calc_average(attack_test_result[inference_model]["Mc"])

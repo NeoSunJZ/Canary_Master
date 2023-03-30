@@ -66,6 +66,10 @@ class SecurityEvaluation:
         attack_adv_example_da_and_cost_evaluation(self.attacker_list, use_raw_nparray_data)
         task_manager.test_data_logger.finish()
 
+    def capability_evaluation(self, use_raw_nparray_data=False):
+        attack_synthetical_capability_evaluation(self.attacker_list, use_raw_nparray_data)
+        # model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data)
+
     def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
         skip_step_list, finish_callback = task_manager.multi_database.get_skip_step()
         if not skip_step_list["model_inference_capability_test_and_evaluation"]:
@@ -80,15 +84,13 @@ class SecurityEvaluation:
                 self.attack_test_and_evaluation(use_raw_nparray_data=False, transfer_test_level=transfer_test_level)
             if not skip_step_list["synthetical_capability_evaluation"]:
                 # 综合能力测试结果分析
-                attack_synthetical_capability_evaluation(self.attacker_list, use_raw_nparray_data=False)
-                # model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=False)
+                self.capability_evaluation(use_raw_nparray_data=False)
         if use_raw_nparray_data:
             if not skip_step_list["attack_test_and_evaluation"]:
                 self.attack_test_and_evaluation(use_raw_nparray_data=True, transfer_test_level=transfer_test_level)
             if not skip_step_list["synthetical_capability_evaluation"]:
                 # 综合能力测试结果分析
-                attack_synthetical_capability_evaluation(self.attacker_list, use_raw_nparray_data=True)
-                # model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data=True)
+                self.capability_evaluation(use_raw_nparray_data=True)
         # 流程结束回调
         finish_callback()
 

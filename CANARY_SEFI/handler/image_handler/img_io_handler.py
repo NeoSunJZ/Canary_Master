@@ -20,10 +20,17 @@ def get_nparray_from_file_input(file_input):
 
 
 def get_pic_base64_from_nparray(file_output):
-    buff = BytesIO()
+    buffer = BytesIO()
     pil_img = Image.fromarray(file_output)
-    pil_img.save(buff, format="JPEG")
-    new_image_string = base64.b64encode(buff.getvalue()).decode("utf-8")
+    pil_img.save(buffer, format="JPEG")
+    result = pic_buffer_to_base64(buffer)
+    del buffer
+    return result
+
+
+def pic_buffer_to_base64(buffer):
+    new_image_string = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    del buffer
     return "data:image/jpg;base64," + new_image_string
 
 

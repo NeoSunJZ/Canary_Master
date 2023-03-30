@@ -33,6 +33,7 @@
   },
   "system": {
     "limited_read_img_size": 900,
-    "use_file_memory_cache": true
+    "use_file_memory_cache": true,
+    "save_fig_model": "save_img_file"
   }
 }

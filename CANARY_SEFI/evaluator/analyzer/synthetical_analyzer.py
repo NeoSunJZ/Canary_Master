@@ -1,5 +1,11 @@
-from colorama import Fore
+import re
 
+import pandas as pd
+import seaborn as sns
+from colorama import Fore
+from matplotlib import pyplot as plt
+
+from CANARY_SEFI.handler.image_handler.plt_handler import get_base64_by_fig, figure_show_handler
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
@@ -11,6 +17,61 @@ from CANARY_SEFI.evaluator.logger.indicator_data_handler import get_model_capabi
     get_attack_adv_example_da_indicator_data_by_attack_name, get_attack_adv_example_cost_indicator_data_by_attack_name, \
     get_attack_adv_example_cost_indicator_data_by_base_model, add_attack_synthetical_capability_log
 from CANARY_SEFI.handler.tools.analyzer_tools import calc_average
+
+
+def adversarial_example_transfer_analyzer_log_handler(attack_deflection_capability_indicator_data, attack_name):
+    adversarial_example_analyzer_log = {
+        "T_MR": [], "T_AIAC": [], "T_ARTC": []
+    }
+    MR_data_map = {}
+    AIAC_data_map = {}
+    ARTC_data_map = {}
+
+    def add_map(map, columns, index, data):
+        columns = re.sub('\(.*?\)', '', columns)
+        index = re.sub('\(.*?\)', '', index)
+        if map.get(columns, None) is None:
+            map[columns] = {}
+        map[columns][index] = data
+
+    for log in attack_deflection_capability_indicator_data:
+        base_model, inference_model = log["base_model"], log["inference_model"]
+        MR = str(log["MR"]).split('/')
+
+        if base_model != inference_model:
+            # 加入数据表
+            add_map(MR_data_map, base_model, inference_model, float(MR[0]))
+            add_map(AIAC_data_map, base_model, inference_model, float(log["AIAC"]))
+            add_map(ARTC_data_map, base_model, inference_model, float(log["ARTC"]))
+
+            adversarial_example_analyzer_log['T_MR'].append(float(MR[0]))
+            adversarial_example_analyzer_log['T_AIAC'].append(float(log["AIAC"]))
+            adversarial_example_analyzer_log['T_ARTC'].append(float(log["ARTC"]))
+
+    MR_data_df = pd.DataFrame(MR_data_map)
+    AIAC_data_df = pd.DataFrame(AIAC_data_map)
+    ARTC_data_df = pd.DataFrame(ARTC_data_map)
+
+    fig = plt.figure(figsize=(24, 6.8), dpi=75)
+
+    def show(data_df, title, subplot):
+        data_df = data_df.reindex(data_df.mean(axis=0).sort_values().index, axis=1)
+        data_df = data_df.reindex(data_df.mean(axis=1).sort_values().index, axis=0)
+
+        # 设置标题、坐标轴标签及字体大小
+        ax = fig.add_subplot(subplot)
+        sns.heatmap(data_df, annot=True, fmt='.2f', cmap='Blues', cbar=True, ax=ax, annot_kws={"fontsize": 7.5})
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=35, ha='right', rotation_mode='anchor', size=10)
+        ax.set_yticklabels(ax.get_yticklabels(), rotation=35, ha='right', rotation_mode='anchor', size=10)
+        ax.set_title('{} {} Heat Map'.format(attack_name, title), size="14")
+        ax.set_xlabel('AEs Generation Based Model', size="13")
+        ax.set_ylabel('AEs Transferred Target Model', size="13")
+
+    show(MR_data_df, 'Misclassification Radio', 131)
+    show(AIAC_data_df, 'Increase Adversarial-Class Confidence', 132)
+    show(ARTC_data_df, 'Reduction True-class Confidence', 133)
+    fig.tight_layout()
+    figure_show_handler(fig, file_path="transfer_analyze_result/", file_name="transfer_heat_map")
 
 
 def adversarial_example_analyzer_log_handler(attack_deflection_capability_indicator_data,
@@ -112,6 +173,7 @@ def attack_synthetical_capability_analyzer_and_evaluation(attack_name, use_raw_n
         adversarial_example_analyzer_log_handler(attack_deflection_capability_indicator_data,
                                                  attack_adv_example_da_indicator_data,
                                                  attack_adv_example_cost_indicator_data)
+    adversarial_example_transfer_analyzer_log_handler(attack_deflection_capability_indicator_data, attack_name)
 
     model_analyzer_log = {
         "ACC": [], "F1": [], "Conf": []
