@@ -21,7 +21,7 @@ from sklearn.metrics import f1_score, accuracy_score
 
 from CANARY_SEFI.evaluator.logger.inference_test_data_handler import get_inference_test_data_by_model_name, \
     get_inference_test_data_by_img_id
-from CANARY_SEFI.handler.tools.analyzer_tools import calc_average
+from CANARY_SEFI.evaluator.analyzer.analyzer_tools import calc_average
 
 
 def model_inference_capability_analyzer_and_evaluation(model_name):

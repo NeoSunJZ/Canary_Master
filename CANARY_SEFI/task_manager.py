@@ -6,10 +6,12 @@ import string
 import torch
 from colorama import Fore
 
-from CANARY_SEFI.copyright import print_logo
+from CANARY_SEFI.compatibility_repair.repair import compatibility_repair
+from CANARY_SEFI.copyright import print_logo, get_system_version
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.core.function.helper.system_log import SystemLog
 from CANARY_SEFI.evaluator.logger.test_data_logger import TestDataLogger
+from CANARY_SEFI.handler.json_handler.json_io_handler import get_info_from_json_file, save_info_to_json_file
 
 
 class TaskManager(object):
@@ -47,9 +49,30 @@ class TaskManager(object):
         self.test_data_logger = TestDataLogger(self.base_temp_path)
         self.sys_log_logger = SystemLog(self.base_temp_path)
 
+        system_info = get_info_from_json_file(task_manager.base_temp_path, "system_info.json")
+        config = get_info_from_json_file(task_manager.base_temp_path, "config.json")
+
+        if system_info is None and config is None:
+            self.set_system_info()
+        else:
+            if system_info is None:
+                system_info = {}
+            version = system_info.get("version", None)
+            compatibility_repair(version, {
+                "test_data_logger": self.test_data_logger,
+                "sys_log_logger": self.sys_log_logger
+            })
+            self.set_system_info()
+
         self.run_device = self.run_device if run_device is None else run_device
 
         self.init_status = True
+
+    def set_system_info(self):
+        system_info = {
+            "version": get_system_version()
+        }
+        save_info_to_json_file(system_info, self.base_temp_path, "system_info.json")
 
 
 task_manager = TaskManager()
