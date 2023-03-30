@@ -5,7 +5,7 @@ import seaborn as sns
 from colorama import Fore
 from matplotlib import pyplot as plt
 
-from CANARY_SEFI.handler.image_handler.plt_handler import get_base64_by_fig, figure_show_handler
+from CANARY_SEFI.handler.image_handler.plt_handler import figure_show_handler
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
@@ -16,7 +16,7 @@ from CANARY_SEFI.evaluator.logger.indicator_data_handler import get_model_capabi
     get_attack_deflection_capability_indicator_data_by_attack_name, \
     get_attack_adv_example_da_indicator_data_by_attack_name, get_attack_adv_example_cost_indicator_data_by_attack_name, \
     get_attack_adv_example_cost_indicator_data_by_base_model, add_attack_synthetical_capability_log
-from CANARY_SEFI.handler.tools.analyzer_tools import calc_average
+from CANARY_SEFI.evaluator.analyzer.analyzer_tools import calc_average
 
 
 def adversarial_example_transfer_analyzer_log_handler(attack_deflection_capability_indicator_data, attack_name):
@@ -73,6 +73,11 @@ def adversarial_example_transfer_analyzer_log_handler(attack_deflection_capabili
     fig.tight_layout()
     figure_show_handler(fig, file_path="transfer_analyze_result/", file_name="transfer_heat_map")
 
+    OTR_MR = calc_average(adversarial_example_analyzer_log["T_MR"])
+    OTR_AIAC = calc_average(adversarial_example_analyzer_log["T_AIAC"])
+    OTR_ARTC = calc_average(adversarial_example_analyzer_log["T_ARTC"])
+
+    return OTR_MR, OTR_AIAC, OTR_ARTC
 
 def adversarial_example_analyzer_log_handler(attack_deflection_capability_indicator_data,
                                              attack_adv_example_da_indicator_data,
@@ -173,7 +178,8 @@ def attack_synthetical_capability_analyzer_and_evaluation(attack_name, use_raw_n
         adversarial_example_analyzer_log_handler(attack_deflection_capability_indicator_data,
                                                  attack_adv_example_da_indicator_data,
                                                  attack_adv_example_cost_indicator_data)
-    adversarial_example_transfer_analyzer_log_handler(attack_deflection_capability_indicator_data, attack_name)
+    OTR_MR, OTR_AIAC, OTR_ARTC =\
+        adversarial_example_transfer_analyzer_log_handler(attack_deflection_capability_indicator_data, attack_name)
 
     model_analyzer_log = {
         "ACC": [], "F1": [], "Conf": []
@@ -193,7 +199,7 @@ def attack_synthetical_capability_analyzer_and_evaluation(attack_name, use_raw_n
 
     add_attack_synthetical_capability_log(attack_name, test_adv_example_file_type,
                                           model_ACC, model_F1, model_Conf,
-                                          MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T,
+                                          MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, OTR_MR, OTR_AIAC, OTR_ARTC,
                                           ACT, AQN_F, AQN_B,
                                           AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS)
     # 增加计数
