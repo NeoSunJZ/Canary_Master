@@ -16,8 +16,8 @@ def build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc
             bar.update(1)
 
         participant = "{}({})".format(atk_name, model_name)
-        if atk_perturbation_budget is not None:
-            participant = "{}({})(e-{})".format(atk_name, model_name, str(round(atk_perturbation_budget, 5)))
+        if atk_perturbation_budget != "None" or atk_perturbation_budget is not None:
+            participant += "(e-{})".format(str(round(float(atk_perturbation_budget), 5)))
         is_skip, completed_num = global_recovery.check_skip(participant)
         if is_skip:
             return None

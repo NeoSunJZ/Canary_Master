@@ -43,10 +43,17 @@ def save_inference_test_data(img_id, img_type, inference_model, inference_img_la
 
 def handle_result(inference_logs):
     for inference_log in inference_logs:
-        inference_log["inference_img_conf_array"] = pickle.loads(eval(inference_log["inference_img_conf_array"]))
-        inference_log["inference_class_cams"] = pickle.loads(eval(inference_log["inference_class_cams"]))
-        inference_log["true_class_cams"] = pickle.loads(eval(inference_log["true_class_cams"]))
+        inference_log["inference_img_conf_array"] = handle_pickle_loads(inference_log["inference_img_conf_array"])
+        inference_log["inference_class_cams"] = handle_pickle_loads(inference_log["inference_class_cams"])
+        inference_log["true_class_cams"] = handle_pickle_loads(inference_log["true_class_cams"])
     return inference_logs
+
+
+def handle_pickle_loads(dump):
+    if dump != "None" and dump is not None:
+        return pickle.loads(eval(dump))
+    else:
+        return None
 
 
 def get_all_inference_test_data(img_type):

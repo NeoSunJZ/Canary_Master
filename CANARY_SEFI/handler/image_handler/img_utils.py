@@ -24,6 +24,8 @@ def get_img_diff(original_img, adversarial_img):
 
 
 def get_img_cosine_similarity(img1, img2):
+    if img1 is None or img2 is None:
+        return None
     imgs = [img1, img2]
     vectors = []
     norms = []

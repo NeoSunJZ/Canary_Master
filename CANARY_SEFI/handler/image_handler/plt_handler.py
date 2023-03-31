@@ -1,12 +1,18 @@
 import base64
+import os
 from io import BytesIO
 
 import numpy as np
+from colorama import Fore
 from matplotlib import figure
 import matplotlib.pyplot as plt
 
+from CANARY_SEFI.core.config.config_manager import config_manager
+from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.handler.image_handler.img_crm_hander import show_cam_on_image
+from CANARY_SEFI.handler.image_handler.img_io_handler import pic_buffer_to_base64
 from CANARY_SEFI.handler.image_handler.img_utils import get_img_diff
+from CANARY_SEFI.task_manager import task_manager
 
 
 def img_diff_fig_builder(original_img, adversarial_img):
@@ -70,13 +76,34 @@ def cam_diff_fig_builder(img, true_class_cams, inference_class_cams, info):
 def get_base64_by_fig(fig):
     buffer = BytesIO()
     fig.savefig(buffer, format='png', bbox_inches="tight", pad_inches=0.0)
-    result = "data:image/png;base64," + str(base64.b64encode(buffer.getvalue()), "utf-8")
+    result = pic_buffer_to_base64(buffer)
     fig.clf()
     del buffer
     return result
+
+
+def save_pic_by_fig(file_path, file_name, fig):
+    full_path = task_manager.base_temp_path + "pic/" + file_path
+    if not os.path.exists(full_path):
+        os.makedirs(full_path)
+    fig.savefig(full_path + file_name + ".PNG", format='png', bbox_inches="tight", pad_inches=0.0)
 
 
 def show_plt(fig):
     fig_plt = plt.figure()
     fig_plt.canvas.manager.canvas.figure = fig
     fig_plt.show()
+
+
+def figure_show_handler(fig, file_path=None, file_name=None):
+    action = config_manager.config.get("system", {}).get("save_fig_model", "no_action")
+    if action == "no_action":
+        return
+    elif action == "save_img_file":
+        assert file_path, file_name
+        save_pic_by_fig(file_path, file_name, fig)
+    elif action == "show_base64_on_terminal":
+        reporter.console_log(get_base64_by_fig(fig), Fore.CYAN, type="Info")
+    elif action == "show_on_window":
+        show_plt(fig)
+

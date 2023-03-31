@@ -216,18 +216,26 @@ def get_model_security_synthetical_capability_log(model_name):
 
 def add_attack_synthetical_capability_log(attack_name, test_adv_example_file_type,
                                                   model_ACC, model_F1, model_Conf,
-                                                  MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T,
+                                                  MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, OTR_MR, OTR_AIAC, OTR_ARTC,
                                                   ACT, AQN_F, AQN_B,
                                                   AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS):
     sql = "INSERT INTO attack_dimension_summary (attack_name, test_adv_example_file_type, " \
-          "ACC, F1, Conf, MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, ACT, AQN_F, AQN_B, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS) " \
-          "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+          "ACC, F1, Conf, MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, OTR_MR, OTR_AIAC, OTR_ARTC," \
+          "ACT, AQN_F, AQN_B, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS) " \
+          "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
     args = (attack_name, test_adv_example_file_type, model_ACC, model_F1, model_Conf,
-            MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, ACT, AQN_F, AQN_B, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS)
+            MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, OTR_MR, OTR_AIAC, OTR_ARTC,
+            ACT, AQN_F, AQN_B, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS)
     task_manager.test_data_logger.insert_log(sql, args)
     if task_manager.test_data_logger.debug_log:
         msg = "[ LOGGER ] Logged. Model({})'s Evaluated Result (Tested Adv Example Type:{} ) :[ " \
-              "ACC:{} F1:{} Conf:{} MR:{} TAS:{} AIAC:{} ARTC:{} ACAMC_A:{} ACAMC_T:{}" \
+              "ACC:{} F1:{} Conf:{} MR:{} TAS:{} AIAC:{} ARTC:{} ACAMC_A:{} ACAMC_T:{} " \
+              "OTR_MR:{} OTR_AIAC:{} OTR_ARTC:{} " \
               "ACT:{} AQN_F:{} AQN_B:{} AMD:{} AED:{} AED_HF:{} AED_LF:{} APCR:{} ADMS:{} ALMS:{} ]".format(*args)
         reporter.console_log(msg, Fore.CYAN, type="DEBUG")
     return
+
+
+def get_attack_synthetical_capability_log():
+    sql = "SELECT * FROM attack_dimension_summary"
+    return task_manager.test_data_logger.query_logs(sql, ())
