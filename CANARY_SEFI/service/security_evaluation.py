@@ -15,7 +15,7 @@ from CANARY_SEFI.core.function.test_and_evaluation import adv_example_generate, 
     attack_adv_example_da_and_cost_evaluation, attack_adv_example_comparative_test, \
     attack_synthetical_capability_evaluation, \
     defense_model_adv_inference_capability_evaluation, defense_model_normal_inference_capability_evaluation, \
-    trans_deflection_capability_test, trans_deflection_capability_evaluation
+    trans_deflection_capability_test, trans_deflection_capability_evaluation, adv_trans_generate
 from CANARY_SEFI.handler.json_handler.json_io_handler import save_info_to_json_file, get_info_from_json_file
 
 
@@ -36,6 +36,7 @@ class SecurityEvaluation:
 
         self.model_config = config.get("model_config", None)
         self.attacker_config = config.get("attacker_config", None)
+        self.trans_config = config.get("trans_config", None)
         self.img_proc_config = config.get("img_proc_config", None)
 
         self.perturbation_increment_config = config.get("perturbation_increment_config", None)
@@ -183,7 +184,14 @@ class SecurityEvaluation:
 
         task_manager.test_data_logger.finish()
 
-    def trans_test_and_evaluation(self, use_raw_nparray_data=True, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
+    def adv_trans_generate(self):
+        # 生成对抗样本与对抗样本质量分析
+        adv_trans_generate(self.attacker_list, self.trans_config)
+        task_manager.test_data_logger.finish()
+
+    def trans_full_test(self, use_raw_nparray_data=True, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
+        # 生成图片预处理防御样本
+        self.adv_trans_generate()
 
         # 防御样本攻击偏转能力测试
         trans_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config,

@@ -1,5 +1,6 @@
 from colorama import Fore
 
+from CANARY_SEFI.core.function.basic.img_trans_function import adv_trans_4_img_batch
 from CANARY_SEFI.core.function.comparative_test_adv_example import adv_comparative_test
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 from CANARY_SEFI.evaluator.analyzer.inference_data_analyzer import defense_normal_effectiveness_analyzer_and_evaluation, \
@@ -262,6 +263,17 @@ def attack_capability_evaluation_with_perturbation_increment(attacker_list, data
         for base_model in attacker_list[atk_name]:
             attack_capability_with_perturbation_increment_analyzer_and_evaluation(atk_name, base_model, dataset_info,
                                                                                   use_raw_nparray_data)
+
+
+def adv_trans_generate(attacker_list, trans_config):
+    # 标记当前步骤
+    task_manager.sys_log_logger.set_step(Step.ADV_TRANS_GENERATE)
+    for atk_name in attacker_list:
+        for base_model in attacker_list[atk_name]:
+            for trans_name in attacker_list[atk_name][base_model]:
+                trans_args = trans_config.get(trans_name, None)
+                attack_log = find_attack_log_by_name_and_base_model(atk_name, base_model)
+                adv_trans_4_img_batch(trans_name=trans_name, trans_args=trans_args, atk_log=attack_log)
 
 
 # 防御样本攻击偏转能力测试
