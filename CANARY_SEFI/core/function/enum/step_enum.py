@@ -29,6 +29,7 @@ class Step(Enum):
     DEFENSE_NORMAL_EFFECTIVENESS_EVALUATION = {'step_name': "防御方法在干净样本上的有效性评估"}
     DEFENSE_ADVERSARIAL_EFFECTIVENESS_EVALUATION = {'step_name': "防御方法在对抗样本上的有效性评估"}
 
+    ADV_TRANS_GENERATE = {'step_name': "图片预处理防御样本生成"}
     TRANS_DEFLECTION_CAPABILITY_TEST = {'step_name': "图片预处理防御样本-攻击方法推理偏转效果/模型注意力偏转效果测试"}
     TRANS_DEFLECTION_CAPABILITY_EVALUATION = {'step_name': "图片预处理防御样本-攻击方法推理偏转效果/模型注意力偏转效果评估"}
 
