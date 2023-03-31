@@ -11,7 +11,7 @@
     "ILSVRC-2012": {
       "name": "ImageNet Large Scale Visual Recognition Challenge_2012数据集(VAL)",
       "n_classes": 1000,
-      "path": "/mnt/data/ILSVRC2012_img_val/"
+      "path": "E:\\dataset"
     },
     "CIFAR-10": {
       "name": "CIFAR-10数据集(VAL)",
@@ -33,6 +33,7 @@
   },
   "system": {
     "limited_read_img_size": 900,
-    "use_file_memory_cache": true
+    "use_file_memory_cache": true,
+    "save_fig_model": "save_img_file"
   }
 }
