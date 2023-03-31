@@ -10,7 +10,7 @@ class DefenseEvaluation:
         if config is None:
             config = get_info_from_json_file("config.json")
         else:
-            save_info_to_json_file(config, "config.json")
+            save_info_to_json_file(config, task_manager.base_temp_path, "config.json")
         self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size"),
                                          config.get("dataset_seed", None))
 
