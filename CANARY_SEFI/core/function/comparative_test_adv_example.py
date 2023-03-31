@@ -27,7 +27,7 @@ def adv_comparative_test(atk_log, dataset_info, use_raw_nparray_data=False):
 
     with tqdm(total=adv_dataset_info.dataset_size, desc="Adv-example Disturbance-aware Test Progress", ncols=120) as bar:
         participant = "{}({})".format(atk_log['atk_name'], atk_log['base_model'])
-        if atk_log['atk_perturbation_budget'] != "None" or atk_log['atk_perturbation_budget'] is not None:
+        if atk_log['atk_perturbation_budget'] != "None" and atk_log['atk_perturbation_budget'] is not None:
             participant += "(e-{})".format(str(round(float(atk_log['atk_perturbation_budget']), 5)))
         participant += "(RAW)" if use_raw_nparray_data else "(IMG)"
         is_skip, completed_num = global_recovery.check_skip(participant)
