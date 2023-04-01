@@ -34,11 +34,13 @@ def adversarial_example_transfer_analyzer_log_handler(attack_deflection_capabili
             map[columns] = {}
         map[columns][index] = data
 
+    transfer_flag = False
     for log in attack_deflection_capability_indicator_data:
         base_model, inference_model = log["base_model"], log["inference_model"]
         MR = str(log["MR"]).split('/')
 
         if base_model != inference_model:
+            transfer_flag = True
             # 加入数据表
             add_map(MR_data_map, base_model, inference_model, float(MR[0]))
             add_map(AIAC_data_map, base_model, inference_model, float(log["AIAC"]))
@@ -47,6 +49,9 @@ def adversarial_example_transfer_analyzer_log_handler(attack_deflection_capabili
             adversarial_example_analyzer_log['T_MR'].append(float(MR[0]))
             adversarial_example_analyzer_log['T_AIAC'].append(float(log["AIAC"]))
             adversarial_example_analyzer_log['T_ARTC'].append(float(log["ARTC"]))
+
+    if not transfer_flag:
+        return None, None, None
 
     MR_data_df = pd.DataFrame(MR_data_map)
     AIAC_data_df = pd.DataFrame(AIAC_data_map)
