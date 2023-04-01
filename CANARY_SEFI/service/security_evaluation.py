@@ -18,10 +18,13 @@ from CANARY_SEFI.handler.json_handler.json_io_handler import save_info_to_json_f
 
 class SecurityEvaluation:
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, config_handler=None):
         if config is None:
             config = get_info_from_json_file(task_manager.base_temp_path, "config.json")
         else:
+            save_info_to_json_file(config, task_manager.base_temp_path, "config.json")
+        if config_handler is not None:
+            config = config_handler(config)
             save_info_to_json_file(config, task_manager.base_temp_path, "config.json")
         self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size"), config.get("dataset_seed", None))
 
@@ -29,6 +32,7 @@ class SecurityEvaluation:
         self.attacker_list = config.get("attacker_list", None)
 
         self.transfer_attack_test_mode = TransferAttackType(config.get("transfer_attack_test_mode", "NOT"))
+        print(self.transfer_attack_test_mode)
         self.transfer_attack_test_on_model_list = config.get("transfer_attack_test_on_model_list", {})
 
         self.model_config = config.get("model_config", None)
@@ -59,7 +63,7 @@ class SecurityEvaluation:
                                           self.transfer_attack_test_mode, self.transfer_attack_test_on_model_list,
                                           use_raw_nparray_data, transfer_test_level)
         # 攻击方法推理偏转效果/模型注意力偏转效果评估
-        attack_deflection_capability_evaluation(self.attacker_list,self.dataset_info, use_raw_nparray_data)
+        attack_deflection_capability_evaluation(self.attacker_list, self.dataset_info, use_raw_nparray_data)
         # 攻击方法生成对抗样本综合对比测试(图像相似性/模型注意力差异对比/像素差异对比)
         attack_adv_example_comparative_test(self.attacker_list, self.dataset_info, use_raw_nparray_data)
         # 攻击方法生成对抗样本图像相似性(扰动距离)/生成代价评估

@@ -70,7 +70,7 @@ class SystemLog(SqliteDBLogger):
         # 强行终止检查点
         task_thread.sys_check_task_status()
 
-    def update_finish_status(self, is_finish=True, stop_reason=None, is_restart=False):
+    def update_finish_status(self, is_finish=True, stop_reason=None, is_restart=False, reset_completed_num=False):
         cursor = self.conn.cursor()
         if is_restart:
             sql_update_restart = "UPDATE system_log SET is_finish = '0', stop_reason = NULL, stop_time = NULL WHERE id = ? "
@@ -80,6 +80,11 @@ class SystemLog(SqliteDBLogger):
                 stop_reason = "Task_End_Normally"
             sql_update_normal = "UPDATE system_log SET is_finish = ?, stop_reason = ?, stop_time = ? WHERE id = ? "
             cursor.execute(sql_update_normal, (is_finish , str(stop_reason), datetime.datetime.now(), str(self.system_log_id)))
+
+        if reset_completed_num:
+            sql_update_restart = "UPDATE system_log SET completed_num = 0 WHERE id = ? "
+            cursor.execute(sql_update_restart, (str(self.system_log_id), ))
+
         cursor.close()
         self.conn.commit()
 

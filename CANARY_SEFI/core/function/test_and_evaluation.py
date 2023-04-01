@@ -46,7 +46,7 @@ def attack_adv_example_comparative_test(attacker_list, dataset_info, use_raw_npa
                 .format(atk_name, attack_log["base_model"], use_raw_nparray_data)
             reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
 
-            adv_comparative_test(attack_log,dataset_info,use_raw_nparray_data)
+            adv_comparative_test(attack_log, dataset_info, use_raw_nparray_data)
 
 
 # 攻击方法生成对抗样本图像相似性(扰动距离)/生成代价评估
@@ -75,6 +75,9 @@ def attack_deflection_capability_test(attacker_list, model_config, img_proc_conf
                 test_on_model_list.append(base_model)
             elif transfer_attack_test == TransferAttackType.APPOINT:
                 test_on_model_list = transfer_attack_test_on_model_list[atk_name][base_model]
+            elif transfer_attack_test == TransferAttackType.APPOINT_SIMPLE:
+                test_on_model_list = transfer_attack_test_on_model_list[atk_name]
+                test_on_model_list.append(base_model)
             elif transfer_attack_test == TransferAttackType.SELF_CROSS:
                 test_on_model_list = attacker_list[atk_name]
 
