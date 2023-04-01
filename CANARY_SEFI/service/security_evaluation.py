@@ -185,14 +185,11 @@ class SecurityEvaluation:
         task_manager.test_data_logger.finish()
 
     def adv_trans_generate(self):
-        # 生成对抗样本与对抗样本质量分析
+        # 生成图片预处理防御样本
         adv_trans_generate(self.attacker_list, self.trans_config)
         task_manager.test_data_logger.finish()
 
-    def trans_full_test(self, use_raw_nparray_data=True, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
-        # 生成图片预处理防御样本
-        self.adv_trans_generate()
-
+    def trans_test_and_evaluation(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
         # 防御样本攻击偏转能力测试
         trans_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config,
                                          self.inference_batch_config,
@@ -201,5 +198,9 @@ class SecurityEvaluation:
         # 防御样本攻击方法推理偏转效果/模型注意力偏转效果评估
         trans_deflection_capability_evaluation(self.attacker_list, self.dataset_info, use_raw_nparray_data)
         task_manager.test_data_logger.finish()
+
+    def trans_full_test(self, use_raw_nparray_data=True, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
+        self.adv_trans_generate()
+        self.trans_test_and_evaluation(use_raw_nparray_data, transfer_test_level)
 
 # sys.excepthook = excepthook
