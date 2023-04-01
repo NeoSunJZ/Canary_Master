@@ -20,12 +20,14 @@ class Transform():
     def img_transform(self, img):
         if not torch.is_tensor(img):
             img = torch.from_numpy(img)
-        return _quantize_img(img, depth=self.args.get("quantize_depth", 8))
+        return _quantize_img(img, depth=self.args.get("quantize_depth", 3))
 
 
-def _quantize_img(im, depth=8):
+def _quantize_img(im, depth=3):
     assert torch.is_tensor(im)
+    im /= 255
     N = int(math.pow(2, depth))
     im = (im * N).round()
     im = im / N
+    im *= 255
     return im
