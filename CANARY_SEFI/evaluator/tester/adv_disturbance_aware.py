@@ -1,6 +1,7 @@
 from functools import reduce
 
 import cv2
+import numpy as np
 import piq
 import torch
 from torchvision.transforms import Resize
@@ -15,55 +16,74 @@ class AdvDisturbanceAwareTester:
         self.max_pixel = max_pixel
         self.min_pixel = min_pixel
 
+        self.test_all_handled_img = {}
+
     def test_all(self, ori_img, adv_img):
-        # ori_img, adv_img = img_size_uniform_fix(ori_img, adv_img)
+        self.test_all_handled_img["ori_img"] = self.img_handler(ori_img)
+        self.test_all_handled_img["img"] = self.img_handler(adv_img)
         high_freq_euclidean_distortion, low_freq_euclidean_distortion = self.calculate_freq_euclidean_distortion(
             ori_img, adv_img)
-        return {
-            "maximum_disturbance": float(self.calculate_maximum_disturbance(ori_img, adv_img)),
-            "euclidean_distortion": float(self.calculate_euclidean_distortion(ori_img, adv_img)),
-            "pixel_change_ratio": float(self.calculate_pixel_change_ratio(ori_img, adv_img)),
-            "deep_metrics_similarity": float(self.calculate_deep_metrics_similarity(ori_img, adv_img)),
-            "low_level_metrics_similarity": float(self.calculate_low_level_metrics_similarity(ori_img, adv_img)),
+        result = {
+            "maximum_disturbance": float(self.calculate_maximum_disturbance(test_all_model=True)),
+            "euclidean_distortion": float(self.calculate_euclidean_distortion(test_all_model=True)),
+            "pixel_change_ratio": float(self.calculate_pixel_change_ratio(test_all_model=True)),
+            "deep_metrics_similarity": float(self.calculate_deep_metrics_similarity(test_all_model=True)),
+            "low_level_metrics_similarity": float(self.calculate_low_level_metrics_similarity(test_all_model=True)),
             "high_freq_euclidean_distortion": high_freq_euclidean_distortion,
             "low_freq_euclidean_distortion": low_freq_euclidean_distortion
         }
+        self.test_all_handled_img = {}
+        return result
 
-    def calculate_maximum_disturbance(self, ori_img, img):
+
+    def calculate_maximum_disturbance(self, ori_img=None, img=None, test_all_model=False):
+        if test_all_model:
+            ori_img, img = self.test_all_handled_img["ori_img"], self.test_all_handled_img["img"]
+        else:
+            ori_img, img = self.img_handler(ori_img), self.img_handler(img)
         # L-inf
-        result = torch.norm(torch.abs(self.img_handler(img) - self.img_handler(ori_img)),
-                            float("inf")).cpu().detach().numpy()
+        result = torch.norm(torch.abs(img - ori_img), float("inf")).cpu().detach().numpy()
         return result
 
-    def calculate_euclidean_distortion(self, ori_img, img):
+    def calculate_euclidean_distortion(self, ori_img=None, img=None, test_all_model=False):
+        if test_all_model:
+            ori_img, img = self.test_all_handled_img["ori_img"], self.test_all_handled_img["img"]
+        else:
+            ori_img, img = self.img_handler(ori_img), self.img_handler(img)
         # L-2
-        img = self.img_handler(img)
         all_pixel = reduce(lambda x, y: x * y, img.shape)
-        result = torch.norm(img - self.img_handler(ori_img), 2).cpu().detach().numpy() / all_pixel
+        result = torch.norm(img - ori_img, 2).cpu().detach().numpy() / all_pixel
         return result
 
-    def calculate_pixel_change_ratio(self, ori_img, img):
+    def calculate_pixel_change_ratio(self, ori_img=None, img=None, test_all_model=False):
+        if test_all_model:
+            ori_img, img = self.test_all_handled_img["ori_img"], self.test_all_handled_img["img"]
+        else:
+            ori_img, img = self.img_handler(ori_img), self.img_handler(img)
         # L-0
-        img = self.img_handler(img)
         all_pixel = reduce(lambda x, y: x * y, img.shape)
-        result = torch.norm(img - self.img_handler(ori_img), 0).cpu().detach().numpy() / all_pixel
+        result = torch.norm(img.int().float() - ori_img.int().float(), 0).cpu().detach().numpy() / all_pixel
         return result
 
-    def calculate_deep_metrics_similarity(self, ori_img, img):
-        # LPIPS
-        # lpips_vgg = lpips.LPIPS(net='vgg').to(self.device)
-        # result = lpips_vgg(self.img_handler(img), self.img_handler(ori_img)).sum().cpu().detach().numpy()
+    def calculate_deep_metrics_similarity(self, ori_img=None, img=None, test_all_model=False):
+        if test_all_model:
+            ori_img, img = self.test_all_handled_img["ori_img"], self.test_all_handled_img["img"]
+        else:
+            ori_img, img = self.img_handler(ori_img), self.img_handler(img)
 
         # DISTS
-        x = self.img_handler(ori_img).unsqueeze(dim=0)
-        y = self.img_handler(img).unsqueeze(dim=0)
-        result = piq.DISTS(reduction='none')(x, y).cpu().detach().numpy()
+        result = piq.DISTS(reduction='none')(ori_img.unsqueeze(dim=0), img.unsqueeze(dim=0)).cpu().detach().numpy()
         return result[0]
 
-    def calculate_low_level_metrics_similarity(self, ori_img, img):
-        x = self.img_handler(ori_img).unsqueeze(dim=0)
-        y = self.img_handler(img).unsqueeze(dim=0)
-        result = piq.MultiScaleGMSDLoss(chromatic=True, data_range=1., reduction='none')(x, y).cpu().detach().numpy()
+    def calculate_low_level_metrics_similarity(self, ori_img=None, img=None, test_all_model=False):
+        if test_all_model:
+            ori_img, img = self.test_all_handled_img["ori_img"], self.test_all_handled_img["img"]
+        else:
+            ori_img, img = self.img_handler(ori_img), self.img_handler(img)
+
+        # MS-GMSD
+        result = piq.MultiScaleGMSDLoss(chromatic=True, data_range=1., reduction='none')\
+            (ori_img.unsqueeze(dim=0), img.unsqueeze(dim=0)).cpu().detach().numpy()
         return result[0]
 
     def calculate_freq_euclidean_distortion(self, ori_img, img):
