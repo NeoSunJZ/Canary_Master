@@ -7,14 +7,15 @@ from torchvision.transforms import Resize
 
 
 def img_size_uniform_fix(ori_img, target_img, use_raw_nparray_data):
+    img_type = None
     if use_raw_nparray_data:
-        type = np.float32
+        img_type = np.float32
     else:
-        type = np.int
+        img_type = np.int
     ori_h, ori_w = ori_img.shape[0], ori_img.shape[1]
     adv_h, adv_w = target_img.shape[0], target_img.shape[1]
     if ori_h != adv_h or ori_w != adv_w:
-        ori_img = ori_img.copy().astype(type)
+        ori_img = ori_img.copy().astype(img_type)
         ori_img = ori_img.transpose(2, 0, 1)
         ori_img = torch.from_numpy(ori_img).to('cuda' if torch.cuda.is_available() else 'cpu').float()
         resize = Resize([adv_h, adv_w])

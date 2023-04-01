@@ -21,6 +21,8 @@ class AdvDisturbanceAwareTester:
     def test_all(self, ori_img, adv_img):
         self.test_all_handled_img["ori_img"] = self.img_handler(ori_img)
         self.test_all_handled_img["img"] = self.img_handler(adv_img)
+        self.test_all_handled_img["ori_img_forced_int"] = self.img_handler(ori_img, forced_int=True)
+        self.test_all_handled_img["img_forced_int"] = self.img_handler(adv_img, forced_int=True)
         high_freq_euclidean_distortion, low_freq_euclidean_distortion = self.calculate_freq_euclidean_distortion(
             ori_img, adv_img)
         result = {
@@ -57,12 +59,12 @@ class AdvDisturbanceAwareTester:
 
     def calculate_pixel_change_ratio(self, ori_img=None, img=None, test_all_model=False):
         if test_all_model:
-            ori_img, img = self.test_all_handled_img["ori_img"], self.test_all_handled_img["img"]
+            ori_img, img = self.test_all_handled_img["ori_img_forced_int"], self.test_all_handled_img["img_forced_int"]
         else:
-            ori_img, img = self.img_handler(ori_img), self.img_handler(img)
+            ori_img, img = self.img_handler(ori_img, forced_int=True), self.img_handler(img, forced_int=True)
         # L-0
         all_pixel = reduce(lambda x, y: x * y, img.shape)
-        result = torch.norm(img.int().float() - ori_img.int().float(), 0).cpu().detach().numpy() / all_pixel
+        result = torch.norm(img - ori_img, 0).cpu().detach().numpy() / all_pixel
         return result
 
     def calculate_deep_metrics_similarity(self, ori_img=None, img=None, test_all_model=False):
@@ -99,7 +101,9 @@ class AdvDisturbanceAwareTester:
         result_high_freq = self.calculate_euclidean_distortion(high_freq_part_ori_img, high_freq_part_img)
         return result_low_freq, result_high_freq
 
-    def img_handler(self, img):
+    def img_handler(self, img, forced_int=False):
+        if forced_int:
+            img = img.copy().astype(np.int)
         img = img / (self.max_pixel - self.min_pixel)
         if len(img.shape) == 3:
             img = img.transpose(2, 0, 1)
