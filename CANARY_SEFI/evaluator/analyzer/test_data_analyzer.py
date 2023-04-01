@@ -193,7 +193,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                         ori_img, adv_img = None, None
 
                     atk_name = "{}({})".format(attack_info.get("atk_name"), attack_info.get("base_model"))
-                    if attack_info.get("atk_perturbation_budget") != 'None' or attack_info.get("atk_perturbation_budget") is not None:
+                    if attack_info.get("atk_perturbation_budget") != 'None' and attack_info.get("atk_perturbation_budget") is not None:
                         atk_name + ":(e-{})".format(str(round(float(attack_info.get("atk_perturbation_budget")), 5)))
 
                     model_name = ori_img_inference_log["inference_model"]
@@ -205,7 +205,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                                                           ))
                     figure_show_handler(cam_result_plt,
                                         file_path="Grad-CAM_analyze_result/",
-                                        file_name="adv_{}(Attack{})(InferenceModel{})".format(adv_img_file_id, model_name, atk_name))
+                                        file_name="adv_{}(Attack{})(InferenceModel{})".format(adv_img_file_id, atk_name, model_name))
                 bar.update(1)
 
     for inference_model in attack_test_result:

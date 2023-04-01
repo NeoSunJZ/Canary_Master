@@ -6,7 +6,7 @@ def build_dict_with_json_args(component, handler_type, params, run_device=None):
     # 当传入值已经是dict时，无需进行任何处理
     if type(params) == dict:
         return add_run_device(params, run_device)
-    params_handler_func = component.get(handler_type + SubComponentType.CONFIG_PARAMS_HANDLER)
+    params_handler_func = component.get(handler_type.value + SubComponentType.CONFIG_PARAMS_HANDLER.value)
     target_args_dict = None
     # 当json参数存在时构造dict
     if params is not None:
