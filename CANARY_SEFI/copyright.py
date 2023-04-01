@@ -2,6 +2,9 @@ from colorama import Fore, Style
 from tqdm import tqdm
 
 
+def get_system_version():
+    return "2.0.1"
+
 def print_logo(color=Fore.GREEN):
     tqdm.write(color + "\n")
     tqdm.write(" POWERED BY")
@@ -14,7 +17,7 @@ def print_logo(color=Fore.GREEN):
     tqdm.write(" ╚══════╝ ╚══════╝ ╚═╝      ╚═╝")
     tqdm.write("\n")
     tqdm.write(" Security Evaluation Fast Integration Framework")
-    tqdm.write(" V20230328.beta 内部代号[1][2.0.1] \n")
+    tqdm.write(" V20230328.beta 内部代号[1]["+get_system_version()+"] \n")
 
     tqdm.write(" Copyright 2022 BIT ")
     tqdm.write(" Design By Jiazheng Sun")
