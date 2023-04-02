@@ -16,6 +16,7 @@ from CANARY_SEFI.task_manager import task_manager
 
 
 def img_diff_fig_builder(original_img, adversarial_img):
+    original_img = np.clip(original_img, 0, 255).astype(np.uint8)
     adversarial_img = np.clip(adversarial_img, 0, 255).astype(np.uint8)
     fig = figure.Figure(facecolor='w')
 

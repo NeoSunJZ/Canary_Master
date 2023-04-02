@@ -92,7 +92,10 @@ def attack_deflection_capability_test(attacker_list, model_config, img_proc_conf
             if transfer_attack_test == TransferAttackType.NOT:
                 test_on_model_list.append(base_model)
             elif transfer_attack_test == TransferAttackType.APPOINT:
-                test_on_model_list = transfer_attack_test_on_model_list[atk_name][base_model]
+                test_on_model_list = transfer_attack_test_on_model_list[atk_name][base_model].copy()
+            elif transfer_attack_test == TransferAttackType.APPOINT_SIMPLE:
+                test_on_model_list = transfer_attack_test_on_model_list[atk_name].copy()
+                test_on_model_list.append(base_model)
             elif transfer_attack_test == TransferAttackType.SELF_CROSS:
                 test_on_model_list = attacker_list[atk_name]
 

@@ -21,10 +21,13 @@ from CANARY_SEFI.handler.json_handler.json_io_handler import save_info_to_json_f
 
 class SecurityEvaluation:
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, config_handler=None):
         if config is None:
             config = get_info_from_json_file(task_manager.base_temp_path, "config.json")
         else:
+            save_info_to_json_file(config, task_manager.base_temp_path, "config.json")
+        if config_handler is not None:
+            config = config_handler(config)
             save_info_to_json_file(config, task_manager.base_temp_path, "config.json")
         self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size"), config.get("dataset_seed", None))
 
@@ -32,6 +35,7 @@ class SecurityEvaluation:
         self.attacker_list = config.get("attacker_list", None)
 
         self.transfer_attack_test_mode = TransferAttackType(config.get("transfer_attack_test_mode", "NOT"))
+        print(self.transfer_attack_test_mode)
         self.transfer_attack_test_on_model_list = config.get("transfer_attack_test_on_model_list", {})
 
         self.model_config = config.get("model_config", None)

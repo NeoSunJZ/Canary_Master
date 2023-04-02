@@ -200,7 +200,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                         atk_name + ":(e-{})".format(str(round(float(attack_info.get("atk_perturbation_budget")), 5)))
 
                     model_name = ori_img_inference_log["inference_model"]
-                    ori_img, adv_img = img_size_uniform_fix(ori_img, adv_img)
+                    ori_img, adv_img = img_size_uniform_fix(ori_img, adv_img, use_raw_nparray_data)
                     cam_result_plt = cam_diff_fig_builder((ori_img, adv_img), true_class_cams, inference_class_cams,
                                                           info=(
                                                               model_name, atk_name, ori_img_id, adv_img_file_id, ori_label,
