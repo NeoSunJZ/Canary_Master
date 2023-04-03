@@ -15,14 +15,14 @@ from Defense_Method.Adversarial_Training.common import adjust_learning_rate, eva
 sefi_component = SEFIComponent()
 
 
-@sefi_component.defense_class(defense_name="trades")
-@sefi_component.config_params_handler(handler_target=ComponentType.DEFENSE, name="trades",
+@sefi_component.defense_class(defense_name="Mart")
+@sefi_component.config_params_handler(handler_target=ComponentType.DEFENSE, name="Mart",
                                       handler_type=ComponentConfigHandlerType.DEFENSE_CONFIG_PARAMS,
                                       use_default_handler=True,
                                       params={
 
                                       })
-class Trades:
+class Mart:
     def __init__(self, lr=0.1, momentum=0.9, weight_decay=2e-4, epochs=10, run_device=None, step_size=0.003,
                  epsilon=0.031, num_steps=10, beta=6.0, log_interval=5):
         # defense_args_dict传到这里初始化
@@ -37,7 +37,7 @@ class Trades:
         self.beta = beta
         self.log_interval = log_interval
 
-    @sefi_component.defense(name="trades", is_inclass=True, support_model=[])
+    @sefi_component.defense(name="Mart", is_inclass=True, support_model=[])
     def defense(self, defense_model, train_dataset, val_dataset, each_epoch_finish_callback=None):
         optimizer = optim.SGD(defense_model.parameters(), lr=self.lr, momentum=self.momentum,
                               weight_decay=self.weight_decay)
@@ -50,14 +50,14 @@ class Trades:
                 data, target = train_dataset[index][0].to(self.device), train_dataset[index][1].to(self.device)
                 optimizer.zero_grad()
                 # calculate robust loss
-                loss = self.trades_loss(model=defense_model,
-                                        x_natural=data,
-                                        y=target,
-                                        optimizer=optimizer,
-                                        step_size=self.step_size,
-                                        epsilon=self.epsilon,
-                                        perturb_steps=self.num_steps,
-                                        beta=self.beta)
+                loss = self.mart_loss(model=defense_model,
+                                      x_natural=data,
+                                      y=target,
+                                      optimizer=optimizer,
+                                      step_size=self.step_size,
+                                      epsilon=self.epsilon,
+                                      perturb_steps=self.num_steps,
+                                      beta=self.beta)
                 loss.backward()
                 optimizer.step()
                 msg = "[ Epoch {} ] step {}/{} -loss:{:.4f}.".format(epoch, index, len(train_dataset), loss)
@@ -65,9 +65,10 @@ class Trades:
 
             if epoch % self.log_interval == 0:
                 model_name = defense_model.__class__.__name__ + "(CIFAR-10)"
-                file_name = "AT_" + "trades" + '_' + model_name + "_" + "CIFAR-10" + "_" + task_manager.task_token + "_" + str(
+                file_name = "AT_" + "Mart" + '_' + model_name + "_" + "CIFAR-10" + "_" + task_manager.task_token + "_" + str(
                     epoch) + ".pt"
-                save_weight_to_temp(file_path=model_name + '/trades/', file_name=file_name, weight=defense_model.state_dict())
+                save_weight_to_temp(file_path=model_name + '/Mart/', file_name=file_name,
+                                    weight=defense_model.state_dict())
 
             # val预测
             eval_test(val_dataset, defense_model, epoch, self.device)
@@ -75,10 +76,9 @@ class Trades:
 
         return defense_model.state_dict()
 
-    def trades_loss(self, model, x_natural, y, optimizer, step_size=0.003, epsilon=0.031, perturb_steps=10, beta=1.0,
-                    distance='l_inf'):
-        # define KL-loss
-        criterion_kl = nn.KLDivLoss(size_average=False)
+    def mart_loss(self, model, x_natural, y, optimizer, step_size=0.003, epsilon=0.031, perturb_steps=10, beta=1.0,
+                  distance='l_inf'):
+        kl = nn.KLDivLoss(reduction='none')
         model.eval()
         batch_size = len(x_natural)
         # generate adversarial example
@@ -87,9 +87,8 @@ class Trades:
             for _ in range(perturb_steps):
                 x_adv.requires_grad_()
                 with torch.enable_grad():
-                    loss_kl = criterion_kl(F.log_softmax(model(x_adv), dim=1),
-                                           F.softmax(model(x_natural), dim=1))
-                grad = torch.autograd.grad(loss_kl, [x_adv])[0]
+                    loss_ce = F.cross_entropy(model(x_adv), y)
+                grad = torch.autograd.grad(loss_ce, [x_adv])[0]
                 x_adv = x_adv.detach() + step_size * torch.sign(grad.detach())
                 x_adv = torch.min(torch.max(x_adv, x_natural - epsilon), x_natural + epsilon)
                 x_adv = torch.clamp(x_adv, 0.0, 1.0)
@@ -102,36 +101,15 @@ class Trades:
         optimizer.zero_grad()
         # calculate robust loss
         logits = model(x_natural)
-        loss_natural = F.cross_entropy(logits, y)
-        loss_robust = (1.0 / batch_size) * criterion_kl(F.log_softmax(model(x_adv), dim=1),
-                                                        F.softmax(model(x_natural), dim=1))
-        loss = loss_natural + beta * loss_robust
-        return loss
+        logits_adv = model(x_adv)
+        adv_probs = F.softmax(logits_adv, dim=1)
+        tmp1 = torch.argsort(adv_probs, dim=1)[:, -2:]
+        new_y = torch.where(tmp1[:, -1] == y, tmp1[:, -2], tmp1[:, -1])
+        loss_adv = F.cross_entropy(logits_adv, y) + F.nll_loss(torch.log(1.0001 - adv_probs + 1e-12), new_y)
+        nat_probs = F.softmax(logits, dim=1)
+        true_probs = torch.gather(nat_probs, 1, (y.unsqueeze(1)).long()).squeeze()
+        loss_robust = (1.0 / batch_size) * torch.sum(
+            torch.sum(kl(torch.log(adv_probs + 1e-12), nat_probs), dim=1) * (1.0000001 - true_probs))
 
-    # def eval_test(self, val_dataset, defense_model, epoch):
-    #     acc = 0
-    #     val_loss = 0
-    #     for index in range(len(val_dataset)):
-    #         defense_model.eval()
-    #         data, target = val_dataset[index][0].to(self.device), val_dataset[index][1].to(self.device)
-    #         logit = defense_model(data)
-    #         val_loss += F.cross_entropy(logit, target, size_average=False).item()
-    #         output = F.softmax(logit, dim=1)
-    #         pred_label = torch.argmax(output, dim=1)
-    #         acc += torch.sum(torch.eq(pred_label, target))
-    #
-    #     msg = "[ Val ] epoch {} -val_loss:{:.4f} -acc:{:.4f}.".format(epoch, val_loss / val_dataset.dataset_size,
-    #                                                                   acc / val_dataset.dataset_size)
-    #     reporter.console_log(msg, Fore.GREEN, show_task=False, show_step_sequence=False)
-    #
-    # def adjust_learning_rate(self, optimizer, epoch):
-    #     """decrease the learning rate"""
-    #     lr = self.lr
-    #     if epoch >= 75:
-    #         lr = self.lr * 0.1
-    #     if epoch >= 90:
-    #         lr = self.lr * 0.01
-    #     if epoch >= 100:
-    #         lr = self.lr * 0.001
-    #     for param_group in optimizer.param_groups:
-    #         param_group['lr'] = lr
+        loss = loss_adv + float(beta) * loss_robust
+        return loss

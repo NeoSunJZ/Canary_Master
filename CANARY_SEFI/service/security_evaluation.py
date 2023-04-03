@@ -26,7 +26,8 @@ class SecurityEvaluation:
             config = get_info_from_json_file(task_manager.base_temp_path, "config.json")
         else:
             save_info_to_json_file(config, task_manager.base_temp_path, "config.json")
-        self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size"), config.get("dataset_seed", None))
+        self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size"),
+                                         config.get("dataset_seed", None), config.get("is_train", False))
 
         self.model_list = config.get("model_list", None)
         self.attacker_list = config.get("attacker_list", None)
@@ -127,7 +128,8 @@ class SecurityEvaluation:
         attack_synthetical_capability_evaluation(self.attacker_list, use_raw_nparray_data)
         # model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data)
 
-    def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
+    def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False,
+                         transfer_test_level=TestLevel.ESSENTIAL_ONLY):
         skip_step_list, finish_callback = task_manager.multi_database.get_skip_step()
         if not skip_step_list["model_inference_capability_test_and_evaluation"]:
             self.model_inference_capability_test_and_evaluation()

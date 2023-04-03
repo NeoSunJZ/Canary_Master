@@ -8,11 +8,11 @@ class DefenseEvaluation:
 
     def __init__(self, config=None):
         if config is None:
-            config = get_info_from_json_file("config.json")
+            config = get_info_from_json_file(task_manager.base_temp_path, "config.json")
         else:
             save_info_to_json_file(config, task_manager.base_temp_path, "config.json")
         self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size"),
-                                         config.get("dataset_seed", None))
+                                         config.get("dataset_seed", None),config.get("is_train", True))
 
         self.model_list = config.get("model_list", None)
         self.defense_list = config.get("defense_list", None)

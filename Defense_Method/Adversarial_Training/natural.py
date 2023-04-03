@@ -15,14 +15,14 @@ from Defense_Method.Adversarial_Training.common import adjust_learning_rate, eva
 sefi_component = SEFIComponent()
 
 
-@sefi_component.defense_class(defense_name="trades")
-@sefi_component.config_params_handler(handler_target=ComponentType.DEFENSE, name="trades",
+@sefi_component.defense_class(defense_name="natural")
+@sefi_component.config_params_handler(handler_target=ComponentType.DEFENSE, name="natural",
                                       handler_type=ComponentConfigHandlerType.DEFENSE_CONFIG_PARAMS,
                                       use_default_handler=True,
                                       params={
 
                                       })
-class Trades:
+class Natural:
     def __init__(self, lr=0.1, momentum=0.9, weight_decay=2e-4, epochs=10, run_device=None, step_size=0.003,
                  epsilon=0.031, num_steps=10, beta=6.0, log_interval=5):
         # defense_args_dict传到这里初始化
@@ -37,7 +37,7 @@ class Trades:
         self.beta = beta
         self.log_interval = log_interval
 
-    @sefi_component.defense(name="trades", is_inclass=True, support_model=[])
+    @sefi_component.defense(name="natural", is_inclass=True, support_model=[])
     def defense(self, defense_model, train_dataset, val_dataset, each_epoch_finish_callback=None):
         optimizer = optim.SGD(defense_model.parameters(), lr=self.lr, momentum=self.momentum,
                               weight_decay=self.weight_decay)
@@ -45,19 +45,14 @@ class Trades:
             # adjust learning rate for SGD
             defense_model.train()
             adjust_learning_rate(self.lr, optimizer, epoch)
-            # adversarial training
             for index in range(len(train_dataset)):
                 data, target = train_dataset[index][0].to(self.device), train_dataset[index][1].to(self.device)
                 optimizer.zero_grad()
-                # calculate robust loss
-                loss = self.trades_loss(model=defense_model,
-                                        x_natural=data,
-                                        y=target,
-                                        optimizer=optimizer,
-                                        step_size=self.step_size,
-                                        epsilon=self.epsilon,
-                                        perturb_steps=self.num_steps,
-                                        beta=self.beta)
+                loss = self.loss(model=defense_model,
+                                 x_natural=data,
+                                 y=target,
+                                 optimizer=optimizer
+                                 )
                 loss.backward()
                 optimizer.step()
                 msg = "[ Epoch {} ] step {}/{} -loss:{:.4f}.".format(epoch, index, len(train_dataset), loss)
@@ -65,9 +60,9 @@ class Trades:
 
             if epoch % self.log_interval == 0:
                 model_name = defense_model.__class__.__name__ + "(CIFAR-10)"
-                file_name = "AT_" + "trades" + '_' + model_name + "_" + "CIFAR-10" + "_" + task_manager.task_token + "_" + str(
+                file_name = "AT_" + "natural" + '_' + model_name + "_" + "CIFAR-10" + "_" + task_manager.task_token + "_" + str(
                     epoch) + ".pt"
-                save_weight_to_temp(file_path=model_name + '/trades/', file_name=file_name, weight=defense_model.state_dict())
+                save_weight_to_temp(file_path=model_name + '/natural/', file_name=file_name, weight=defense_model.state_dict())
 
             # val预测
             eval_test(val_dataset, defense_model, epoch, self.device)
@@ -75,37 +70,9 @@ class Trades:
 
         return defense_model.state_dict()
 
-    def trades_loss(self, model, x_natural, y, optimizer, step_size=0.003, epsilon=0.031, perturb_steps=10, beta=1.0,
-                    distance='l_inf'):
-        # define KL-loss
-        criterion_kl = nn.KLDivLoss(size_average=False)
-        model.eval()
-        batch_size = len(x_natural)
-        # generate adversarial example
-        x_adv = x_natural.detach() + 0.001 * torch.randn(x_natural.shape).cuda().detach()
-        if distance == 'l_inf':
-            for _ in range(perturb_steps):
-                x_adv.requires_grad_()
-                with torch.enable_grad():
-                    loss_kl = criterion_kl(F.log_softmax(model(x_adv), dim=1),
-                                           F.softmax(model(x_natural), dim=1))
-                grad = torch.autograd.grad(loss_kl, [x_adv])[0]
-                x_adv = x_adv.detach() + step_size * torch.sign(grad.detach())
-                x_adv = torch.min(torch.max(x_adv, x_natural - epsilon), x_natural + epsilon)
-                x_adv = torch.clamp(x_adv, 0.0, 1.0)
-        else:
-            x_adv = torch.clamp(x_adv, 0.0, 1.0)
-        model.train()
-
-        x_adv = Variable(torch.clamp(x_adv, 0.0, 1.0), requires_grad=False)
-        # zero gradient
+    def loss(self, model, x_natural, y, optimizer):
         optimizer.zero_grad()
-        # calculate robust loss
-        logits = model(x_natural)
-        loss_natural = F.cross_entropy(logits, y)
-        loss_robust = (1.0 / batch_size) * criterion_kl(F.log_softmax(model(x_adv), dim=1),
-                                                        F.softmax(model(x_natural), dim=1))
-        loss = loss_natural + beta * loss_robust
+        loss = F.cross_entropy(model(x_natural), y)
         return loss
 
     # def eval_test(self, val_dataset, defense_model, epoch):

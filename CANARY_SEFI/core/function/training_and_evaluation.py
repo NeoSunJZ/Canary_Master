@@ -12,7 +12,7 @@ def adv_defense_training(dataset_info, defense_list, defense_config, model_confi
     task_manager.sys_log_logger.set_step(Step.DEFENSE_ADVERSARIAL_TRAINING)
 
     def function(defense_name, defense_args, model_name, model_args, img_proc_args, run_device):
-        msg = "[Device {}] Adversarial Training With Defense Method {} on(base) Model {}.".format(run_device,
+        msg = "[Device {}] Adversarial Training With Defense Method ({}) on Model ({}).".format(run_device,
                                                                                                   defense_name,
                                                                                                   model_name)
         reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)

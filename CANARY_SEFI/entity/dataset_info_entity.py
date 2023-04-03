@@ -10,7 +10,7 @@ class DatasetType(Enum):
 
 
 class DatasetInfo(object):
-    def __init__(self, dataset_name, dataset_seed=None, dataset_size=None, img_cursor_list=None):
+    def __init__(self, dataset_name, dataset_seed=None, dataset_size=None, img_cursor_list=None, is_train=False):
         if (dataset_size is not None and dataset_seed is not None) and img_cursor_list is not None:
             raise Exception(
                 "[ Config Error ] Only one of the two methods can be selected: 'specify dataset subset item' and 'specify dataset subset size'!")
@@ -21,6 +21,7 @@ class DatasetInfo(object):
         self.dataset_seed = dataset_seed
         self.dataset_size = dataset_size
         self.img_cursor_list = img_cursor_list
+        self.is_train = is_train
 
         if img_cursor_list is not None:
             self.dataset_size = len(img_cursor_list)

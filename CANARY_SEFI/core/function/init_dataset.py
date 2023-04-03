@@ -9,7 +9,7 @@ from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
 from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo
 
 
-def init_dataset(dataset_name, dataset_size, dataset_seed=None):
+def init_dataset(dataset_name, dataset_size, dataset_seed=None, is_train=False):
     # 标记当前步骤
     task_manager.sys_log_logger.set_step(Step.INIT, is_first=True)
 
@@ -18,7 +18,7 @@ def init_dataset(dataset_name, dataset_size, dataset_seed=None):
 
     dataset_seed = dataset_seed_handler(dataset_seed)
     # 构建数据集对象
-    dataset_info = DatasetInfo(dataset_name, dataset_seed, dataset_size)
+    dataset_info = DatasetInfo(dataset_name=dataset_name, dataset_seed=dataset_seed, dataset_size=dataset_size, is_train=is_train)
     dataset_info.n_classes = config_manager.config.get("dataset", {}).get(dataset_info.dataset_name, {}).get("n_classes", None)
 
     msg = "From Dataset {} (based seed {}) selected {} sample(s)".format(dataset_name, dataset_seed, dataset_size)

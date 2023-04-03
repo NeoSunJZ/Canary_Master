@@ -61,8 +61,7 @@ class Adversarial_Trainer:
             self.label_array.append(label)
 
     @staticmethod
-    def init_with_dataset(dataset_info, img_preprocessor, img_proc_args_dict):
-        ori_dataset = get_dataset(dataset_info)
+    def init_with_dataset(ori_dataset, img_preprocessor, img_proc_args_dict):
 
         class PreprocessDataset:
             def __init__(self):
@@ -70,7 +69,7 @@ class Adversarial_Trainer:
                 self.img_preprocessor = img_preprocessor
                 self.img_proc_args_dict = img_proc_args_dict
                 self.batch_size = self.img_proc_args_dict.get('batch_size', 1)
-                self.dataset_size = dataset_info.dataset_size
+                self.dataset_size = len(ori_dataset)
 
             def __getitem__(self, index):
                 imgs = []
@@ -88,18 +87,20 @@ class Adversarial_Trainer:
                 return img_batch, label_batch
 
             def __len__(self):
-                all_batch = int(math.ceil(self.dataset_size/ self.batch_size))
+                all_batch = int(math.ceil(self.dataset_size / self.batch_size))
                 return all_batch
 
         return PreprocessDataset()
 
     def adv_defense_training_4_img(self):
-        dataset = self.init_with_dataset(self.dataset_info, self.img_preprocessor, self.img_proc_args_dict)
+        ori_dataset = get_dataset(self.dataset_info)
+        train_dataset = self.init_with_dataset(ori_dataset[1], self.img_preprocessor, self.img_proc_args_dict)
+        val_dataset = self.init_with_dataset(ori_dataset[0], self.img_preprocessor, self.img_proc_args_dict)
         if self.defense_component.get(DefenseComponentAttributeType.IS_INCLASS) is True:
-            weight = self.defense_func(self.defense_class, self.defense_model, dataset,
+            weight = self.defense_func(self.defense_class, self.defense_model, train_dataset, val_dataset,
                                        self.each_epoch_finish_callback)
         else:
-            weight = self.defense_func(self.defense_class, self.defense_model, dataset,
+            weight = self.defense_func(self.defense_class, self.defense_model, train_dataset, val_dataset,
                                        self.each_epoch_finish_callback)
         return weight
 
@@ -116,9 +117,11 @@ def adv_defense_4_img_batch(defense_name, defense_args, model_name, model_args, 
 
     weight = adv_defense.adv_defense_training_4_img()
     # Save model
-    file_name = "AT_" + model_name + "_" + dataset_info.dataset_name + "_" + task_manager.task_token + ".pt"
-    save_weight_to_temp(file_path=model_name + '/', file_name=file_name, weight=weight)
+    file_path = model_name + '/'+defense_name+"/"
+    file_name = "AT_" + defense_name + '_' + model_name + "_" + dataset_info.dataset_name + "_" + task_manager.task_token + "_final" + ".pt"
+    save_weight_to_temp(file_path=file_path, file_name=file_name, weight=weight)
     task_manager.sys_log_logger.update_finish_status(True)
     adv_defense.destroy()
     del adv_defense
     return file_name
+

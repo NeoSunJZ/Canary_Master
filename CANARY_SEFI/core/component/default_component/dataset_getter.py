@@ -21,7 +21,10 @@ def get_dataset(dataset_info):
         dataset_getter = default_dataset_getter
 
     dataset_path = config_manager.config.get("dataset", {}).get(dataset_info.dataset_name, {}).get("path", None)
-    dataset = dataset_getter(dataset_path, dataset_info.dataset_seed, dataset_info.dataset_size)
+    if dataset_info.dataset_name == "CIFAR-10":
+        dataset = dataset_getter(dataset_path, dataset_info.dataset_seed, dataset_info.dataset_size, dataset_info.is_train)
+    else:
+        dataset = dataset_getter(dataset_path, dataset_info.dataset_seed, dataset_info.dataset_size)
     return dataset
 
 
