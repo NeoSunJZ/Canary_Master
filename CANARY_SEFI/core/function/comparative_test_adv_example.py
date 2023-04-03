@@ -41,7 +41,7 @@ def adv_comparative_test(atk_log, dataset_info, use_raw_nparray_data=False):
             # 尝试在缓存中找到原始图片,若禁用则直接读取磁盘文件
             ori_img, ori_label = get_ori_img(dataset_info, ori_img_id)
 
-            ori, adv = img_size_uniform_fix(ori_img, adv_img[0])
+            ori, adv = img_size_uniform_fix(ori_img, adv_img[0], use_raw_nparray_data)
             # 执行Disturbance-Aware测试
             adv_da_test_result = adv_da_tester.test_all(ori, adv)
             # 执行像素差异对比分析
