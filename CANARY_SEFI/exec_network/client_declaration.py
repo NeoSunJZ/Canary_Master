@@ -1,5 +1,5 @@
 import json
-import os
+from datetime import datetime
 
 from flask import Blueprint, Response
 
@@ -23,7 +23,8 @@ def get_declaration():
             "attacker_list": get_attacker_component_list(),
             "model_list": get_model_component_list(),
             "dataset_list": get_dataset_component_list()
-        }
+        },
+        "datatime": str(datetime.now())
     }
     return Response(json.dumps(declaration, ensure_ascii=False), mimetype='application/json')
 
@@ -36,7 +37,9 @@ def get_attacker_component_list():
             "attacker_name": attack_method,
             "info": {
                 "attack_type": atk_component.get(AttackComponentAttributeType.ATTACK_TYPE, None, True),
-                "params": atk_component.get(AttackComponentAttributeType.CONFIG_PARAMS, None, True),
+                "attack_config_params": atk_component.get(
+                    ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS.value +
+                    AttackComponentAttributeType.CONFIG_PARAMS.value, None, True),
                 "is_class": atk_component.get(AttackComponentAttributeType.IS_INCLASS, None, True),
                 "model_var_name": atk_component.get(AttackComponentAttributeType.MODEL_VAR_NAME, None, True),
                 "perturbation_budget_var_name": atk_component.get(AttackComponentAttributeType.PERTURBATION_BUDGET_VAR_NAME, None, True),
@@ -59,6 +62,12 @@ def get_model_component_list():
         model_component_list.append({
             "model_name": model,
             "info": {
+                "model_config_params": model_component.get(
+                    ComponentConfigHandlerType.MODEL_CONFIG_PARAMS.value +
+                    AttackComponentAttributeType.CONFIG_PARAMS.value, None, True),
+                "img_process_config_params": model_component.get(
+                    ComponentConfigHandlerType.IMG_PROCESS_CONFIG_PARAMS.value +
+                    AttackComponentAttributeType.CONFIG_PARAMS.value, None, True),
             },
             "sub_component": {
                 "model_create_func": True if model_component.get(SubComponentType.MODEL_CREATE_FUNC, None, True) else False,
@@ -82,7 +91,7 @@ def get_dataset_component_list():
     for dataset in SEFI_component_manager.dataset_list:
         dataset_component = SEFI_component_manager.dataset_list[dataset]
         dataset_component_list.append({
-            "model_name": dataset,
+            "dataset_name": dataset,
             "info": {
             },
             "sub_component": {
