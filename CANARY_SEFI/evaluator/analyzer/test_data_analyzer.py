@@ -31,6 +31,10 @@ def model_inference_capability_analyzer_and_evaluation(model_name):
     is_skip, completed_num = global_recovery.check_skip(model_name)
     if is_skip:
         return
+    if model_name.find("API") != -1:
+        task_manager.sys_log_logger.update_completed_num(1)
+        task_manager.sys_log_logger.update_finish_status(True)
+        return
     all_inference_log = get_inference_test_data_by_model_name(model_name, DatasetType.NORMAL.value)
     # 初始化
     analyzer_log = {
@@ -119,9 +123,10 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                     adv_inference_label = adv_img_inference_log["inference_img_label"]  # 对抗图片预测的标签
 
                     if adv_img_inference_log["inference_model"] != attack_info['base_model']:
-                        if ori_inference_label != ori_label:
+                        if ori_inference_label != ori_label and ori_img_inference_log["inference_model"].find("API") == -1:
                             # 已经判断在目标模型上的准确性，此处无需再判断
                             # 原始图片必须在测试模型(转移模型)上也预测准确(不准确的直接无效处理)
+                            # API的预测结果为例外(可能与数据集标签不一致)
                             msg = "Adv Example(ImgID {}) is not VALID (due to the original img inference error (ON TEST MODEL)), has been temporarily abandoned.".format(
                                 adv_img_file_id)
                             reporter.console_log(msg, Fore.GREEN, save_db=False, send_msg=False, show_task=True,
@@ -137,7 +142,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                     if attack_test_result.get(inference_model, None) is None:
                         attack_test_result[inference_model] = {"Mc": [], "TAS": [], "IAC": [], "RTC": [], "CAMC_A": [], "CAMC_T": []}
                     # 获取误分类数量(Mc:Misclassification)
-                    if adv_inference_label != ori_label:  # 攻击是否成功
+                    if adv_inference_label != ori_inference_label:  # 攻击是否成功
                         attack_test_result[inference_model]["Mc"].append(1)
                         success_flag = True
                     else:
@@ -152,17 +157,23 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                             attack_test_result[inference_model]["TAS"].append(0)
 
                     # 如果对抗样本没有设置有效性，且当前处理的是目标模型（而非迁移模型），则为其设置有效性
-                    if adv_img_inference_log["inference_model"] == attack_info['base_model'] and \
-                            adv_example_file_log["ground_valid"] is None:
+                    if test_on_base_model and adv_example_file_log["ground_valid"] is None:
                         set_adv_example_file_ground_valid(adv_img_file_id, success_flag)
 
                     # 获取置信偏移(IAC:Increase adversarial-class confidence/RTC:Reduction true-class confidence)
+                    # API类模型的特殊处理，避免前后差异过大时没有置信度提供
+                    if ori_img_inference_log["inference_model"].find("API") != -1:
+                        if ori_img_inference_log["inference_img_conf_array"].get(adv_inference_label, None) is None:
+                            ori_img_inference_log["inference_img_conf_array"][adv_inference_label] = 0
+                        if adv_img_inference_log["inference_img_conf_array"].get(ori_inference_label, None) is None:
+                            adv_img_inference_log["inference_img_conf_array"][ori_inference_label] = 0
+
                     attack_test_result[inference_model]["IAC"] \
-                        .append(adv_img_inference_log["inference_img_conf_array"][adv_inference_label] -
-                                ori_img_inference_log["inference_img_conf_array"][adv_inference_label])
+                        .append(float(adv_img_inference_log["inference_img_conf_array"][adv_inference_label]) -
+                                float(ori_img_inference_log["inference_img_conf_array"][adv_inference_label]))
                     attack_test_result[inference_model]["RTC"] \
-                        .append(ori_img_inference_log["inference_img_conf_array"][ori_label] -
-                                adv_img_inference_log["inference_img_conf_array"][ori_label])
+                        .append(float(ori_img_inference_log["inference_img_conf_array"][ori_inference_label]) -
+                                float(adv_img_inference_log["inference_img_conf_array"][ori_inference_label]))
                     # 获取注意力偏移(CAMC_A:G-CAM Change(Adversarial-class)/CAMC_T: G-CAM Change(True-class))
                     CAMC_A = get_img_cosine_similarity(adv_img_inference_log["inference_class_cams"],
                                                        ori_img_inference_log["inference_class_cams"])

@@ -42,9 +42,9 @@ def save_inference_test_data(img_id, img_type, inference_model, inference_img_la
 
 def handle_result(inference_logs):
     for inference_log in inference_logs:
-        inference_log["inference_img_conf_array"] = handle_pickle_loads(inference_log["inference_img_conf_array"])
-        inference_log["inference_class_cams"] = handle_pickle_loads(inference_log["inference_class_cams"])
-        inference_log["true_class_cams"] = handle_pickle_loads(inference_log["true_class_cams"])
+        inference_log["inference_img_conf_array"] = handle_pickle_loads(inference_log.get("inference_img_conf_array", None))
+        inference_log["inference_class_cams"] = handle_pickle_loads(inference_log.get("inference_class_cams", None))
+        inference_log["true_class_cams"] = handle_pickle_loads(inference_log.get("true_class_cams", None))
     return inference_logs
 
 

@@ -24,6 +24,11 @@ from Model.ImageNet.common import sefi_component as common_imagenet
 # 模型(CIFAR-10)
 from Model.CIFAR10.DenseNet.DenseNet_CIFAR10 import sefi_component as densenet_model_cifar10
 from Model.CIFAR10.common import sefi_component as common_cifar10
+# 模型(API)
+from Model.RemoteAPI.BAIDU import sefi_component as baidu_api
+from Model.RemoteAPI.ALIBABA import sefi_component as alibaba_api
+from Model.RemoteAPI.HUAWEI import sefi_component as huawei_api
+from Model.RemoteAPI.TENCENT import sefi_component as tencent_api
 # 攻击方案
 from Attack_Method.white_box_adv.l_bfgs.l_bfgs import sefi_component as l_bfgs_attacker  # CW
 from Attack_Method.white_box_adv.cw.cw import sefi_component as cw_attacker  # CW
@@ -33,8 +38,8 @@ from Attack_Method.white_box_adv.fgsm_family.i_fgsm import sefi_component as i_f
 from Attack_Method.white_box_adv.fgsm_family.pgd import sefi_component as pgd_attacker  # PGD
 from Attack_Method.white_box_adv.fgsm_family.mi_fgsm import sefi_component as mi_fgsm_attacker  # MI-FGSM
 from Attack_Method.white_box_adv.fgsm_family.vmi_fgsm import sefi_component as v_mi_fgsm_attacker  # VMI-FGSM
-from Attack_Method.white_box_adv.fgsm_family.pna_ni_fgsm import sefi_component as pna_ni_fgsm_attacker  # PNA-NI-FGSM
-from Attack_Method.white_box_adv.fgsm_family.pna_si_fgsm import sefi_component as pna_si_fgsm_attacker  # PNA-SI-FGSM
+from Attack_Method.white_box_adv.fgsm_family.ni_fgsm import sefi_component as ni_fgsm_attacker  # PNA-NI-FGSM
+from Attack_Method.white_box_adv.fgsm_family.si_fgsm import sefi_component as si_fgsm_attacker  # PNA-SI-FGSM
 from Attack_Method.white_box_adv.jsma.jsma import sefi_component as jsma_attacker  # JSMA
 from Attack_Method.white_box_adv.UAP import sefi_component as uap_attacker  # UAP
 from Attack_Method.white_box_adv.ead.EAD import sefi_component as ead_attacker  # EAD
@@ -47,6 +52,7 @@ from Attack_Method.black_box_adv.hop_skip_jump_attack.hop_skip_jump_attack impor
 from Attack_Method.black_box_adv.local_search_attack.local_search_attack import sefi_component as ls_attacker  # LSA
 from Attack_Method.black_box_adv.spsa.spsa import sefi_component as sps_attacker  # SPSA
 from Attack_Method.black_box_adv.qFool import sefi_component as qfool_attacker  # qFool
+from Attack_Method.black_box_adv.tremba.tremba import sefi_component as tremba_attacker # tremba
 
 # 数据集
 from Dataset.ImageNet2012.dataset_loader import sefi_component as imgnet2012_dataset  # IMAGENET2012
@@ -66,16 +72,19 @@ def init_component_manager():
         densenet_model_cifar10,
         common_cifar10
     ]
+    api_model_list = [
+        baidu_api, alibaba_api, huawei_api, tencent_api
+    ]
 
     attacker_list = [
         cw_attacker, fgm_attacker, mi_fgsm_attacker, uap_attacker, deepfool_attacker, boundary_attacker, hsj_attacker,
         pgd_attacker, ls_attacker, ead_attacker, gen_attacker, i_fgsm_attacker, fgsm_attacker, jsma_attacker,
-        sps_attacker, l_bfgs_attacker, adv_gan_attacker, v_mi_fgsm_attacker, pna_ni_fgsm_attacker, pna_si_fgsm_attacker,
-        qfool_attacker, ssah_attacker
+        sps_attacker, l_bfgs_attacker, adv_gan_attacker, v_mi_fgsm_attacker, ni_fgsm_attacker, si_fgsm_attacker,
+        qfool_attacker, ssah_attacker, tremba_attacker
     ]
 
     dataset_list = [
         imgnet2012_dataset, cifar10_dataset
     ]
 
-    SEFI_component_manager.add_all(imagenet_model_list + cifar_model_list + attacker_list + dataset_list)
+    SEFI_component_manager.add_all(imagenet_model_list + cifar_model_list + api_model_list + attacker_list + dataset_list)

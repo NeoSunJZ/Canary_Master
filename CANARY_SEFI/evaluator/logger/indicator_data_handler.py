@@ -49,6 +49,10 @@ def get_attack_deflection_capability_indicator_data_by_base_model(base_model):
     sql = " SELECT * FROM attack_deflection_capability_indicator_data WHERE base_model = ? "
     return task_manager.test_data_logger.query_logs(sql, (base_model,))
 
+def get_attack_deflection_capability_indicator_data_by_inference_model(inference_model):
+    sql = " SELECT * FROM attack_deflection_capability_indicator_data WHERE inference_model = ? "
+    return task_manager.test_data_logger.query_logs(sql, (inference_model,))
+
 
 def get_attack_deflection_capability_indicator_data_by_attack_name(atk_name):
     sql = " SELECT * FROM attack_deflection_capability_indicator_data WHERE atk_name = ? "

@@ -20,7 +20,7 @@ class InferenceDetector:
         # 注册Model的HOOK钩子以使用GRAD-CRM分析可解释性
         self.activations_and_grads = None
         if test_level is TestLevel.FULL:
-            target_layers_getter = model_component.get(SubComponentType.MODEL_TARGET_LAYERS_GETTER)
+            target_layers_getter = model_component.get(SubComponentType.MODEL_TARGET_LAYERS_GETTER, default=None, allow_not_exist=True)
             if target_layers_getter is not None:
                 target_layers, reshape_transform = target_layers_getter(self.model)
                 self.activations_and_grads = ActivationsAndGradients(target_layers=target_layers, reshape_transform=reshape_transform)
@@ -32,9 +32,9 @@ class InferenceDetector:
                                                             ComponentConfigHandlerType.IMG_PROCESS_CONFIG_PARAMS,
                                                             img_proc_args, run_device)
         # 图片预处理
-        self.img_preprocessor = model_component.get(SubComponentType.IMG_PREPROCESSOR)
+        self.img_preprocessor = model_component.get(SubComponentType.IMG_PREPROCESSOR, None, True)
         # 结果处理
-        self.result_postprocessor = model_component.get(SubComponentType.RESULT_POSTPROCESSOR)
+        self.result_postprocessor = model_component.get(SubComponentType.RESULT_POSTPROCESSOR, None, True)
 
         self.imgs = None
 
@@ -49,10 +49,8 @@ class InferenceDetector:
             self.activations_and_grads.gradients = []
             self.activations_and_grads.activations = []
 
-        # 预测(关闭预测时torch的梯度，因为预测无需反向传播)
-        self.model.eval()
+        # 预测
         logits = self.inference_detector(self.model, self.imgs)
-        self.model.zero_grad()
 
         if self.result_postprocessor is not None:
             result = self.result_postprocessor(logits, self.img_proc_args_dict)
@@ -74,7 +72,7 @@ def inference_detector_4_img_batch(inference_model_name, model_args, img_proc_ar
         result, logits = inference_detector.inference_detector_4_img(imgs)
         inference_labels, inference_conf_arrays = result[0], result[1]
 
-        if inference_detector.activations_and_grads is not None or test_level is TestLevel.FULL:
+        if inference_detector.activations_and_grads is not None and test_level is TestLevel.FULL:
             cam = GradCAM(activations_and_grads=inference_detector.activations_and_grads)
             grayscale_cams_with_true_labels = cam(output=logits, input_tensor=inference_detector.imgs, target_category=img_labels)
             grayscale_cams_with_inference_labels = cam(output=logits, input_tensor=inference_detector.imgs, target_category=inference_labels)
