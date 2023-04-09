@@ -72,7 +72,7 @@ class SecurityEvaluation:
 
     def capability_evaluation(self, use_raw_nparray_data=False):
         attack_synthetical_capability_evaluation(self.attacker_list, use_raw_nparray_data)
-        # model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data)
+        model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data)
 
     def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
         skip_step_list, finish_callback = task_manager.multi_database.get_skip_step()
