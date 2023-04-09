@@ -26,11 +26,11 @@ class SubComponentType(Enum):
 
 
 class ModelComponentAttributeType(Enum):
-    CONFIG_PARAMS = "config_params"
+    CONFIG_PARAMS = "_config_params"
 
 
 class AttackComponentAttributeType(Enum):
-    CONFIG_PARAMS = "config_params"
+    CONFIG_PARAMS = "_config_params"
     SUPPORT_MODEL = "support_model"
     IS_INCLASS = "is_inclass"
     ATTACK_TYPE = "attack_type"
