@@ -7,9 +7,9 @@ from CANARY_SEFI.core.component.component_enum import ComponentConfigHandlerType
 sefi_component = SEFIComponent()
 
 
-@sefi_component.attacker_class(attack_name="MI_FGSM", perturbation_budget_var_name="epsilon")
+@sefi_component.attacker_class(attack_name="NIM", perturbation_budget_var_name="epsilon")
 @sefi_component.config_params_handler(
-    handler_target=ComponentType.ATTACK, name="MI_FGSM",
+    handler_target=ComponentType.ATTACK, name="NIM",
     handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
     use_default_handler=True,
     params={
@@ -20,7 +20,7 @@ sefi_component = SEFIComponent()
         "attack_type": {"desc": "攻击类型", "type": "SELECT", "selector": [{"value": "TARGETED", "name": "靶向"},{"value": "UNTARGETED", "name": "非靶向"}], "required": "true"},
         "tlabel": {"desc": "靶向攻击目标标签(分类标签)(仅TARGETED时有效)", "type": "INT"}
     })
-class MI_FGSM():
+class NIM():
     def __init__(self, model, run_device, attack_type='UNTARGETED', clip_min=0, clip_max=1, T=10, epsilon=16/255, tlabel=None):
         self.model = model  # 待攻击的白盒模型
         self.T = T  # 迭代攻击轮数
@@ -38,9 +38,8 @@ class MI_FGSM():
         x = torch.clamp(x, self.clip_min, self.clip_max)
         return x.data
 
-    @sefi_component.attack(name="MI_FGSM", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
+    @sefi_component.attack(name="NIM", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
     def attack(self, img, ori_labels, tlabels=None):
-        print(ori_labels)
         batch_size = img.shape[0]
         tlabels = np.repeat(self.tlabel, batch_size) if tlabels is None else tlabels
 
@@ -54,28 +53,26 @@ class MI_FGSM():
 
         # 迭代攻击
         for iter in range(self.T):
-            # 记录总输出，求和形式
-            output = 0
-            # 模型预测
+            # NIM
             self.model.zero_grad()
-            output = self.model(img)
+            output = self.model(img + sum_grad * ((self.epsilon * 2) / self.T))
+
             # 计算loss
             if self.attack_type == 'UNTARGETED':
                 loss = loss_(output, torch.Tensor(ori_labels).to(self.device).long())  # 非靶向
             else:
                 loss = -loss_(output, torch.Tensor(tlabels).to(self.device).long())  # 靶向
-
             # 反向传播
             loss.backward()
             grad = img.grad.data
             img.grad = None
             # MIM
-            grad = grad / torch.std(grad, dim=(1, 2), keepdim=True)
-            grad = grad + sum_grad
-            grad = grad / torch.std(grad, dim=(1, 2), keepdim=True)
+            grad = grad / grad.abs().mean(dim=[1, 2, 3], keepdim=True)
+            grad = sum_grad + grad
+            grad = grad / grad.abs().mean(dim=[1, 2, 3], keepdim=True)
             sum_grad = grad
 
-            # 更新图像像素
+            # 更新图像像素 -1 1 0-1
             img.data = img.data + ((self.epsilon * 2) / self.T) * torch.sign(grad)
             img.data = self.clip_value(img, ori_img)
         return img
