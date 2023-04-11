@@ -11,16 +11,16 @@
     "ILSVRC-2012": {
       "name": "ImageNet Large Scale Visual Recognition Challenge_2012数据集(VAL)",
       "n_classes": 1000,
-      "path": "E:\\dataset"
+      "path": "/home/server/extra-dataset/ILSVRC2012_img_val/"
     },
     "CIFAR-10": {
       "name": "CIFAR-10数据集(VAL)",
       "n_classes": 1000,
-      "path": "E:\\dataset"
+      "path": "/home/server/extra-dataset/CIFAR-10/"
     }
   },
-  "baseTemp": "F:\\备份\\",
-  "centerDatabase": "E:\\Canary\\",
+  "baseTemp": "/home/server/canary/Raw_Data_2/",
+  "centerDatabase": "/home/server/canary/Raw_Data_2/",
   "attackConfig":{
     "MI-FGSM": {
       "no_model": false

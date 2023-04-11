@@ -7,8 +7,8 @@ from numpy import long
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
 
-from CANARY_SEFI.core.component.component_decorator import SEFIComponent
-from CANARY_SEFI.core.component.component_enum import SubComponentType, ComponentType
+from canary_sefi.core.component.component_decorator import SEFIComponent
+from canary_sefi.core.component.component_enum import SubComponentType, ComponentType
 
 sefi_component = SEFIComponent()
 
@@ -40,3 +40,13 @@ def dataset_getter(dataset_path, dataset_seed, dataset_size=None):
     #     return img_np_array, dataset[int(img_index)][1]
     # else:
     #     return img_np_array
+@sefi_component.util(util_type=SubComponentType.DATASET_LOADER, util_target=ComponentType.DATASET, name="Custom")
+def dataset_getter(dataset_path, dataset_seed, dataset_size=None):
+    class ImageFolderCustom(ImageFolder):
+        def __getitem__(self, index: int) -> Tuple[Any, Any]:
+            sample, target = super().__getitem__(index)
+            target = [527, 545, 553, 831][target]
+            return np.array(sample, dtype=np.uint8), target
+
+    dataset = ImageFolderCustom(root=dataset_path)
+    return dataset

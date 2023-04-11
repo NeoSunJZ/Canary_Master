@@ -1,6 +1,6 @@
 from flask_cors import CORS
-from CANARY_SEFI.exec_network import create_app
-from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
+from canary_sefi.exec_network import create_app
+from canary_sefi.core.function.helper.realtime_reporter import reporter
 from component_manager import init_component_manager
 
 app = create_app()
