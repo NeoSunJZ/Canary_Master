@@ -3,13 +3,13 @@
 
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
+## Introduction
+
 SEFI is a framework for evaluating the robustness of artificial intelligence. It will generate adversarial samples based on selected models using selected attack methods and use these adversarial samples to attack any model you wish. In the process it will collect data including adversarial sample quality, model result deflection and model baseline inference as a basis for evaluating the robustness of AI models and the effectiveness of attack methods, while finding the best defense solution.
 
 It additionally provides a toolkit with multiple models, SOTA attack methods and defense methods, and allows users to integrate more on their own.
 
 SEFI is created and maintained by researchers at Beijing Institute of Technology.
-
-## Background
 
 ## Install
 
@@ -23,18 +23,29 @@ pip install sefi
 
 ## Usage
 
-### Binding
 
-By applying a series of decorators, you can bind new attack methods, defense methods and models.
+## Supported
 
-```sh
-$ standard-readme-spec
-# Prints out the standard-readme spec
-```
+### Model
 
-### Generator
+| Model Name |    Dataset    |                         Model Source                         | Best Acc | Support Grad-CAM |
+| :--------: | :-----------: | :----------------------------------------------------------: | :------: | :--------------: |
+|  AlexNet   | Fashion-MNIST | [CNN-for-Fashion-MNIST](https://github.com/wzyjsha-00/CNN-for-Fashion-MNIST) |  92.19%  |                  |
+|  AlexNet   |   ImageNet    |                         Torchvision                          |          |        ✔         |
+|    VGG     | Fashion-MNIST | [CNN-for-Fashion-MNIST](https://github.com/wzyjsha-00/CNN-for-Fashion-MNIST) |  91.35%  |                  |
+|    VGG     |   CIFAR-10    |                                                              |          |        ✔         |
+|    VGG     |   ImageNet    |                         Torchvision                          |          |        ✔         |
+|            |               |                                                              |          |                  |
 
-To use the generator, look at [generator-standard-readme](https://github.com/RichardLitt/generator-standard-readme). There is a global executable to run the generator in that package, aliased as `standard-readme`.
+
+
+### Attack Method
+
+
+
+### Database
+
+
 
 ## Maintainers
 
