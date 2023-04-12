@@ -54,6 +54,7 @@ class TestDataLogger(SqliteDBLogger):
                        'attack_id integer, '
                        'adv_img_file_id integer, '
                        'adv_trans_img_filename varchar, '
+                       'adv_trans_raw_nparray_filename varchar, '
                        'ground_valid varchar,'
                        'UNIQUE (trans_name, adv_img_file_id))')
 
@@ -107,6 +108,7 @@ class TestDataLogger(SqliteDBLogger):
         cursor.execute('create table if not exists trans_deflection_capability_indicator_data '
                        '(atk_name varchar, '
                        'base_model varchar, '
+                       'atk_perturbation_budget float, '
                        'trans_name varchar, '
                        'inference_model varchar, '
                        'trans_file_type varchar, '  # 防御样本文件类型 IMG文件可能导致真实误差，NP文件不会转换类型因而没有误差，但并不真实
@@ -115,7 +117,7 @@ class TestDataLogger(SqliteDBLogger):
                        'ARTC float, '
                        'ACAMC_A float, '
                        'ACAMC_T float, '
-                       'UNIQUE (atk_name, base_model, trans_name, inference_model, trans_file_type))')
+                       'UNIQUE (atk_name, base_model, atk_perturbation_budget, trans_name, inference_model, trans_file_type))')
 
         # 缩写释义:
         # ACT: average cost time
