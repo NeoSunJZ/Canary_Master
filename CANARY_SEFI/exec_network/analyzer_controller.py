@@ -24,11 +24,23 @@ def get_inference_result_by_model_name():
     task_manager.init_task(request.args.get("batchToken"))
 
     inference_model = request.args.get("inferenceModel")
+    clean_inference_test_data = get_clean_inference_test_data_with_img_info(inference_model)
+    adv_inference_test_data = get_adv_inference_test_data_with_adv_info(inference_model)
     result = {
-        "clean": get_clean_inference_test_data_with_img_info(inference_model),
-        "adv": get_adv_inference_test_data_with_adv_info(inference_model),
+        "clean": handle_result(clean_inference_test_data),
+        "adv": handle_result(adv_inference_test_data),
     }
     return MsgEntity("SUCCESS", "1", result).msg2json()
+
+
+def handle_result(inference_logs):
+    for inference_log in inference_logs:
+        # 置信度矩阵inference_img_conf_array转为字符串
+        inference_log['inference_img_conf_array'] = ','.join(str(i) for i in inference_log['inference_img_conf_array'])
+        # 屏蔽CAM相关对象
+        inference_log['inference_class_cams'] = None
+        inference_log['true_class_cams'] = None
+    return inference_logs
 
 
 @api.route('/result/getModelSecuritySyntheticalCapabilityResult', methods=['GET'])
