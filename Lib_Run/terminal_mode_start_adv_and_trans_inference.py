@@ -1,5 +1,4 @@
 import numpy as np
-
 from CANARY_SEFI.core.function.enum.multi_db_mode_enum import MultiDatabaseMode
 from CANARY_SEFI.core.function.helper.multi_db import use_multi_database
 from CANARY_SEFI.service.security_evaluation import SecurityEvaluation
@@ -9,15 +8,22 @@ from component_manager import init_component_manager
 if __name__ == "__main__":
     init_component_manager()
     example_config = {
-        "dataset_size": 100, "dataset": "ILSVRC-2012",
+        "dataset_size": 10, "dataset": "ILSVRC-2012",
         "dataset_seed": 40376958655838027,
         "attacker_list": {
-            "PNA_SIM": {
-                "Alexnet(ImageNet)": ["jpeg", "tvm", "quantize"],
-                "VGG(ImageNet)": ["jpeg", "tvm", "quantize"],
-            },
+            "I_FGSM": [
+                "Alexnet(ImageNet)",
+                "VGG(ImageNet)",
+            ],
         },
         "model_list": ["Alexnet(ImageNet)", "VGG(ImageNet)"],
+        "trans_list": {
+            "I_FGSM": {
+                "jpeg": ["Alexnet(ImageNet)", "VGG(ImageNet)"],
+                "tvm": ["Alexnet(ImageNet)", "VGG(ImageNet)"],
+                "quantize": ["Alexnet(ImageNet)", "VGG(ImageNet)"],
+            },
+        },
         "img_proc_config": {
             "EfficientNetV2(ImageNet)": {
                 "img_size_h": 384,
@@ -29,31 +35,30 @@ if __name__ == "__main__":
             },
         },
         "attacker_config": {
-            "PNA_SIM": {
+            "I_FGSM": {
                 "clip_min": 0,
                 "clip_max": 1,
-                "epsilon": 1 / 255,
-                "T": 100,
+                "eps_iter": 2.5 * ((1 / 255) / 100),
+                "nb_iter": 100,
+                "norm": np.inf,
                 "attack_type": "UNTARGETED",
-                "tlabel": None
+                "epsilon": 1 / 255,
             }
         },
         "trans_config": {
-            "jpeg": {
-
-            },
+            "jpeg": {"quality": 50},
             "tvm": {},
             "quantize": {}
         }
     }
-    task_manager.init_task(task_token="5Jrs9nDZ", show_logo=True, run_device="cuda")
+    task_manager.init_task(show_logo=True, run_device="cuda")
 
     # 多数据库模式
     use_multi_database(mode=MultiDatabaseMode.SIMPLE)
 
     security_evaluation = SecurityEvaluation(example_config)
-    # security_evaluation.adv_example_generate()
     # security_evaluation.model_inference_capability_test_and_evaluation()
+    # security_evaluation.adv_example_generate()
     # security_evaluation.attack_test_and_evaluation(use_raw_nparray_data=True)
     # security_evaluation.capability_evaluation(use_raw_nparray_data=True)
 
@@ -61,3 +66,6 @@ if __name__ == "__main__":
 
     # trans_full_test
     security_evaluation.trans_full_test(use_raw_nparray_data=True)
+
+    # security_evaluation.adv_trans_generate()
+    # security_evaluation.trans_test_and_evaluation(use_raw_nparray_data=True)
