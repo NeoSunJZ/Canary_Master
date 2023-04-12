@@ -2,7 +2,7 @@
 from .DenseNet.DenseNet_CIFAR10 import sefi_component as densenet_model_cifar10
 from .GoogLeNet.GoogLeNet_CIFAR10 import sefi_component as googlenet_model_cifar10
 from .Inception.InceptionV3_CIFAR10 import sefi_component as inception_model_cifar10
-from .MobileNet.MobileNetV2_CIFAR10 import sefi_component as mobilenet_model_cifar10
+from .MobileNetV2.MobileNetV2_CIFAR10 import sefi_component as mobilenet_model_cifar10
 from .ResNet.ResNet_CIFAR10 import sefi_component as resnet_model_cifar10
 from .VGG.VGG_CIFAR10 import sefi_component as vgg_model_cifar10
 from .common import sefi_component as common_cifar10
