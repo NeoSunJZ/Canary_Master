@@ -41,9 +41,9 @@ class AdvAttacker:
                                                             ComponentConfigHandlerType.IMG_PROCESS_CONFIG_PARAMS,
                                                             img_proc_args, run_device)
         # 图片预处理
-        self.img_preprocessor = model_component.get(SubComponentType.IMG_PREPROCESSOR)
+        self.img_preprocessor = model_component.get(SubComponentType.IMG_PREPROCESSOR, None, True)
         # 结果处理
-        self.img_reverse_processor = model_component.get(SubComponentType.IMG_REVERSE_PROCESSOR)
+        self.img_reverse_processor = model_component.get(SubComponentType.IMG_REVERSE_PROCESSOR, None, True)
 
         self.atk_func = self.atk_component.get(SubComponentType.ATTACK_FUNC)
         # 增加计时修饰
@@ -56,7 +56,7 @@ class AdvAttacker:
             attacker_class_builder = self.atk_component.get(SubComponentType.ATTACK_CLASS)
             self.attacker_class = attacker_class_builder(**self.atk_args_dict)
             # 攻击类初始化方法
-            self.atk_init = self.atk_component.get(SubComponentType.ATTACK_INIT, None)
+            self.atk_init = self.atk_component.get(SubComponentType.ATTACK_INIT, default=None, allow_not_exist=True)
             # 初始化类
             if self.atk_init is not None and dataset_info is not None:
                 def dataset_loader(dataset_info):

@@ -15,7 +15,8 @@ from CANARY_SEFI.evaluator.logger.indicator_data_handler import get_model_capabi
     get_attack_adv_example_da_indicator_data_by_base_model, add_model_security_synthetical_capability_log, \
     get_attack_deflection_capability_indicator_data_by_attack_name, \
     get_attack_adv_example_da_indicator_data_by_attack_name, get_attack_adv_example_cost_indicator_data_by_attack_name, \
-    get_attack_adv_example_cost_indicator_data_by_base_model, add_attack_synthetical_capability_log
+    get_attack_adv_example_cost_indicator_data_by_base_model, add_attack_synthetical_capability_log, \
+    get_attack_deflection_capability_indicator_data_by_inference_model
 from CANARY_SEFI.evaluator.analyzer.analyzer_tools import calc_average
 
 
@@ -86,14 +87,15 @@ def adversarial_example_transfer_analyzer_log_handler(attack_deflection_capabili
 
 def adversarial_example_analyzer_log_handler(attack_deflection_capability_indicator_data,
                                              attack_adv_example_da_indicator_data,
-                                             attack_adv_example_cost_indicator_data):
+                                             attack_adv_example_cost_indicator_data,
+                                             include_transfer=False):
     adversarial_example_analyzer_log = {
         "MR": [], "TAS": [], "AIAC": [], "ARTC": [], "ACAMC_A": [], "ACAMC_T": [], "ACT": [], "AQN_F": [],
         "AQN_B": [], "AMD": [], "AED": [], "AED_HF": [], "AED_LF": [], "APCR": [], "ADMS": [], "ALMS": []
     }
     for log in attack_deflection_capability_indicator_data:
         # 排除转移测试
-        if log["base_model"] == log["inference_model"]:
+        if log["base_model"] == log["inference_model"] or include_transfer:
             MR = str(log["MR"]).split('/')
             adversarial_example_analyzer_log['MR'].append(float(MR[0]))
             if len(MR) == 2:
@@ -142,18 +144,24 @@ def model_security_synthetical_capability_analyzer_and_evaluation(model_name, us
     if is_skip:
         return
     model_capability_indicator_data = get_model_capability_indicator_data(model_name)
-    model_ACC = float(model_capability_indicator_data["clear_acc"])
-    model_F1 = float(model_capability_indicator_data["clear_f1"])
-    model_Conf = float(model_capability_indicator_data["clear_conf"])
+    if model_name.find("API") != -1:
+        model_ACC, model_F1, model_Conf = None, None, None
+        include_transfer = True
+    else:
+        model_ACC = float(model_capability_indicator_data["clear_acc"])
+        model_F1 = float(model_capability_indicator_data["clear_f1"])
+        model_Conf = float(model_capability_indicator_data["clear_conf"])
+        include_transfer = False
 
-    attack_deflection_capability_indicator_data = get_attack_deflection_capability_indicator_data_by_base_model(model_name)
+    attack_deflection_capability_indicator_data = get_attack_deflection_capability_indicator_data_by_inference_model(model_name)
     attack_adv_example_cost_indicator_data = get_attack_adv_example_cost_indicator_data_by_base_model(model_name)
     attack_adv_example_da_indicator_data = get_attack_adv_example_da_indicator_data_by_base_model(model_name)
 
     MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, ACT, AQN_F, AQN_B, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS =\
         adversarial_example_analyzer_log_handler(attack_deflection_capability_indicator_data,
                                                  attack_adv_example_da_indicator_data,
-                                                 attack_adv_example_cost_indicator_data)
+                                                 attack_adv_example_cost_indicator_data,
+                                                 include_transfer)
 
     test_adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG.value
 
