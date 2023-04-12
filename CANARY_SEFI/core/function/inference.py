@@ -5,6 +5,7 @@ from CANARY_SEFI.core.function.enum.test_level_enum import TestLevel
 from CANARY_SEFI.core.function.helper.recovery import global_recovery
 from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo, DatasetType
 from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id
+from CANARY_SEFI.evaluator.logger.trans_file_info_handler import find_adv_trans_file_logs_by_attack_id_and_trans_name
 
 
 def inference(dataset_info, model_name, model_args, img_proc_args, inference_batch_config, run_device=None):
@@ -25,17 +26,24 @@ def inference(dataset_info, model_name, model_args, img_proc_args, inference_bat
 
 def adv_inference(atk_log, test_model, model_args, img_proc_args, inference_batch_config,
                   use_raw_nparray_data=False, run_device=None,
-                  test_level=TestLevel.FULL):
-    all_adv_log = find_adv_example_file_logs_by_attack_id(atk_log['attack_id'])
+                  test_level=TestLevel.FULL, trans_name=None):
+    if trans_name is not None:
+        all_adv_log = find_adv_trans_file_logs_by_attack_id_and_trans_name(atk_log['attack_id'], trans_name)
+    else:
+        all_adv_log = find_adv_example_file_logs_by_attack_id(atk_log['attack_id'])
 
     adv_img_cursor_list = []
     for adv_log in all_adv_log:
-        adv_img_cursor_list.append(adv_log["adv_img_file_id"])
+        adv_img_cursor_list.append(adv_log["adv_img_file_id"] if trans_name is None else adv_log["adv_trans_img_file_id"])
 
     adv_dataset_info = DatasetInfo(None, None, None, adv_img_cursor_list)
-    adv_dataset_info.dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG
+    if trans_name is None:
+        adv_dataset_info.dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG
+    else:
+        adv_dataset_info.dataset_type = DatasetType.TRANSFORM_RAW_DATA if use_raw_nparray_data else DatasetType.TRANSFORM_IMG
 
-    with tqdm(total=adv_dataset_info.dataset_size, desc="Adv-example Inference Progress", ncols=120) as bar:
+    desc = "Adv-example Inference Progress" if trans_name is None else "Trans-example Inference Progress"
+    with tqdm(total=adv_dataset_info.dataset_size, desc=desc, ncols=120) as bar:
         def each_img_finish_callback(img, result):
             bar.update(1)
 
@@ -43,6 +51,8 @@ def adv_inference(atk_log, test_model, model_args, img_proc_args, inference_batc
         if atk_log['atk_perturbation_budget'] != "None" and atk_log['atk_perturbation_budget'] is not None:
             participant = "{}({})(e-{}):{}".format(atk_log['atk_name'], atk_log['base_model'],
                                                    str(round(float(atk_log['atk_perturbation_budget']), 5)), test_model)
+        if trans_name is not None:
+            participant += ":{}".format(trans_name)
         participant += "(RAW)" if use_raw_nparray_data else "(IMG)"
         is_skip, completed_num = global_recovery.check_skip(participant)
         if is_skip:
@@ -50,37 +60,6 @@ def adv_inference(atk_log, test_model, model_args, img_proc_args, inference_batc
 
         batch_size = inference_batch_config.get(test_model, 1)
         inference_detector_4_img_batch(test_model, model_args, img_proc_args, adv_dataset_info,
-                                       each_img_finish_callback=each_img_finish_callback,
-                                       batch_size=batch_size,
-                                       completed_num=completed_num,
-                                       run_device=run_device,
-                                       test_level=test_level)
-
-
-def trans_inference(atk_log, trans_logs, test_model, model_args, img_proc_args, inference_batch_config,
-                    use_raw_nparray_data=False, run_device=None,
-                    test_level=TestLevel.FULL):
-
-    trans_img_cursor_list = []
-    for trans_log in trans_logs:
-        trans_img_cursor_list.append(trans_log["adv_trans_img_file_id"])
-    trans_log = trans_logs[0]
-
-    trans_dataset_info = DatasetInfo(None, None, None, trans_img_cursor_list)
-    trans_dataset_info.dataset_type = DatasetType.TRANSFORM_RAW_DATA if use_raw_nparray_data else DatasetType.TRANSFORM_IMG
-
-    with tqdm(total=trans_dataset_info.dataset_size, desc="Trans-example Inference Progress", ncols=120) as bar:
-        def each_img_finish_callback(img, result):
-            bar.update(1)
-
-        participant = "{}({}):{}:{}".format(atk_log['atk_name'], atk_log['base_model'], test_model, trans_log['trans_name'])
-        participant += "(RAW)" if use_raw_nparray_data else "(IMG)"
-        is_skip, completed_num = global_recovery.check_skip(participant)
-        if is_skip:
-            return None
-
-        batch_size = inference_batch_config.get(test_model, 1)
-        inference_detector_4_img_batch(test_model, model_args, img_proc_args, trans_dataset_info,
                                        each_img_finish_callback=each_img_finish_callback,
                                        batch_size=batch_size,
                                        completed_num=completed_num,
