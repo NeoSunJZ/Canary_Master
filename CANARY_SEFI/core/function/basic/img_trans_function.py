@@ -33,11 +33,10 @@ class Image_Transformer:
             self.trans_init = self.trans_component.get(SubComponentType.TRANS_INIT, None)
 
     def adv_trans_4_img(self, img):
-        # TODO 修改
         if self.trans_component.get(TransComponentAttributeType.IS_INCLASS) is True:
             img_trans = self.trans_func(self.trans_class, img)
         else:
-            img_trans = self.trans_func(self.trans_class, img)
+            img_trans = self.trans_func(self.trans_args_dict, img)
         return img_trans
 
     def destroy(self):
@@ -65,18 +64,23 @@ def adv_trans_4_img_batch(trans_name, trans_args, atk_log, run_device=None):
     save_path = str(attack_id) + "/trans/" + trans_name + "/"
 
     def trans_iterator(imgs, img_log_ids, img_labels, save_raw_data=True):
-        for index in range(len(imgs)):
-            imgs[index] = adv_trans.adv_trans_4_img(imgs[index])
+        # 生成防御样本
+        trans_results = adv_trans.adv_trans_4_img(imgs.copy())
+        for index in range(len(trans_results)):
             img_log_id = img_log_ids[index]
             adv_img_file_log = find_adv_example_file_log_by_id(img_log_id)
             adv_img_file_id = adv_img_file_log['adv_img_file_id']
-            if torch.is_tensor(imgs[index]):
-                imgs[index] = imgs[index].numpy()
-            trans_file_name = "adv_trans_{}.npy".format(img_log_id)
-            save_pic_to_temp(save_path, trans_file_name, imgs[index], save_as_numpy_array=True)
+            if torch.is_tensor(trans_results[index]):
+                trans_results[index] = trans_results[index].numpy()
+            trans_img_file_name = "adv_trans_{}.png".format(img_log_id)
+            save_pic_to_temp(save_path, trans_img_file_name, trans_results[index], save_as_numpy_array=False)
+            raw_file_name = None
+            if save_raw_data:
+                raw_file_name = "adv_trans_{}.npy".format(img_log_id)
+                save_pic_to_temp(save_path, raw_file_name, trans_results[index], save_as_numpy_array=True)
 
             # 写入日志
-            adv_trans_img_file_id = add_adv_trans_img_file_log(trans_name, attack_id, adv_img_file_id, trans_file_name)
+            adv_trans_img_file_id = add_adv_trans_img_file_log(trans_name, attack_id, adv_img_file_id, trans_img_file_name, raw_file_name)
             trans_img_id_list.append(adv_trans_img_file_id)
 
     dataset_image_reader(trans_iterator, adv_dataset_info)
