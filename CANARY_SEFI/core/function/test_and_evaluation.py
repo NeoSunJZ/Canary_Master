@@ -6,12 +6,11 @@ from CANARY_SEFI.entity.dataset_info_entity import DatasetType
 from CANARY_SEFI.evaluator.analyzer.inference_data_analyzer import defense_normal_effectiveness_analyzer_and_evaluation, \
     analyzer_log_handler, defense_adv_effectiveness_analyzer_and_evaluation
 from CANARY_SEFI.core.function.enum.test_level_enum import TestLevel
-from CANARY_SEFI.evaluator.logger.trans_file_info_handler import find_adv_trans_file_logs_by_attack_id_and_trans_name
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.enum.step_enum import Step
 from CANARY_SEFI.core.function.enum.transfer_attack_type_enum import TransferAttackType
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
-from CANARY_SEFI.core.function.inference import inference, adv_inference, trans_inference
+from CANARY_SEFI.core.function.inference import inference, adv_inference
 from CANARY_SEFI.core.function.generate_adv_example import build_AEs, build_AEs_with_perturbation_increment
 from CANARY_SEFI.core.function.helper.batch_list_iterator import BatchListIterator
 from CANARY_SEFI.evaluator.analyzer.synthetical_analyzer import \
@@ -19,7 +18,7 @@ from CANARY_SEFI.evaluator.analyzer.synthetical_analyzer import \
 from CANARY_SEFI.evaluator.analyzer.test_data_analyzer import model_inference_capability_analyzer_and_evaluation, \
     attack_deflection_capability_analyzer_and_evaluation, \
     attack_capability_with_perturbation_increment_analyzer_and_evaluation, \
-    attack_adv_example_da_and_cost_analyzer_and_evaluation, trans_deflection_capability_analyzer_and_evaluation
+    attack_adv_example_da_and_cost_analyzer_and_evaluation
 from CANARY_SEFI.evaluator.logger.attack_info_handler import find_attack_log_by_name_and_base_model, \
     find_attack_log_by_name
 
@@ -268,19 +267,19 @@ def attack_capability_evaluation_with_perturbation_increment(attacker_list, data
                                                                                   use_raw_nparray_data)
 
 
-def adv_trans_generate(attacker_list, trans_config):
+def adv_trans_generate(trans_list, trans_config):
     # 标记当前步骤
     task_manager.sys_log_logger.set_step(Step.ADV_TRANS_GENERATE)
-    for atk_name in attacker_list:
-        for base_model in attacker_list[atk_name]:
-            for trans_name in attacker_list[atk_name][base_model]:
+    for atk_name in trans_list:
+        for trans_name in trans_list[atk_name]:
+            for base_model in trans_list[atk_name][trans_name]:
                 trans_args = trans_config.get(trans_name, None)
                 attack_log = find_attack_log_by_name_and_base_model(atk_name, base_model)
                 adv_trans_4_img_batch(trans_name=trans_name, trans_args=trans_args, atk_log=attack_log)
 
 
 # 防御样本攻击偏转能力测试
-def trans_deflection_capability_test(attacker_list, model_config, img_proc_config,
+def trans_deflection_capability_test(trans_list, model_config, img_proc_config,
                                      inference_batch_config,
                                      transfer_attack_test=TransferAttackType.NOT,
                                      transfer_attack_test_on_model_list=None, use_raw_nparray_data=False,
@@ -288,9 +287,9 @@ def trans_deflection_capability_test(attacker_list, model_config, img_proc_confi
     # 标记当前步骤
     task_manager.sys_log_logger.set_step(Step.TRANS_DEFLECTION_CAPABILITY_TEST)
 
-    for atk_name in attacker_list:
-        for base_model in attacker_list[atk_name]:
-            for trans_name in attacker_list[atk_name][base_model]:
+    for atk_name in trans_list:
+        for trans_name in trans_list[atk_name]:
+            for base_model in trans_list[atk_name][trans_name]:
 
                 test_on_model_list = []
                 test_on_model_list.append(base_model)
@@ -314,24 +313,21 @@ def trans_deflection_capability_test(attacker_list, model_config, img_proc_confi
                         test_level = transfer_test_level
 
                     attack_log = find_attack_log_by_name_and_base_model(atk_name, base_model)
-                    trans_logs = find_adv_trans_file_logs_by_attack_id_and_trans_name(attack_log['attack_id'],
-                                                                                      trans_name)
 
-                    trans_inference(attack_log, trans_logs, model_name, model_args, img_proc_args,
-                                    inference_batch_config=inference_batch_config,
-                                    use_raw_nparray_data=use_raw_nparray_data,
-                                    run_device=run_device,
-                                    test_level=test_level)
+                    adv_inference(attack_log, model_name, model_args, img_proc_args,
+                                  inference_batch_config=inference_batch_config,
+                                  use_raw_nparray_data=use_raw_nparray_data, run_device=run_device,
+                                  test_level=test_level, trans_name=trans_name)
 
                 BatchListIterator.model_list_iterator(test_on_model_list, model_config, img_proc_config, function)
 
 
 # 防御样本-攻击方法推理偏转效果/模型注意力偏转效果评估
-def trans_deflection_capability_evaluation(attacker_list, dataset_info=None, use_raw_nparray_data=False):
+def trans_deflection_capability_evaluation(trans_list, dataset_info=None, use_raw_nparray_data=False):
     # 标记当前步骤
     task_manager.sys_log_logger.set_step(Step.TRANS_DEFLECTION_CAPABILITY_EVALUATION)
-    for atk_name in attacker_list:
-        for base_model in attacker_list[atk_name]:
-            for trans_name in attacker_list[atk_name][base_model]:
-                trans_deflection_capability_analyzer_and_evaluation(atk_name, base_model, trans_name, dataset_info,
-                                                                    use_raw_nparray_data)
+    for atk_name in trans_list:
+        for trans_name in trans_list[atk_name]:
+            for base_model in trans_list[atk_name][trans_name]:
+                attack_deflection_capability_analyzer_and_evaluation(atk_name, base_model, dataset_info,
+                                                                     use_raw_nparray_data, trans_name)

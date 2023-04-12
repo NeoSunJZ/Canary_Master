@@ -34,6 +34,7 @@ class SecurityEvaluation:
 
         self.model_list = config.get("model_list", None)
         self.attacker_list = config.get("attacker_list", None)
+        self.trans_list = config.get("trans_list", None)
 
         self.transfer_attack_test_mode = TransferAttackType(config.get("transfer_attack_test_mode", "NOT"))
         self.transfer_attack_test_on_model_list = config.get("transfer_attack_test_on_model_list", {})
@@ -190,17 +191,17 @@ class SecurityEvaluation:
 
     def adv_trans_generate(self):
         # 生成图片预处理防御样本
-        adv_trans_generate(self.attacker_list, self.trans_config)
+        adv_trans_generate(self.trans_list, self.trans_config)
         task_manager.test_data_logger.finish()
 
     def trans_test_and_evaluation(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
         # 防御样本攻击偏转能力测试
-        trans_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config,
+        trans_deflection_capability_test(self.trans_list, self.model_config, self.img_proc_config,
                                          self.inference_batch_config,
                                          self.transfer_attack_test_mode, self.transfer_attack_test_on_model_list,
                                          use_raw_nparray_data, transfer_test_level)
         # 防御样本攻击方法推理偏转效果/模型注意力偏转效果评估
-        trans_deflection_capability_evaluation(self.attacker_list, self.dataset_info, use_raw_nparray_data)
+        trans_deflection_capability_evaluation(self.trans_list, self.dataset_info, use_raw_nparray_data)
         task_manager.test_data_logger.finish()
 
     def trans_full_test(self, use_raw_nparray_data=True, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
