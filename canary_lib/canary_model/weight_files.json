@@ -1,0 +1,40 @@
+{
+  "cifar-100": {
+    "mobilenet_v2": {
+      "x0_5": {
+        "file_name": "cifar100_mobilenetv2_x0_5-9f915757.pt",
+        "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/MobileNetV2/cifar100_mobilenetv2_x0_5-9f915757.pt"
+      },
+      "x0_75": {
+        "file_name": "cifar100_mobilenetv2_x0_75-d7891e60.pt",
+        "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/MobileNetV2/cifar100_mobilenetv2_x0_75-d7891e60.pt"
+      },
+      "x1_0": {
+        "file_name": "cifar100_mobilenetv2_x1_0-1311f9ff.pt",
+        "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/MobileNetV2/cifar100_mobilenetv2_x1_0-1311f9ff.pt"
+      },
+      "x1_4": {
+        "file_name": "cifar100_mobilenetv2_x1_4-8a269f5e.pt",
+        "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/MobileNetV2/cifar100_mobilenetv2_x1_4-8a269f5e.pt"
+      }
+    },
+    "resnet": {
+      "resnet20":{
+        "file_name": "cifar100_resnet20-23dac2f1.pt",
+        "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/ResNet/cifar100_resnet20-23dac2f1.pt"
+      },
+      "resnet32": {
+        "file_name": "cifar100_resnet32-84213ce6.pt",
+        "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/ResNet/cifar100_resnet32-84213ce6.pt"
+      },
+      "resnet44":{
+        "file_name": "cifar100_resnet44-ffe32858.pt",
+        "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/ResNet/cifar100_resnet44-ffe32858.pt"
+      },
+      "resnet56": {
+        "file_name": "cifar100_resnet56-f2eff4c8.pt",
+        "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/ResNet/cifar100_resnet56-f2eff4c8.pt"
+      }
+    }
+  }
+}

@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 
 def get_system_version():
-    return "1.0.0"
+    return "1.0.1"
 
 
 def print_logo(color=Fore.BLUE):
