@@ -16,18 +16,20 @@ sefi_component = SEFIComponent()
                                       params={
                                       })
 class Transform():
-    def __init__(self, args={}):
-        self.args = args
-        self.pixel_drop_rate = self.args.get('pixel_drop_rate', 0.05)
-        self.tvm_method = self.args.get('tvm_method', 'none')
-        self.tvm_weight = self.args.get('tvm_weight', 0.03)
+    def __init__(self, pixel_drop_rate=0.05, tvm_method='none', tvm_weight=0.03):
+        self.pixel_drop_rate = pixel_drop_rate
+        self.tvm_method = tvm_method
+        self.tvm_weight = tvm_weight
 
     @sefi_component.trans(name="tvm", is_inclass=True)
-    def img_transform(self, img):
-        if not torch.is_tensor(img):
-            img = torch.from_numpy(img)
-        img = img / 255
-        im = tvm(
-            img, self.pixel_drop_rate, self.tvm_method, self.tvm_weight
-        )*255
-        return im
+    def img_transform(self, imgs):
+        result = []
+        for img in imgs:
+            if not torch.is_tensor(img):
+                img = torch.from_numpy(img)
+            img = img / 255
+            img = tvm(
+                img, self.pixel_drop_rate, self.tvm_method, self.tvm_weight
+            )*255
+            result.append(img)
+        return result

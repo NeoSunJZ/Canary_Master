@@ -13,14 +13,17 @@ sefi_component = SEFIComponent()
                                       params={
                                       })
 class Transform():
-    def __init__(self, args={}):
-        self.args = args
+    def __init__(self, quantize_depth=3):
+        self.quantize_depth = quantize_depth
 
     @sefi_component.trans(name="quantize", is_inclass=True)
-    def img_transform(self, img):
-        if not torch.is_tensor(img):
-            img = torch.from_numpy(img)
-        return _quantize_img(img, depth=self.args.get("quantize_depth", 3))
+    def img_transform(self, imgs):
+        result = []
+        for img in imgs:
+            if not torch.is_tensor(img):
+                img = torch.from_numpy(img)
+            result.append(_quantize_img(img, depth=self.quantize_depth))
+        return result
 
 
 def _quantize_img(im, depth=3):
