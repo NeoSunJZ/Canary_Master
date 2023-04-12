@@ -36,7 +36,7 @@ class SEFIComponent:
                     raise ComponentReturnTypeError(
                         sub_component_name=SubComponentType.MODEL_CREATE_FUNC,
                         component_name=name, component_type=ComponentType.MODEL,
-                        need_type=type(torch.nn.Module), get_type=type(model))
+                        need_type=torch.nn.Module, get_type=type(model))
                 return model
 
             target_model[SubComponentType.MODEL_CREATE_FUNC] = inner
@@ -53,26 +53,24 @@ class SEFIComponent:
             target = self.get_models(name)
             if handler_type not in (ComponentConfigHandlerType.MODEL_CONFIG_PARAMS,
                                     ComponentConfigHandlerType.IMG_PROCESS_CONFIG_PARAMS):
-                raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target,
-                                                      error_type=handler_type)
-            target[AttackComponentAttributeType.CONFIG_PARAMS] = params
+                raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target, error_type=handler_type)
+            target[handler_type.value + ModelComponentAttributeType.CONFIG_PARAMS.value] = params
 
         elif handler_target == ComponentType.ATTACK:
             target = self.get_attack_methods(name)
             if handler_type not in (ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,):
-                raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target,
-                                                      error_type=handler_type)
-            target[ModelComponentAttributeType.CONFIG_PARAMS] = params
+                raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target, error_type=handler_type)
+            target[handler_type.value + AttackComponentAttributeType.CONFIG_PARAMS.value] = params
         elif handler_target == ComponentType.DEFENSE:
             target = self.get_defense_methods(name)
             if handler_type not in (ComponentConfigHandlerType.DEFENSE_CONFIG_PARAMS,):
-                raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target,
-                                                      error_type=handler_type)
+                raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target, error_type=handler_type)
+            target[handler_type.value + DefenseComponentAttributeType.CONFIG_PARAMS.value] = params
         elif handler_target == ComponentType.TRANS:
             target = self.get_trans_methods(name)
             if handler_type not in (ComponentConfigHandlerType.TRANS_CONFIG_PARAMS,):
-                raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target,
-                                                      error_type=handler_type)
+                raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target, error_type=handler_type)
+            target[handler_type.value + TransComponentAttributeType.CONFIG_PARAMS.value] = params
 
         else:
             raise ComponentTypeError(component_name=name, component_type=handler_target)
@@ -85,12 +83,12 @@ class SEFIComponent:
                 args_dict = decorated(*args, **kwargs)
                 if not isinstance(args_dict, dict):
                     raise ComponentReturnTypeError(
-                        sub_component_name=SubComponentType.CONFIG_PARAMS_HANDLER + handler_type,
+                        sub_component_name=handler_type.value + SubComponentType.CONFIG_PARAMS_HANDLER.value,
                         component_name=name, component_type=handler_type,
                         need_type=type(dict), get_type=type(args_dict))
                 return args_dict
 
-            target[handler_type + SubComponentType.CONFIG_PARAMS_HANDLER] = inner
+            target[handler_type.value + SubComponentType.CONFIG_PARAMS_HANDLER.value] = inner
             return inner
 
         return wrapper
@@ -232,10 +230,7 @@ class SEFIComponent:
     def attacker_class(self, attack_name,
                        model_var_name="model",
                        perturbation_budget_var_name=None):
-        target_attack_method = self.attack_methods.get(attack_name, default=None, allow_not_exist=True)
-        if target_attack_method is None:
-            self.attack_methods[attack_name] = {}
-            target_attack_method = self.attack_methods.get(attack_name)
+        target_attack_method = self.get_attack_methods(attack_name)
 
         def wrapper(decorated):
             target_attack_method[SubComponentType.ATTACK_CLASS] = decorated

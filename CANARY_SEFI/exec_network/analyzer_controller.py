@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 
+from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_single_image_reader
 from CANARY_SEFI.task_manager import task_manager
-from CANARY_SEFI.core.function.basic.dataset_function import dataset_single_image_reader
 from CANARY_SEFI.core.function.init_dataset import dataset_seed_handler
 from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo
 from CANARY_SEFI.entity.msg_entity import MsgEntity
@@ -21,7 +21,7 @@ api = Blueprint('analyzer_api', __name__)
 @api.route('/result/getInferenceResultByModelName', methods=['GET'])
 def get_inference_result_by_model_name():
     # 初始化批次
-    task_manager.init_task(request.args.get("batchToken"))
+    task_manager.load_task(request.args.get("batchToken"))
 
     inference_model = request.args.get("inferenceModel")
     clean_inference_test_data = get_clean_inference_test_data_with_img_info(inference_model)
@@ -46,7 +46,7 @@ def handle_result(inference_logs):
 @api.route('/result/getModelSecuritySyntheticalCapabilityResult', methods=['GET'])
 def get_model_security_synthetical_capability_result():
     # 初始化批次
-    task_manager.init_task(request.args.get("batchToken"))
+    task_manager.load_task(request.args.get("batchToken"))
 
     inference_model = request.args.get("inferenceModel")
     result = get_model_security_synthetical_capability_log(inference_model)
@@ -56,7 +56,7 @@ def get_model_security_synthetical_capability_result():
 @api.route('/result/getExplorePerturbationResult', methods=['GET'])
 def get_perturbation_increment_test_result():
     # 初始化批次
-    task_manager.init_task(request.args.get("batchToken"))
+    task_manager.load_task(request.args.get("batchToken"))
 
     atk_name = request.args.get("attackName")
     base_model = request.args.get("baseModel")
@@ -67,7 +67,7 @@ def get_perturbation_increment_test_result():
 @api.route('/result/getAdvInfo', methods=['GET'])
 def get_adv_info_by_adv_img_id():
     # 初始化批次
-    task_manager.init_task(request.args.get("batchToken"))
+    task_manager.load_task(request.args.get("batchToken"))
 
     adv_img_file_id = request.args.get("advImgId")
     need_adv_img = request.args.get("needAdvImg", 0)
@@ -90,7 +90,7 @@ def get_adv_info_by_adv_img_id():
         adv_example_file_log['adv_img'] = {
             "original_img": get_pic_base64_from_nparray(original_img),
             "adversarial_img": get_pic_base64_from_nparray(adversarial_img),
-            "diff": show_img_diff(original_img, adversarial_img)
+            "diff": get_img_diff(original_img, adversarial_img)
         }
 
     return MsgEntity("SUCCESS", "1", adv_example_file_log).msg2json()

@@ -3,6 +3,8 @@ import sys
 from colorama import Fore
 from flask import Blueprint, request, current_app
 
+from CANARY_SEFI.core.function.enum.multi_db_mode_enum import MultiDatabaseMode
+from CANARY_SEFI.core.function.helper.multi_db import use_multi_database
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.function.helper.excepthook import excepthook
 from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
@@ -19,6 +21,7 @@ def full_test(debug_log, config, context):
         try:
             task_manager.test_data_logger.debug_log = debug_log
             security_evaluation = SecurityEvaluation(config)
+            use_multi_database(mode=MultiDatabaseMode.SIMPLE)
             security_evaluation.attack_full_test(config.get('use_img_file', True),
                                                  config.get('use_raw_nparray_data', False))
 

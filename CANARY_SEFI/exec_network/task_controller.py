@@ -27,7 +27,10 @@ def running_status():
 
 def check_abnormal_termination(task_token):
     # 初始化批次
-    task_manager.init_task(task_token)
+    try:
+        task_manager.load_task(task_token)
+    except FileNotFoundError:
+        return False
 
     progress_log = task_manager.sys_log_logger.get_all_task_progress_log()
     for log in progress_log:
@@ -47,17 +50,27 @@ def stop_task():
 @api.route('/task/getTaskStepLog', methods=['GET'])
 def get_task_progress_log():
     # 初始化批次
-    task_manager.init_task(request.args.get("batchToken"))
+    task_manager.load_task(request.args.get("batchToken"))
 
     log = task_manager.sys_log_logger.get_all_task_progress_log()
+    return MsgEntity("SUCCESS", "1", log).msg2json()
+
+
+@api.route('/task/revokeTaskStepLog', methods=['GET'])
+def revoke_task_progress_log():
+    # 初始化批次
+    task_manager.load_task(request.args.get("batchToken"))
+
+    task_manager.sys_log_logger.system_log_id = request.args.get("systemLogID")
+    log = task_manager.sys_log_logger.update_finish_status(is_finish=False, stop_reason=None, is_restart=True)
+
     return MsgEntity("SUCCESS", "1", log).msg2json()
 
 
 @api.route('/task/getTaskConsoleLog', methods=['GET'])
 def get_task_console_log():
     # 初始化批次
-    task_manager.init_task(request.args.get("batchToken"))
-
+    task_manager.load_task(request.args.get("batchToken"))
     before_time = request.args.get("beforeTime", None)
     log = task_manager.sys_log_logger.get_all_console_msg(before_time)
     return MsgEntity("SUCCESS", "1", log).msg2json()
