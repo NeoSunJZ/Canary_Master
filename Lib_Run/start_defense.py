@@ -1,6 +1,6 @@
-from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
-from CANARY_SEFI.core.function.basic.train_function import adv_defense_4_img_batch
-from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo
+from canary_sefi.core.component.component_manager import SEFI_component_manager
+from canary_sefi.core.function.basic.train_function import adv_defense_4_img_batch
+from canary_sefi.entity.dataset_info_entity import DatasetInfo
 from component_manager import init_component_manager
 from Defense_Method.Adversarial_Training.trades import sefi_component as trades_component
 

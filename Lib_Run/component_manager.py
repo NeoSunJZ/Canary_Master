@@ -1,5 +1,5 @@
 # 管理器
-from CANARY_SEFI.core.component.component_manager import SEFI_component_manager
+from canary_sefi.core.component.component_manager import SEFI_component_manager
 # 模型(ImageNet)
 from Model.ImageNet.Alexnet_ImageNet import sefi_component as alexnet_model_imagenet  # Alexnet
 from Model.ImageNet.ConvNeXt_ImageNet import sefi_component as convnext_model_imagenet  # ConvNext

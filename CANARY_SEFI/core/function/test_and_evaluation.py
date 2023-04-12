@@ -1,25 +1,25 @@
 from colorama import Fore
 
-from CANARY_SEFI.core.function.basic.img_trans_function import adv_trans_4_img_batch
-from CANARY_SEFI.core.function.comparative_test_adv_example import adv_comparative_test
-from CANARY_SEFI.entity.dataset_info_entity import DatasetType
-from CANARY_SEFI.evaluator.analyzer.inference_data_analyzer import defense_normal_effectiveness_analyzer_and_evaluation, \
+from canary_sefi.core.function.basic.img_trans_function import adv_trans_4_img_batch
+from canary_sefi.core.function.comparative_test_adv_example import adv_comparative_test
+from canary_sefi.entity.dataset_info_entity import DatasetType
+from canary_sefi.evaluator.analyzer.inference_data_analyzer import defense_normal_effectiveness_analyzer_and_evaluation, \
     analyzer_log_handler, defense_adv_effectiveness_analyzer_and_evaluation
-from CANARY_SEFI.core.function.enum.test_level_enum import TestLevel
-from CANARY_SEFI.task_manager import task_manager
-from CANARY_SEFI.core.function.enum.step_enum import Step
-from CANARY_SEFI.core.function.enum.transfer_attack_type_enum import TransferAttackType
-from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
-from CANARY_SEFI.core.function.inference import inference, adv_inference
-from CANARY_SEFI.core.function.generate_adv_example import build_AEs, build_AEs_with_perturbation_increment
-from CANARY_SEFI.core.function.helper.batch_list_iterator import BatchListIterator
-from CANARY_SEFI.evaluator.analyzer.synthetical_analyzer import \
+from canary_sefi.core.function.enum.test_level_enum import TestLevel
+from canary_sefi.task_manager import task_manager
+from canary_sefi.core.function.enum.step_enum import Step
+from canary_sefi.core.function.enum.transfer_attack_type_enum import TransferAttackType
+from canary_sefi.core.function.helper.realtime_reporter import reporter
+from canary_sefi.core.function.inference import inference, adv_inference
+from canary_sefi.core.function.generate_adv_example import build_AEs, build_AEs_with_perturbation_increment
+from canary_sefi.core.function.helper.batch_list_iterator import BatchListIterator
+from canary_sefi.evaluator.analyzer.synthetical_analyzer import \
     model_security_synthetical_capability_analyzer_and_evaluation, attack_synthetical_capability_analyzer_and_evaluation
-from CANARY_SEFI.evaluator.analyzer.test_data_analyzer import model_inference_capability_analyzer_and_evaluation, \
+from canary_sefi.evaluator.analyzer.test_data_analyzer import model_inference_capability_analyzer_and_evaluation, \
     attack_deflection_capability_analyzer_and_evaluation, \
     attack_capability_with_perturbation_increment_analyzer_and_evaluation, \
     attack_adv_example_da_and_cost_analyzer_and_evaluation
-from CANARY_SEFI.evaluator.logger.attack_info_handler import find_attack_log_by_name_and_base_model, \
+from canary_sefi.evaluator.logger.attack_info_handler import find_attack_log_by_name_and_base_model, \
     find_attack_log_by_name
 
 

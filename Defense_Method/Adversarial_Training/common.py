@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from colorama import Fore
 
-from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
+from canary_sefi.core.function.helper.realtime_reporter import reporter
 
 
 def eval_test(val_dataset, defense_model, epoch, device):

@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-from CANARY_SEFI.task_manager import task_manager
+from canary_sefi.task_manager import task_manager
 
 
 def query_logs(conn, sql, args):

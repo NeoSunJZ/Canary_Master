@@ -2,8 +2,8 @@ import numpy as np
 import torch
 from PIL import Image
 
-from CANARY_SEFI.core.component.component_decorator import SEFIComponent
-from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
+from canary_sefi.core.component.component_decorator import SEFIComponent
+from canary_sefi.core.component.component_enum import ComponentType, ComponentConfigHandlerType
 
 from Defense_Method.Img_Preprocess.tvm.tvm import reconstruct as tvm
 

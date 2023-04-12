@@ -1,8 +1,8 @@
-from CANARY_SEFI.core.function.enum.multi_db_mode_enum import MultiDatabaseMode
-from CANARY_SEFI.core.function.helper.multi_db import use_multi_database
-from CANARY_SEFI.core.function.helper.recovery import global_recovery
-from CANARY_SEFI.handler.helper.correctness_check import CorrectnessCheck
-from CANARY_SEFI.service.security_evaluation import SecurityEvaluation
+from canary_sefi.core.function.enum.multi_db_mode_enum import MultiDatabaseMode
+from canary_sefi.core.function.helper.multi_db import use_multi_database
+from canary_sefi.core.function.helper.recovery import global_recovery
+from canary_sefi.handler.helper.correctness_check import CorrectnessCheck
+from canary_sefi.service.security_evaluation import SecurityEvaluation
 from utils import load_test_config
 from component_manager import init_component_manager
 

@@ -1,9 +1,9 @@
 # from add_path import append_sys_path
 # append_sys_path("/home/xiongwenqi/Canary/")
 
-from CANARY_SEFI.task_manager import task_manager
+from canary_sefi.task_manager import task_manager
 from component_manager import init_component_manager
-from CANARY_SEFI.service.defense_evaluation import DefenseEvaluation
+from canary_sefi.service.defense_evaluation import DefenseEvaluation
 
 
 if __name__ == "__main__":

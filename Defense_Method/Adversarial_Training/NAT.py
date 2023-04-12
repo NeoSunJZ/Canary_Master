@@ -5,11 +5,11 @@ from colorama import Fore
 from torch.autograd import Variable
 import torch.optim as optim
 
-from CANARY_SEFI.core.component.component_decorator import SEFIComponent
-from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
-from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
-from CANARY_SEFI.handler.model_weight_handler.weight_file_io_handler import save_weight_to_temp
-from CANARY_SEFI.task_manager import task_manager
+from canary_sefi.core.component.component_decorator import SEFIComponent
+from canary_sefi.core.component.component_enum import ComponentType, ComponentConfigHandlerType
+from canary_sefi.core.function.helper.realtime_reporter import reporter
+from canary_sefi.handler.model_weight_handler.weight_file_io_handler import save_weight_to_temp
+from canary_sefi.task_manager import task_manager
 from Defense_Method.Adversarial_Training.common import eval_test, adjust_learning_rate
 
 sefi_component = SEFIComponent()

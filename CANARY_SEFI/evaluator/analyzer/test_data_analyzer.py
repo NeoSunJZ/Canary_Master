@@ -1,29 +1,29 @@
 from colorama import Fore
 from tqdm import tqdm
 
-from CANARY_SEFI.core.function.basic.dataset.adv_dataset_function import adv_dataset_single_image_reader
-from CANARY_SEFI.core.function.basic.dataset.dataset_function import dataset_single_image_reader
-from CANARY_SEFI.evaluator.logger.trans_file_info_handler import find_adv_trans_file_logs_by_attack_id_and_trans_name, \
+from canary_sefi.core.function.basic.dataset.adv_dataset_function import adv_dataset_single_image_reader
+from canary_sefi.core.function.basic.dataset.dataset_function import dataset_single_image_reader
+from canary_sefi.evaluator.logger.trans_file_info_handler import find_adv_trans_file_logs_by_attack_id_and_trans_name, \
     set_adv_trans_file_ground_valid
-from CANARY_SEFI.handler.image_handler.img_utils import get_img_cosine_similarity, img_size_uniform_fix
-from CANARY_SEFI.handler.image_handler.plt_handler import cam_diff_fig_builder, figure_show_handler
-from CANARY_SEFI.task_manager import task_manager
-from CANARY_SEFI.core.function.helper.realtime_reporter import reporter
-from CANARY_SEFI.core.function.helper.recovery import global_recovery
-from CANARY_SEFI.entity.dataset_info_entity import DatasetType
-from CANARY_SEFI.evaluator.logger.adv_example_da_test_data_handler import find_adv_example_da_test_data_by_id_and_type
-from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id, \
+from canary_sefi.handler.image_handler.img_utils import get_img_cosine_similarity, img_size_uniform_fix
+from canary_sefi.handler.image_handler.plt_handler import cam_diff_fig_builder, figure_show_handler
+from canary_sefi.task_manager import task_manager
+from canary_sefi.core.function.helper.realtime_reporter import reporter
+from canary_sefi.core.function.helper.recovery import global_recovery
+from canary_sefi.entity.dataset_info_entity import DatasetType
+from canary_sefi.evaluator.logger.adv_example_da_test_data_handler import find_adv_example_da_test_data_by_id_and_type
+from canary_sefi.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id, \
     set_adv_example_file_ground_valid, find_adv_example_file_log_by_id
-from CANARY_SEFI.evaluator.logger.img_file_info_handler import find_img_log_by_id
-from CANARY_SEFI.evaluator.logger.indicator_data_handler import save_attack_deflection_capability_indicator_data, \
+from canary_sefi.evaluator.logger.img_file_info_handler import find_img_log_by_id
+from canary_sefi.evaluator.logger.indicator_data_handler import save_attack_deflection_capability_indicator_data, \
     save_attack_adv_example_da_indicator_data, save_model_capability_indicator_data, \
     save_attack_adv_example_cost_indicator_data, save_trans_deflection_capability_indicator_data
-from CANARY_SEFI.evaluator.logger.attack_info_handler import find_attack_log_by_name_and_base_model
+from canary_sefi.evaluator.logger.attack_info_handler import find_attack_log_by_name_and_base_model
 from sklearn.metrics import f1_score, accuracy_score
 
-from CANARY_SEFI.evaluator.logger.inference_test_data_handler import get_inference_test_data_by_model_name, \
+from canary_sefi.evaluator.logger.inference_test_data_handler import get_inference_test_data_by_model_name, \
     get_inference_test_data_by_img_id
-from CANARY_SEFI.evaluator.analyzer.analyzer_tools import calc_average
+from canary_sefi.evaluator.analyzer.analyzer_tools import calc_average
 
 
 def model_inference_capability_analyzer_and_evaluation(model_name):

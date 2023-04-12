@@ -4,8 +4,8 @@ import torchvision
 from numpy import long
 from torch.utils.data import DataLoader
 
-from CANARY_SEFI.core.component.component_decorator import SEFIComponent
-from CANARY_SEFI.core.component.component_enum import SubComponentType, ComponentType
+from canary_sefi.core.component.component_decorator import SEFIComponent
+from canary_sefi.core.component.component_enum import SubComponentType, ComponentType
 
 sefi_component = SEFIComponent()
 

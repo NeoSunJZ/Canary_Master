@@ -1,11 +1,11 @@
 from tqdm import tqdm
 
-from CANARY_SEFI.core.function.basic.model_function import inference_detector_4_img_batch
-from CANARY_SEFI.core.function.enum.test_level_enum import TestLevel
-from CANARY_SEFI.core.function.helper.recovery import global_recovery
-from CANARY_SEFI.entity.dataset_info_entity import DatasetInfo, DatasetType
-from CANARY_SEFI.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id
-from CANARY_SEFI.evaluator.logger.trans_file_info_handler import find_adv_trans_file_logs_by_attack_id_and_trans_name
+from canary_sefi.core.function.basic.model_function import inference_detector_4_img_batch
+from canary_sefi.core.function.enum.test_level_enum import TestLevel
+from canary_sefi.core.function.helper.recovery import global_recovery
+from canary_sefi.entity.dataset_info_entity import DatasetInfo, DatasetType
+from canary_sefi.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id
+from canary_sefi.evaluator.logger.trans_file_info_handler import find_adv_trans_file_logs_by_attack_id_and_trans_name
 
 
 def inference(dataset_info, model_name, model_args, img_proc_args, inference_batch_config, run_device=None):

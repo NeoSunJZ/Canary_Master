@@ -5,8 +5,8 @@ try:
 except ImportError:
     from io import BytesIO
 from Defense_Method.Img_Preprocess.quilting.quilting import quilting
-from CANARY_SEFI.core.component.component_decorator import SEFIComponent
-from CANARY_SEFI.core.component.component_enum import ComponentType, ComponentConfigHandlerType
+from canary_sefi.core.component.component_decorator import SEFIComponent
+from canary_sefi.core.component.component_enum import ComponentType, ComponentConfigHandlerType
 
 sefi_component = SEFIComponent()
 
