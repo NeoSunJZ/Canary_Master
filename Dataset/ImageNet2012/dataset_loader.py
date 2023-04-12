@@ -40,3 +40,13 @@ def dataset_getter(dataset_path, dataset_seed, dataset_size=None):
     #     return img_np_array, dataset[int(img_index)][1]
     # else:
     #     return img_np_array
+@sefi_component.util(util_type=SubComponentType.DATASET_LOADER, util_target=ComponentType.DATASET, name="Custom")
+def dataset_getter(dataset_path, dataset_seed, dataset_size=None):
+    class ImageFolderCustom(ImageFolder):
+        def __getitem__(self, index: int) -> Tuple[Any, Any]:
+            sample, target = super().__getitem__(index)
+            target = [527, 545, 553, 831][target]
+            return np.array(sample, dtype=np.uint8), target
+
+    dataset = ImageFolderCustom(root=dataset_path)
+    return dataset
