@@ -7,7 +7,6 @@ from CANARY_SEFI.core.component.default_component.dataset_getter import get_data
 from CANARY_SEFI.core.function.basic.dataset.adv_dataset_function import adv_dataset_image_reader
 from CANARY_SEFI.core.function.basic.dataset.memory_cache import memory_cache
 from CANARY_SEFI.core.function.basic.dataset.tools import limit_img_size
-from CANARY_SEFI.core.function.basic.dataset.trans_dataset_function import trans_dataset_image_reader
 from CANARY_SEFI.task_manager import task_manager
 from CANARY_SEFI.core.config.config_manager import config_manager
 from CANARY_SEFI.entity.dataset_info_entity import DatasetType
@@ -22,7 +21,7 @@ def dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num=0):
         adv_dataset_image_reader(iterator, dataset_info, batch_size, completed_num)
         return
     if dataset_info.dataset_type == DatasetType.TRANSFORM_IMG or dataset_info.dataset_type == DatasetType.TRANSFORM_RAW_DATA:
-        trans_dataset_image_reader(iterator, dataset_info, batch_size, completed_num)
+        adv_dataset_image_reader(iterator, dataset_info, batch_size, completed_num, trans=True)
         return
 
     dataset = get_dataset(dataset_info)
