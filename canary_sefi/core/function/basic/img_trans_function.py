@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import torch
 
@@ -65,7 +67,7 @@ def adv_trans_4_img_batch(trans_name, trans_args, atk_log, run_device=None):
 
     def trans_iterator(imgs, img_log_ids, img_labels, save_raw_data=True):
         # 生成防御样本
-        trans_results = adv_trans.adv_trans_4_img(imgs.copy())
+        trans_results = adv_trans.adv_trans_4_img(copy.deepcopy(imgs))
         for index in range(len(trans_results)):
             img_log_id = img_log_ids[index]
             adv_img_file_log = find_adv_example_file_log_by_id(img_log_id)
