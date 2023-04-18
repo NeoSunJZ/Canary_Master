@@ -1,0 +1,12 @@
+{
+  "appName": "CANARY Quick Start",
+  "appDesc": "This is an example program to quickly start using SEFI",
+  "datasetPath": "/home/server/extra-dataset/",
+  "baseTempPath": "/home/server/canary/Raw_Data_2/",
+  "centerDatabasePath": "/home/server/canary/Raw_Data_2/",
+  "system": {
+    "limited_read_img_size": 900,
+    "use_file_memory_cache": true,
+    "save_fig_model": "save_img_file"
+  }
+}
