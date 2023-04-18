@@ -44,7 +44,9 @@ def adv_dataset_single_image_reader(adv_file_log, adv_img_type, is_gray=False):
     elif adv_img_type == DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA:
         img = get_pic_nparray_from_temp(adv_file_path, adv_file_log["adv_raw_nparray_filename"], is_numpy_array_file=True, is_gray=is_gray)
     else:
-        raise ValueError("[ Logic Error ] [ READ DATASET IMG ] Wrong dataset type!")
+        raise ValueError("[SEFI] DatasetTypeError: Wrong adv example dataset Type!\n"
+                         "Excepted:{}, Got:{}"
+                         .format((DatasetType.ADVERSARIAL_EXAMPLE_IMG, DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA), adv_img_type))
     return img
 
 
