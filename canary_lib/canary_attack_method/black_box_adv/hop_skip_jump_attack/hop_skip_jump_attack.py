@@ -11,8 +11,8 @@ from canary_sefi.core.component.component_enum import ComponentType, ComponentCo
 sefi_component = SEFIComponent()
 
 
-@sefi_component.attacker_class(attack_name="HopSkipJumpAttack", perturbation_budget_var_name=None)
-@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="HopSkipJumpAttack",
+@sefi_component.attacker_class(attack_name="HSJA", perturbation_budget_var_name=None)
+@sefi_component.config_params_handler(handler_target=ComponentType.ATTACK, name="HSJA",
                                       handler_type=ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
                                       use_default_handler=True,
                                       params={
@@ -45,7 +45,7 @@ class HopSkipJumpAttack:
         self.gamma = gamma  # 设置二分搜索停止条件的阈值：如果二分两点的距离小于此值，则认为已经搜索到边界
         self.constraint = constraint  # 范数
 
-    @sefi_component.attack(name="HopSkipJumpAttack", is_inclass=True, support_model=["vision_transformer"])
+    @sefi_component.attack(name="HSJA", is_inclass=True, support_model=[])
     def attack(self, imgs, ori_labels, tlabels=None):
         batch_size = imgs.shape[0]
         tlabels = np.repeat(self.tlabel, batch_size) if tlabels is None else tlabels

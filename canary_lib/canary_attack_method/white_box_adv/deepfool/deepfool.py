@@ -17,7 +17,11 @@ sefi_component = SEFIComponent()
                                       params={
                                           "pixel_min": {"desc": "对抗样本像素上界(与模型相关)", "type": "FLOAT", "required": "true"},
                                           "pixel_max": {"desc": "对抗样本像素下界(与模型相关)", "type": "FLOAT", "required": "true"},
-                                          "p": {"desc": "范数类型", "type": "SELECT", "selector": [{"value": "2", "name": "l-2"}, {"value": "inf", "name": "l-inf"}], "required": "true"},
+                                          "attack_type": {"desc": "攻击类型", "type": "SELECT",
+                                                          "selector": [{"value": "TARGETED", "name": "靶向"},
+                                                                       {"value": "UNTARGETED", "name": "非靶向"}],
+                                                          "required": "true"},
+                                          "p": {"desc": "范数类型", "type": "SELECT", "selector": [{"value": "l-2", "name": "l-2"}, {"value": "l-inf", "name": "l-inf"}], "required": "true"},
                                           "max_iter": {"desc": "最大迭代次数(整数)", "type": "INT", "def": "1000"},
                                           "num_classes": {"desc": "模型中类的数量", "type": "INT", "required": "true"},
                                           "overshoot": {"desc": "最大超出边界的值", "type": "FLOAT", "def": "0.02"},
@@ -46,7 +50,6 @@ class DeepFool():
 
         ori_labels = ep.astensor(torch.from_numpy(np.array(ori_labels)).to(self.device))
         imgs = ep.astensor(imgs)
-
         # 实例化攻击类
         if self.p == "l-2":
             attack = L2DeepFoolAttack(steps=self.max_iter, candidates=self.candidates, overshoot=self.overshoot, loss=self.loss)
@@ -61,7 +64,7 @@ class DeepFool():
             raw, clipped, is_adv = attack(self.model, imgs, ori_labels, epsilons=None, criterion=criterion)
 
         adv_img = raw.raw
-        self.p_total = attack.p_total.raw.cpu()
+        self.p_total = attack.p_total
         self.loop_count = attack.loop_count
 
         return adv_img
