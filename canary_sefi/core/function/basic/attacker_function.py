@@ -24,26 +24,28 @@ class AdvAttacker:
         self.atk_args_dict = build_dict_with_json_args(self.atk_component,
                                                        ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS,
                                                        atk_args, run_device)
-        # 是否不需要传入模型
-        no_model = config_manager.config.get("attackConfig", {}).get(atk_name, {}).get("no_model", False)
-
         # 增加模型访问统计
         self.query_num = {
             "backward": 0,
             "forward": 0,
         }
-        if no_model is not True:
-            self.atk_args_dict['model'] = get_model(model_name, model_args, run_device, self)
-        model_component = SEFI_component_manager.model_list.get(model_name)
+        if self.atk_component.get(AttackComponentAttributeType.MODEL_REQUIRE):
+            model_var_name = self.atk_component.get(AttackComponentAttributeType.MODEL_VAR_NAME)
+            self.atk_args_dict[model_var_name] = get_model(model_name, model_args, run_device, self)
 
-        # 图片处理参数JSON转DICT
-        self.img_proc_args_dict = build_dict_with_json_args(model_component,
-                                                            ComponentConfigHandlerType.IMG_PROCESS_CONFIG_PARAMS,
-                                                            img_proc_args, run_device)
-        # 图片预处理
-        self.img_preprocessor = model_component.get(SubComponentType.IMG_PREPROCESSOR, None, True)
-        # 结果处理
-        self.img_reverse_processor = model_component.get(SubComponentType.IMG_REVERSE_PROCESSOR, None, True)
+            model_component = SEFI_component_manager.model_list.get(model_name)
+            # 图片处理参数JSON转DICT
+            self.img_proc_args_dict = build_dict_with_json_args(model_component,
+                                                                ComponentConfigHandlerType.IMG_PROCESS_CONFIG_PARAMS,
+                                                                img_proc_args, run_device)
+            # 图片预处理
+            self.img_preprocessor = model_component.get(SubComponentType.IMG_PREPROCESSOR, None, True)
+            # 结果处理
+            self.img_reverse_processor = model_component.get(SubComponentType.IMG_REVERSE_PROCESSOR, None, True)
+        else:
+            self.img_proc_args_dict = None
+            self.img_preprocessor = None
+            self.img_reverse_processor = None
 
         self.atk_func = self.atk_component.get(SubComponentType.ATTACK_FUNC)
         # 增加计时修饰
@@ -56,7 +58,7 @@ class AdvAttacker:
             attacker_class_builder = self.atk_component.get(SubComponentType.ATTACK_CLASS)
             self.attacker_class = attacker_class_builder(**self.atk_args_dict)
             # 攻击类初始化方法
-            self.atk_init = self.atk_component.get(SubComponentType.ATTACK_INIT, default=None, allow_not_exist=True)
+            self.atk_init = self.atk_component.get(SubComponentType.ATTACK_INIT, None, True)
             # 初始化类
             if self.atk_init is not None and dataset_info is not None:
                 def dataset_loader(dataset_info):
@@ -71,7 +73,7 @@ class AdvAttacker:
                 )
 
         # 扰动变量名称
-        self.perturbation_budget_var_name = self.atk_component.get(AttackComponentAttributeType.PERTURBATION_BUDGET_VAR_NAME)
+        self.perturbation_budget_var_name = self.atk_component.get(AttackComponentAttributeType.PERTURBATION_BUDGET_VAR_NAME, None, True)
 
         if dataset_info is not None:
             self.n_classes = dataset_info.n_classes
@@ -81,7 +83,7 @@ class AdvAttacker:
 
     @staticmethod
     def dataset_loader(dataset_info, img_preprocessor, img_proc_args_dict):
-        ori_dataset = get_dataset(dataset_info)
+        ori_dataset, _ = get_dataset(dataset_info)
 
         class PreprocessDataset:
             def __init__(self):
@@ -103,8 +105,9 @@ class AdvAttacker:
         tlabels = []
         if self.atk_args_dict['attack_type'] == "TARGETED" and self.atk_args_dict['tlabel'] is None:
             if self.n_classes is None:
-                raise ValueError(" [SEFI] Targeted Attack Method does not give valid target label parameter")
-
+                raise ValueError("[SEFI] DatasetParameterError: Targeted attacks randomly generate targeted tags "
+                                 "require input of the dataset category number parameter!\n"
+                                 "Excepted:{}, Got:{}".format(int, None))
             for i in range(img_count):
                 # 尝试生成随机标签
                 tlabel = None

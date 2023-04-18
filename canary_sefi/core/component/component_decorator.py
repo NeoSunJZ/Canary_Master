@@ -127,6 +127,7 @@ class SEFIComponent:
 
     def attack(self, name, is_inclass=False, support_model=None, attack_type=None,
                model_var_name="model",
+               model_require=True,
                perturbation_budget_var_name=None):
         target_attack_method = self.get_attack_methods(name)
 
@@ -141,6 +142,9 @@ class SEFIComponent:
             target_attack_method[AttackComponentAttributeType.ATTACK_TYPE] = attack_type
 
             target_attack_method[AttackComponentAttributeType.MODEL_VAR_NAME] = model_var_name
+            target_attack_method[AttackComponentAttributeType.MODEL_REQUIRE] = model_require
+
+            target_attack_method[AttackComponentAttributeType.SUPPORT_MODEL] = support_model
             # 扰动预算变量名
             target_attack_method[AttackComponentAttributeType.PERTURBATION_BUDGET_VAR_NAME] = perturbation_budget_var_name
             return inner

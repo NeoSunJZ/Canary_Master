@@ -40,7 +40,7 @@ class MultiDatabase:
         self.multi_database_config = multi_database_config if multi_database_config is not None else {}
 
     def connect_center_database(self):
-        base_temp_path = config_manager.config.get("centerDatabase", config_manager.config.get("baseTemp", "Raw_Data/")) + self.center_database_token + "/"
+        base_temp_path = config_manager.config.get("centerDatabasePath", config_manager.config.get("baseTempPath", "Raw_Data/")) + self.center_database_token + "/"
         full_path = base_temp_path + "database/evaluator_logger.db"
         # 检查是否存在数据库文件
         if not os.path.exists(full_path):

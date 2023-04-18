@@ -59,7 +59,7 @@ def attack_adv_example_da_and_cost_evaluation(attacker_list, use_raw_nparray_dat
 
 
 # 攻击偏转能力测试
-def attack_deflection_capability_test(attacker_list, model_config, img_proc_config,
+def attack_deflection_capability_test(attacker_list, dataset_info, model_config, img_proc_config,
                                       inference_batch_config,
                                       transfer_attack_test=TransferAttackType.NOT,
                                       transfer_attack_test_on_model_list=None, use_raw_nparray_data=False,
@@ -94,7 +94,7 @@ def attack_deflection_capability_test(attacker_list, model_config, img_proc_conf
                     test_level = transfer_test_level
 
                 attack_log = find_attack_log_by_name_and_base_model(atk_name, base_model)
-                adv_inference(attack_log, model_name, model_args, img_proc_args,
+                adv_inference(dataset_info, attack_log, model_name, model_args, img_proc_args,
                               inference_batch_config=inference_batch_config,
                               use_raw_nparray_data=use_raw_nparray_data,
                               run_device=run_device,

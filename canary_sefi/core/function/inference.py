@@ -23,7 +23,7 @@ def inference(dataset_info, model_name, model_args, img_proc_args, inference_bat
                                        run_device=run_device)
 
 
-def adv_inference(atk_log, test_model, model_args, img_proc_args, inference_batch_config,
+def adv_inference(dataset_info, atk_log, test_model, model_args, img_proc_args, inference_batch_config,
                   use_raw_nparray_data=False, run_device=None,
                   test_level=TestLevel.FULL):
     all_adv_log = find_adv_example_file_logs_by_attack_id(atk_log['attack_id'])
@@ -32,8 +32,15 @@ def adv_inference(atk_log, test_model, model_args, img_proc_args, inference_batc
     for adv_log in all_adv_log:
         adv_img_cursor_list.append(adv_log["adv_img_file_id"])
 
-    adv_dataset_info = DatasetInfo(None, None, None, adv_img_cursor_list)
-    adv_dataset_info.dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG
+    adv_dataset_info = DatasetInfo(
+        dataset_name=None,
+        dataset_extra_info={
+            "is_gray": dataset_info.is_gray,
+        },
+        dataset_type=DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG,
+        dataset_seed=None,
+        dataset_size=None,
+        img_cursor_list=adv_img_cursor_list)
 
     with tqdm(total=adv_dataset_info.dataset_size, desc="Adv-example Inference Progress", ncols=120) as bar:
         def each_img_finish_callback(img, result):

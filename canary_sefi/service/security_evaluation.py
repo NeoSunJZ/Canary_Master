@@ -1,4 +1,5 @@
 from canary_sefi.core.function.enum.test_level_enum import TestLevel
+from canary_sefi.entity.dataset_info_entity import DatasetType
 from canary_sefi.task_manager import task_manager
 from canary_sefi.core.function.enum.transfer_attack_type_enum import TransferAttackType
 from canary_sefi.core.function.init_dataset import init_dataset
@@ -22,7 +23,21 @@ class SecurityEvaluation:
         if config_handler is not None:
             config = config_handler(config)
             save_info_to_json_file(config, task_manager.base_temp_path, "config.json")
-        self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size"), config.get("dataset_seed", None))
+
+        # 初始化数据集
+        if isinstance(config.get("dataset"), str):
+            self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size", None), config.get("dataset_seed", None))
+        elif isinstance(config.get("dataset"), dict):
+            dataset_extra_config = config.get("dataset")
+            self.dataset_info = init_dataset(
+                dataset_name=dataset_extra_config.get("dataset_name"),
+                dataset_size=config.get("dataset_size", None),
+                dataset_seed=config.get("dataset_seed", None),
+                dataset_path=dataset_extra_config.get("dataset_path", None),
+                dataset_folder=dataset_extra_config.get("dataset_folder", None),
+                dataset_type=dataset_extra_config.get("dataset_type", DatasetType.NORMAL),
+                n_classes=dataset_extra_config.get("n_classes", None),
+                is_gray=dataset_extra_config.get("is_gray", False))
 
         self.model_list = config.get("model_list", None)
         self.attacker_list = config.get("attacker_list", None)
@@ -54,7 +69,7 @@ class SecurityEvaluation:
 
     def attack_test_and_evaluation(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
         # 攻击偏转能力测试
-        attack_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config,
+        attack_deflection_capability_test(self.attacker_list, self.dataset_info, self.model_config, self.img_proc_config,
                                           self.inference_batch_config,
                                           self.transfer_attack_test_mode, self.transfer_attack_test_on_model_list,
                                           use_raw_nparray_data, transfer_test_level)
