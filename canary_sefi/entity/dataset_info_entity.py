@@ -18,6 +18,8 @@ class DatasetInfo(object):
         self.dataset_name = dataset_name
         self.dataset_seed = dataset_seed
         self.dataset_size = dataset_size
+        # 是否灰度
+        self.is_gray = dataset_extra_info.get('is_gray', False)
         self.img_cursor_list = img_cursor_list
 
         if img_cursor_list is not None:
