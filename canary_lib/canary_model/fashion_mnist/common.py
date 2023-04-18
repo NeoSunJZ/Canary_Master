@@ -35,6 +35,7 @@ def img_post_handler(adv_imgs, args):
 
     result = []
     for adv_img in adv_imgs:
+        adv_img = adv_img.transpose(1, 2, 0)
         adv_img = np.clip(adv_img, 0, 255).astype(np.float32)
         result.append(adv_img)
     return result
