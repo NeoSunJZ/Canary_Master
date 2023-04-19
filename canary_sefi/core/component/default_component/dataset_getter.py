@@ -25,11 +25,21 @@ def get_dataset(dataset_info):
         msg = "[SEFI] User has NOT defined dataset loader. Attempting to load dataset from folder..."
         reporter.console_log(msg, Fore.BLUE, show_task=True, show_step_sequence=True)
         dataset = default_folder_dataset_getter(copy.copy(dataset_info))
-
-        if dataset is None:
-            msg = "[SEFI] User has NOT defined dataset loader. Attempting to load dataset by TorchVision's Dataset..."
-            reporter.console_log(msg, Fore.BLUE, show_task=True, show_step_sequence=True)
-            dataset = default_torchvision_dataset_getter(copy.copy(dataset_info))
+    if dataset is not None:
+        SEFI_component_manager.dataset_list[dataset_info.dataset_name] = {
+            SubComponentType.DATASET_LOADER: default_folder_dataset_getter
+        }
+    else:
+        msg = "[SEFI] User has NOT defined dataset loader. Attempting to load dataset by TorchVision's Dataset..."
+        reporter.console_log(msg, Fore.BLUE, show_task=True, show_step_sequence=True)
+        dataset = default_torchvision_dataset_getter(copy.copy(dataset_info))
+    if dataset is not None:
+        SEFI_component_manager.dataset_list[dataset_info.dataset_name] = {
+            SubComponentType.DATASET_LOADER: default_torchvision_dataset_getter
+        }
+    else:
+        raise Exception("[SEFI] After exhausting possible loading methods, it has not been successful. "
+                        "Please configure the loader or check if the configuration is correct")
 
     if dataset_info.dataset_size is None:
         dataset_info.dataset_size = len(dataset)
@@ -56,7 +66,7 @@ def default_folder_dataset_getter(dataset_info):
         dataset = ImageFolderCustom(root=dataset_info.dataset_path)
         return dataset
     except Exception as e:
-        msg = "[SEFI] User has NOT defined dataset loader "\
+        msg = "[SEFI] INFO: User has NOT defined dataset loader "\
               "AND default dataset loader is used BUT FAILED TO IMPORT DATASET FROM PATH\n"\
               "Info: {}".format(e)
         reporter.console_log(msg, Fore.RED, show_task=True, show_step_sequence=True)
@@ -71,6 +81,8 @@ def default_torchvision_dataset_getter(dataset_info):
         dataset = dataset_class(root=dataset_info.dataset_path, train=is_train, download=True)
         return dataset
     except Exception as e:
-        raise Exception("[SEFI] User has NOT defined dataset loader "
-                        "AND default dataset loader is used BUT FAILED TO IMPORT DATASET BY TORCHVISION DATASET\n"
-                        "Info: {}".format(e))
+        msg = "[SEFI] INFO: User has NOT defined dataset loader "\
+              "AND default dataset loader is used BUT FAILED TO IMPORT DATASET BY TORCHVISION DATASET\n"\
+              "Info: {}".format(e)
+        reporter.console_log(msg, Fore.RED, show_task=True, show_step_sequence=True)
+        return None
