@@ -1,5 +1,6 @@
 from colorama import Fore
 
+from canary_sefi.core.function.adversarial_training import adv_training
 from canary_sefi.core.function.basic.img_trans_function import adv_trans_4_img_batch
 from canary_sefi.core.function.comparative_test_adv_example import adv_comparative_test
 from canary_sefi.entity.dataset_info_entity import DatasetType
@@ -37,18 +38,6 @@ def adv_example_generate(dataset_info, attacker_list, attacker_config, model_con
                   atk_batch_config=adv_example_generate_batch_config, run_device=run_device)
 
     BatchListIterator.attack_list_iterator(attacker_list, attacker_config, model_config, img_proc_config, function)
-
-
-# def adv_defense_training(dataset_info, defense_list, defense_config, model_config, img_proc_config):
-#     # 标记当前步骤
-#     task_manager.sys_log_logger.set_step(Step.ADV_EXAMPLE_GENERATE)
-#
-#     def function(defense_name, defense_args, model_name, model_args, img_proc_args, run_device):
-#         # msg = "[Device {}] Adversarial Training With Defense Method {} on(base) Model {}.".format(run_device, defense_name, model_name)
-#         # reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
-#         AT(dataset_info, defense_name, defense_args, model_name, model_args, img_proc_args, run_device=run_device)
-#
-#     BatchListIterator.defense_list_iterator(defense_list, defense_config, model_config, img_proc_config, function)
 
 
 # 攻击方法生成对抗样本综合对比测试(图像相似性/模型注意力差异对比/像素差异对比)
@@ -292,6 +281,7 @@ def trans_deflection_capability_test(trans_list, model_config, img_proc_config,
 
                 test_on_model_list = []
                 test_on_model_list.append(base_model)
+
                 # if transfer_attack_test == TransferAttackType.NOT:
                 #     test_on_model_list.append(base_model)
                 # elif transfer_attack_test == TransferAttackType.APPOINT:
@@ -330,3 +320,18 @@ def trans_deflection_capability_evaluation(trans_list, dataset_info=None, use_ra
             for base_model in trans_list[atk_name][trans_name]:
                 attack_deflection_capability_analyzer_and_evaluation(atk_name, base_model, dataset_info,
                                                                      use_raw_nparray_data, trans_name)
+
+
+def adv_defense_training(dataset_info, defense_list, defense_config, model_config, img_proc_config):
+    # 标记当前步骤
+    task_manager.sys_log_logger.set_step(Step.DEFENSE_ADVERSARIAL_TRAINING)
+
+    def function(defense_name, defense_args, model_name, model_args, img_proc_args, run_device):
+        msg = "[Device {}] Adversarial Training With Defense Method ({}) on Model ({}).".format(run_device,
+                                                                                                defense_name,
+                                                                                                model_name)
+        reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
+        adv_training(dataset_info, defense_name, defense_args, model_name, model_args, img_proc_args,
+                     run_device=run_device)
+
+    BatchListIterator.defense_list_iterator(defense_list, defense_config, model_config, img_proc_config, function)
