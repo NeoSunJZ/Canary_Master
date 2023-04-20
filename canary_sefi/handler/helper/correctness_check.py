@@ -8,6 +8,7 @@ from canary_sefi.core.component.default_component.model_getter import get_model
 from canary_sefi.core.function.basic.attacker_function import AdvAttacker
 from canary_sefi.core.function.basic.dataset.dataset_function import dataset_image_reader
 from canary_sefi.core.function.init_dataset import init_dataset
+from canary_sefi.entity.dataset_info_entity import DatasetType
 from canary_sefi.evaluator.tester.adv_disturbance_aware import AdvDisturbanceAwareTester
 from canary_sefi.handler.image_handler.img_io_handler import save_pic_to_temp
 from canary_sefi.handler.image_handler.img_utils import img_size_uniform_fix
@@ -21,7 +22,19 @@ class CorrectnessCheck:
             print(" WARNING : START WITH CORRECTNESS CHECK MODE ")
         task_manager.init_task(task_token="C_TEST", show_logo=True, run_device="cuda", not_retain_same_token=True, logo_color=Fore.RED)
 
-        self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size"), config.get("dataset_seed", None))
+        if isinstance(config.get("dataset"), str):
+            self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size", None), config.get("dataset_seed", None))
+        elif isinstance(config.get("dataset"), dict):
+            dataset_extra_config = config.get("dataset")
+            self.dataset_info = init_dataset(
+                dataset_name=dataset_extra_config.get("dataset_name"),
+                dataset_size=config.get("dataset_size", None),
+                dataset_seed=config.get("dataset_seed", None),
+                dataset_path=dataset_extra_config.get("dataset_path", None),
+                dataset_folder=dataset_extra_config.get("dataset_folder", None),
+                dataset_type=dataset_extra_config.get("dataset_type", DatasetType.NORMAL),
+                n_classes=dataset_extra_config.get("n_classes", None),
+                is_gray=dataset_extra_config.get("is_gray", False))
 
         self.model_name = config.get("model_name", None)
         self.atk_name = config.get("atk_name", None)

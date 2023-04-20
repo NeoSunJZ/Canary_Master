@@ -127,4 +127,4 @@ class SSAH(nn.Module):
             optimizer.step()
 
         adv = 0.5 * (torch.tanh(modifier.detach()) + 1)
-        return adv + inputs
+        return adv

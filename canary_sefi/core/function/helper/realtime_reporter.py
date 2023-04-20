@@ -24,8 +24,7 @@ class RealtimeReport:
 
         if self.room is not None and send_msg:
             self.send_realtime_msg(msg, type)
-        tqdm.write(fore + msg)
-        tqdm.write(Style.RESET_ALL)
+        tqdm.write(fore + msg + Fore.RESET)
 
     def get_socket(self, app):
         socketio = SocketIO()
