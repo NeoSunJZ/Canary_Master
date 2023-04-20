@@ -24,7 +24,7 @@ def inference(dataset_info, model_name, model_args, img_proc_args, inference_bat
                                        run_device=run_device)
 
 
-def adv_inference(atk_log, test_model, model_args, img_proc_args, inference_batch_config,
+def adv_inference(dataset_info, atk_log, test_model, model_args, img_proc_args, inference_batch_config,
                   use_raw_nparray_data=False, run_device=None,
                   test_level=TestLevel.FULL, trans_name=None):
     if trans_name is not None:
@@ -36,7 +36,16 @@ def adv_inference(atk_log, test_model, model_args, img_proc_args, inference_batc
     for adv_log in all_adv_log:
         adv_img_cursor_list.append(adv_log["adv_img_file_id"] if trans_name is None else adv_log["adv_trans_img_file_id"])
 
-    adv_dataset_info = DatasetInfo(None, None, None, adv_img_cursor_list)
+    # TODO 修改
+    adv_dataset_info = DatasetInfo(
+        dataset_name=None,
+        dataset_extra_info={
+            "is_gray": dataset_info.is_gray,
+        },
+        dataset_type=DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG,
+        dataset_seed=None,
+        dataset_size=None,
+        img_cursor_list=adv_img_cursor_list)
     if trans_name is None:
         adv_dataset_info.dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG
     else:

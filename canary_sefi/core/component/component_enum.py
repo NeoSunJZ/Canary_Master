@@ -45,6 +45,7 @@ class AttackComponentAttributeType(Enum):
     IS_INCLASS = "is_inclass"
     ATTACK_TYPE = "attack_type"
     MODEL_VAR_NAME = "model_var_name"
+    MODEL_REQUIRE = "model_require"
     PERTURBATION_BUDGET_VAR_NAME = "perturbation_budget_var_name"
 
 

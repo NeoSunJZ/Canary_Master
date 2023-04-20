@@ -37,7 +37,7 @@ def model_inference_capability_analyzer_and_evaluation(model_name):
         task_manager.sys_log_logger.update_completed_num(1)
         task_manager.sys_log_logger.update_finish_status(True)
         return
-    all_inference_log = get_inference_test_data_by_model_name(model_name, DatasetType.NORMAL.value)
+    all_inference_log = get_inference_test_data_by_model_name(model_name, "NORMAL")
     # 初始化
     analyzer_log = {
         "ori_labels": [], "inference_labels": [], "inference_confs": [],
@@ -106,7 +106,7 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
         adv_target_label = adv_example_file_log["tlabel"]  # 定向攻击的目标label
 
         # 原始图片的预测记录(如干净样本O在M1、M2、M3、M4上进行了测试则有四条)
-        ori_img_inference_log_list = get_inference_test_data_by_img_id(ori_img_id, DatasetType.NORMAL.value)
+        ori_img_inference_log_list = get_inference_test_data_by_img_id(ori_img_id, "NORMAL")
         # 确定原始样本有效性(目标模型必须是预测准确的，否则原始样本和其生成的对抗样本都无效)
         is_valid = True
         for ori_img_inference_log in ori_img_inference_log_list:
@@ -217,7 +217,8 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                         continue
                     if dataset_info is not None:
                         ori_img, _ = dataset_single_image_reader(dataset_info, ori_img_cursor=ori_img_log['ori_img_cursor'])
-                        adv_img = adv_dataset_single_image_reader(adv_example_file_log, adv_example_file_type)
+                        adv_img = adv_dataset_single_image_reader(adv_example_file_log, adv_example_file_type,
+                                                                  is_gray=dataset_info.is_gray)
                     else:
                         ori_img, adv_img = None, None
 
@@ -313,7 +314,8 @@ def attack_adv_example_da_and_cost_analyzer_and_evaluation_handler(attack_info, 
         analyzer_log["ED_LF"].append(float(adv_example_da_test_data["low_freq_euclidean_distortion"]))
         analyzer_log["PCR"].append(float(adv_example_da_test_data["pixel_change_ratio"]))
         analyzer_log["DMS"].append(float(adv_example_da_test_data["deep_metrics_similarity"]))
-        analyzer_log["LMS"].append(float(adv_example_da_test_data["low_level_metrics_similarity"]))
+        if adv_example_da_test_data["low_level_metrics_similarity"] is not None:
+            analyzer_log["LMS"].append(float(adv_example_da_test_data["low_level_metrics_similarity"]))
     # COST
     ACT = calc_average(analyzer_log["CT"])
     AQN_F = calc_average(analyzer_log["QN_F"])

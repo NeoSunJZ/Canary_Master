@@ -24,7 +24,7 @@ def dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num=0):
         adv_dataset_image_reader(iterator, dataset_info, batch_size, completed_num, trans=True)
         return
 
-    dataset = get_dataset(dataset_info)
+    dataset, _ = get_dataset(dataset_info)
 
     def handler_img(_img_array, _img_label_array, _img_cursor_array):
         img_log_id_array = []
@@ -68,7 +68,7 @@ def dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num=0):
 
 
 def dataset_single_image_reader(dataset_info, ori_img_cursor=0):
-    dataset = get_dataset(dataset_info)
+    dataset, _ = get_dataset(dataset_info)
     img = dataset[int(ori_img_cursor)][0]
     if type(img) != numpy.array:
         img = np.array(img, dtype=np.uint8)

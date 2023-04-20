@@ -72,7 +72,7 @@ class TaskManager(object):
 
     @staticmethod
     def get_base_temp_path(task_token):
-        return config_manager.config.get("baseTemp", "Raw_Data/") + task_token + "/"
+        return config_manager.config.get("baseTempPath", "Raw_Data/") + task_token + "/"
 
     @staticmethod
     def set_system_info(base_temp_path):
