@@ -34,14 +34,17 @@ def pic_buffer_to_base64(buffer):
     return "data:image/jpg;base64," + new_image_string
 
 
-def get_pic_nparray_from_temp(file_path, file_name, is_numpy_array_file=False):
+def get_pic_nparray_from_temp(file_path, file_name, is_numpy_array_file=False, is_gray=False):
     file_name = img_file_name_handler(file_name, is_numpy_array_file)
     full_path = file_path + ("npy/" if is_numpy_array_file else "img/")
     if full_path is None:
         raise RuntimeError("[ Config Error ] The dataset path is NOT FOUND, please check your config")
     if not is_numpy_array_file:
         img = cv2.imread(full_path + file_name)
-        np_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        if is_gray:
+            np_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        else:
+            np_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         return np_img
     else:
         np_img = np.load(full_path + file_name)
@@ -59,7 +62,10 @@ def save_pic_to_temp(file_path, file_name, pic_numpy_array, save_as_numpy_array=
     if not save_as_numpy_array:
         # 确保存储的是0-255的uint8数据以避免错误
         pic_numpy_array = np.clip(pic_numpy_array, 0, 255).astype(np.uint8)
-        cv2.imwrite(full_path, cv2.cvtColor(np.asarray(pic_numpy_array), cv2.COLOR_RGB2BGR))
+        if pic_numpy_array.shape[2] == 3:
+            cv2.imwrite(full_path, cv2.cvtColor(np.asarray(pic_numpy_array), cv2.COLOR_RGB2BGR))
+        else:
+            cv2.imwrite(full_path, np.asarray(pic_numpy_array))
     else:
         np.clip(pic_numpy_array, 0, 255).astype(np.float32)
         np.save(full_path, pic_numpy_array)
