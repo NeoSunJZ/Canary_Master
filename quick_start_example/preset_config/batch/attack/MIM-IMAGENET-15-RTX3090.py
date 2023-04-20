@@ -1,6 +1,6 @@
 config = {
     "adv_example_generate_batch_config": {
-        "MI-FGSM": {  # 3090:24G
+        "MI_FGSM": {  # 3090:24G
             "Alexnet(ImageNet)": 150,  # ~8G 3090:65%
             "VGG(ImageNet)": 50,  # ~19G 3090:95%
             "GoogLeNet(ImageNet)": 80,  # ~10G 3090:85%

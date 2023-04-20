@@ -2,7 +2,7 @@ name = "HSJA"
 object_list = ["HopSkipJumpAttack"]
 config = {
     "attacker_config": {
-        "HopSkipJumpAttack": {
+        "HSJA": {
             "clip_min": 0,
             "clip_max": 1,
             "attack_type": "UNTARGETED",
