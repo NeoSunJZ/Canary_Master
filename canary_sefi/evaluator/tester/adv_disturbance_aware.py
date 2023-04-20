@@ -26,11 +26,11 @@ class AdvDisturbanceAwareTester:
         high_freq_euclidean_distortion, low_freq_euclidean_distortion = self.calculate_freq_euclidean_distortion(
             ori_img, adv_img)
         result = {
-            "maximum_disturbance": float(self.calculate_maximum_disturbance(test_all_model=True)),
-            "euclidean_distortion": float(self.calculate_euclidean_distortion(test_all_model=True)),
-            "pixel_change_ratio": float(self.calculate_pixel_change_ratio(test_all_model=True)),
-            "deep_metrics_similarity": float(self.calculate_deep_metrics_similarity(test_all_model=True)),
-            "low_level_metrics_similarity": float(self.calculate_low_level_metrics_similarity(test_all_model=True)),
+            "maximum_disturbance": self.calculate_maximum_disturbance(test_all_model=True),
+            "euclidean_distortion": self.calculate_euclidean_distortion(test_all_model=True),
+            "pixel_change_ratio": self.calculate_pixel_change_ratio(test_all_model=True),
+            "deep_metrics_similarity": self.calculate_deep_metrics_similarity(test_all_model=True),
+            "low_level_metrics_similarity": self.calculate_low_level_metrics_similarity(test_all_model=True),
             "high_freq_euclidean_distortion": high_freq_euclidean_distortion,
             "low_freq_euclidean_distortion": low_freq_euclidean_distortion
         }
@@ -45,7 +45,7 @@ class AdvDisturbanceAwareTester:
             ori_img, img = self.img_handler(ori_img), self.img_handler(img)
         # L-inf
         result = torch.norm(torch.abs(img - ori_img), float("inf")).cpu().detach().numpy()
-        return result
+        return float(result)
 
     def calculate_euclidean_distortion(self, ori_img=None, img=None, test_all_model=False):
         if test_all_model:
@@ -55,7 +55,7 @@ class AdvDisturbanceAwareTester:
         # L-2
         all_pixel = reduce(lambda x, y: x * y, img.shape)
         result = torch.norm(img - ori_img, 2).cpu().detach().numpy() / all_pixel
-        return result
+        return float(result)
 
     def calculate_pixel_change_ratio(self, ori_img=None, img=None, test_all_model=False):
         if test_all_model:
@@ -65,7 +65,7 @@ class AdvDisturbanceAwareTester:
         # L-0
         all_pixel = reduce(lambda x, y: x * y, img.shape)
         result = torch.norm(img - ori_img, 0).cpu().detach().numpy() / all_pixel
-        return result
+        return float(result)
 
     def calculate_deep_metrics_similarity(self, ori_img=None, img=None, test_all_model=False):
         if test_all_model:
@@ -73,9 +73,16 @@ class AdvDisturbanceAwareTester:
         else:
             ori_img, img = self.img_handler(ori_img), self.img_handler(img)
 
+        if len(ori_img.shape) == 2 and len(img.shape) == 2:
+            ori_img = ori_img[None, None, :, :]
+            img = img[None, None, :, :]
+        elif len(ori_img.shape) == 3 and len(img.shape) == 3:
+            ori_img = ori_img[None, :, :]
+            img = img[None, :, :]
+
         # DISTS
-        result = piq.DISTS(reduction='none')(ori_img.unsqueeze(dim=0), img.unsqueeze(dim=0)).cpu().detach().numpy()
-        return result[0]
+        result = piq.DISTS(reduction='none')(ori_img, img).cpu().detach().numpy()
+        return float(result[0])
 
     def calculate_low_level_metrics_similarity(self, ori_img=None, img=None, test_all_model=False):
         if test_all_model:
@@ -83,16 +90,22 @@ class AdvDisturbanceAwareTester:
         else:
             ori_img, img = self.img_handler(ori_img), self.img_handler(img)
 
+        if len(ori_img.shape) == 2 and len(img.shape) == 2:
+            return None
+        elif len(ori_img.shape) == 3 and len(img.shape) == 3:
+            ori_img = ori_img[None, :, :]
+            img = img[None, :, :]
+
         # MS-GMSD
-        result = piq.MultiScaleGMSDLoss(chromatic=True, data_range=1., reduction='none')\
-            (ori_img.unsqueeze(dim=0), img.unsqueeze(dim=0)).cpu().detach().numpy()
-        return result[0]
+        result = piq.MultiScaleGMSDLoss(chromatic=True, data_range=1., reduction='none')(ori_img, img).cpu().detach().numpy()
+        return float(result[0])
 
     def calculate_freq_euclidean_distortion(self, ori_img, img):
         radius_ratio = 0.5  # 圆形过滤器的半径：ratio * w/2
         D = 5  # 高斯过滤器的截止频率：2 5 10 20 50 ，越小越模糊信息越少
-        ori_img = cv2.cvtColor(ori_img, cv2.COLOR_RGB2GRAY)
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        if len(ori_img.shape) == 3:
+            ori_img = cv2.cvtColor(ori_img, cv2.COLOR_RGB2GRAY)
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
         low_freq_part_ori_img, high_freq_part_ori_img = get_low_high_f(ori_img, radius_ratio=radius_ratio, D=D)
         low_freq_part_img, high_freq_part_img = get_low_high_f(img, radius_ratio=radius_ratio, D=D)
