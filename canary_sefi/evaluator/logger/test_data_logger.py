@@ -216,6 +216,13 @@ class TestDataLogger(SqliteDBLogger):
                        'DCAV float, '
                        'TCAV float)')
 
+        cursor.execute('create table if not exists adv_training_weight_path_info '
+                       '(model_name varchar, '
+                       'defense_name varchar, '
+                       'epoch_cursor varchar, '
+                       'weight_file_path varchar,'
+                       'UNIQUE (model_name, defense_name, epoch_cursor))')
+
 
         cursor.close()
         self.conn.commit()
