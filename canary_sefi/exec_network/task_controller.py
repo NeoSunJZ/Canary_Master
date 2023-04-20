@@ -62,7 +62,7 @@ def revoke_task_progress_log():
     task_manager.load_task(request.args.get("batchToken"))
 
     task_manager.sys_log_logger.system_log_id = request.args.get("systemLogID")
-    log = task_manager.sys_log_logger.update_finish_status(is_finish=False, stop_reason=None, is_restart=True)
+    log = task_manager.sys_log_logger.update_finish_status(is_finish=False, stop_reason=None, is_restart=True, reset_completed_num=True)
 
     return MsgEntity("SUCCESS", "1", log).msg2json()
 

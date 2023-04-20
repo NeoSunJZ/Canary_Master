@@ -106,7 +106,7 @@ class UAP:
                 if ori_label == per_label:
                     self.model.zero_grad()
                     deepfool.attack(per_img, [ori_label])
-                    dr = deepfool.p_total
+                    dr = deepfool.p_total.raw.cpu()
                     iter = deepfool.loop_count
                     if iter < self.max_iter_df-1:
                         v_temp = v + dr

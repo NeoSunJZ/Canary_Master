@@ -1,16 +1,12 @@
 import math
-
 import numpy as np
 import torch
-
-from canary_lib.canary_attack_method.white_box_adv.ead.utils import tensor2variable
-from canary_lib.canary_attack_method.white_box_adv.ead.attack import Attack
+from .utils import tensor2variable
 
 
-class EAD(Attack):
+class EAD:
     def __init__(self, model=None, targeted=False, kappa=0, init_const=0.001, lr=0.02, binary_search_steps=5, max_iters=10000, lower_bound=0.0, upper_bound=1.0,
                  beta=1e-3, EN=True, num_classes=1000):
-        super(EAD, self).__init__(model)
         self.model = model
         self.targeted = targeted
         self.kappa = kappa * 1.0
@@ -24,10 +20,6 @@ class EAD(Attack):
         self.beta = beta
         self.EN = EN
         self.num_classes = num_classes
-        # if self.EN:
-        #     print("\nEN Decision Rule")
-        # else:
-        #     print('\nL1 Decision Rule')
 
     def perturbation(self, samples, ys_targets, batch_size, device):
 

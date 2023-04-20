@@ -2,3 +2,4 @@
 Raw_Data/
 .idea/
 .Dead_Code/
+*/__pycache__
