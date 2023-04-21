@@ -1,6 +1,6 @@
 name = "ILSVRC2012-1000-SEED"
 config = {
-    "dataset_size": 10,
+    "dataset_size": 1000,
     "dataset": {
         "dataset_name": "ILSVRC-2012",
         "dataset_folder": "ILSVRC2012_img_val",
