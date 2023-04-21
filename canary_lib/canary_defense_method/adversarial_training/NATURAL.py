@@ -37,7 +37,8 @@ class Natural:
             defense_model.train()
             adjust_learning_rate(self.lr, optimizer, epoch)
             for index in range(len(train_dataset)):
-                data, target = train_dataset[index][0].to(self.device), train_dataset[index][1].to(self.device)
+                dataset = train_dataset[index]
+                data, target = dataset[0].to(self.device), dataset[1].to(self.device)
                 optimizer.zero_grad()
                 loss = self.loss(model=defense_model,
                                  x_natural=data,

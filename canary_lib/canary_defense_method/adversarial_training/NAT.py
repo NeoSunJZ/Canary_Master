@@ -44,7 +44,8 @@ class NAT:
             adjust_learning_rate(self.lr, optimizer, epoch)
             # adversarial training
             for index in range(len(train_dataset)):
-                data, target = train_dataset[index][0].to(self.device), train_dataset[index][1].to(self.device)
+                dataset = train_dataset[index]
+                data, target = dataset[0].to(self.device), dataset[1].to(self.device)
                 optimizer.zero_grad()
                 # calculate robust loss
                 loss = self.madry_loss(model=defense_model,
