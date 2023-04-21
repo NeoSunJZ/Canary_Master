@@ -15,6 +15,7 @@ from canary_sefi.entity.dataset_info_entity import DatasetType
 
 
 def get_dataset(dataset_info):
+    dataset_info = copy.copy(dataset_info)
     dataset_component = SEFI_component_manager.dataset_list.get(dataset_info.dataset_name, default=None,
                                                                 allow_not_exist=True)
     if dataset_component is not None:
@@ -33,13 +34,14 @@ def get_dataset(dataset_info):
         msg = "[SEFI] User has NOT defined dataset loader. Attempting to load dataset by TorchVision's Dataset..."
         reporter.console_log(msg, Fore.BLUE, show_task=True, show_step_sequence=True)
         dataset = default_torchvision_dataset_getter(copy.copy(dataset_info))
-    if dataset is not None:
-        SEFI_component_manager.dataset_list[dataset_info.dataset_name] = {
-            SubComponentType.DATASET_LOADER: default_torchvision_dataset_getter
-        }
-    else:
-        raise Exception("[SEFI] After exhausting possible loading methods, it has not been successful. "
-                        "Please configure the loader or check if the configuration is correct")
+        # 检查是否仍然为空
+        if dataset is not None:
+            SEFI_component_manager.dataset_list[dataset_info.dataset_name] = {
+                SubComponentType.DATASET_LOADER: default_torchvision_dataset_getter
+            }
+        else:
+            raise Exception("[SEFI] After exhausting possible loading methods, it has not been successful. "
+                            "Please configure the loader or check if the configuration is correct")
 
     if dataset_info.dataset_size is None:
         dataset_info.dataset_size = len(dataset)
