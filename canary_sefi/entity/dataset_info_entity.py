@@ -23,7 +23,7 @@ class DatasetInfo(object):
         if not isinstance(dataset_type, DatasetType):
             if dataset_type is None:
                 dataset_type = DatasetType.NORMAL
-            if dataset_type == "VAL":
+            elif dataset_type == "VAL":
                 dataset_type = DatasetType.NORMAL_VAL
             elif dataset_type == "TRAIN":
                 dataset_type = DatasetType.NORMAL_TRAIN
