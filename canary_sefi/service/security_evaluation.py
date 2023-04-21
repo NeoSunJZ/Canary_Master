@@ -61,7 +61,6 @@ class SecurityEvaluation:
 
         self.inference_batch_config = config.get("inference_batch_config", {})
         self.adv_example_generate_batch_config = config.get("adv_example_generate_batch_config", {})
-        self.defense_model_list = config.get("defense_model_list", None)
 
     def adv_example_generate(self):
         # 生成对抗样本与对抗样本质量分析
@@ -179,39 +178,21 @@ class SecurityEvaluation:
                              self.img_train_proc_config)
         task_manager.test_data_logger.finish()
 
-    def get_defense_model_name(self, model_list):
-        new_model_list = []
-        for model in model_list:
-            new_model_list.append(model)
-            defense_methods = self.defense_model_list.get(model, None)
-            if defense_methods is not None:
-                for defense in defense_methods:
-                    new_model_list.append(model + '_' + defense)
-        return new_model_list
-
-    def change_attacker_model_list(self):
-        new_attacker_dic = {}
-        for key in self.attacker_list:
-            new_attacker_dic[key] = self.get_defense_model_name(self.attacker_list[key])
-        return new_attacker_dic
-
     def defense_test_and_evaluation(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.FULL):
         # 干净图像预测及评估
-        model_list = self.get_defense_model_name(self.model_list)
-        model_inference_capability_test(self.dataset_info, model_list, self.model_config, self.img_proc_config,
+        model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config,
                                         self.inference_batch_config)
-        model_inference_capability_evaluation(model_list)
+        model_inference_capability_evaluation(self.model_list)
         # 对抗样本预测及评估
-        attacker_list = self.change_attacker_model_list()
-        adv_example_generate(self.dataset_info, attacker_list, self.attacker_config, self.model_config,
+        adv_example_generate(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config,
                              self.img_proc_config, self.adv_example_generate_batch_config)
-        attack_deflection_capability_test(attacker_list, self.model_config, self.img_proc_config,
+        attack_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config,
                                           self.inference_batch_config,
                                           self.transfer_attack_test_mode,
                                           self.transfer_attack_test_on_model_list,
                                           use_raw_nparray_data,
                                           transfer_test_level)
-        attack_deflection_capability_evaluation(attacker_list, self.dataset_info, use_raw_nparray_data)
+        attack_deflection_capability_evaluation(self.attacker_list, self.dataset_info, use_raw_nparray_data)
         task_manager.test_data_logger.finish()
 
 # sys.excepthook = excepthook
