@@ -33,6 +33,10 @@ class DatasetInfo(object):
                 dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_IMG
             elif dataset_type == "ADV_RAW_DATA":
                 dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA
+            elif dataset_type == "TRANSFORM_IMG":
+                dataset_type = DatasetType.TRANSFORM_IMG
+            elif dataset_type == "TRANSFORM_RAW_DATA":
+                dataset_type = DatasetType.TRANSFORM_RAW_DATA
             else:
                 raise Exception("[SEFI] DatasetConfigError: Dataset Type must be an enum type DatasetType "
                                 "or string 'VAL', 'TRAIN', 'TEST', 'ADV_IMG' or 'ADV_RAW_DATA'!")
