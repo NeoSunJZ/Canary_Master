@@ -29,20 +29,21 @@ def adv_inference(dataset_info, atk_log, test_model, model_args, img_proc_args, 
                   test_level=TestLevel.FULL, trans_name=None):
     if trans_name is not None:
         all_adv_log = find_adv_trans_file_logs_by_attack_id_and_trans_name(atk_log['attack_id'], trans_name)
+        dataset_type = DatasetType.TRANSFORM_RAW_DATA if use_raw_nparray_data else DatasetType.TRANSFORM_IMG
     else:
         all_adv_log = find_adv_example_file_logs_by_attack_id(atk_log['attack_id'])
+        dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG
 
     adv_img_cursor_list = []
     for adv_log in all_adv_log:
         adv_img_cursor_list.append(adv_log["adv_img_file_id"] if trans_name is None else adv_log["adv_trans_img_file_id"])
 
-    # TODO 修改
     adv_dataset_info = DatasetInfo(
         dataset_name=None,
         dataset_extra_info={
             "is_gray": dataset_info.is_gray,
         },
-        dataset_type=DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG,
+        dataset_type=dataset_type,
         dataset_seed=None,
         dataset_size=None,
         img_cursor_list=adv_img_cursor_list)
