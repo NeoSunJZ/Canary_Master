@@ -39,7 +39,7 @@ class DatasetInfo(object):
                 dataset_type = DatasetType.TRANSFORM_RAW_DATA
             else:
                 raise Exception("[SEFI] DatasetConfigError: Dataset Type must be an enum type DatasetType "
-                                "or string 'VAL', 'TRAIN', 'TEST', 'ADV_IMG' or 'ADV_RAW_DATA'!")
+                                "or string 'VAL', 'TRAIN', 'TEST', 'ADV_IMG', 'ADV_RAW_DATA', 'TRANSFORM_IMG' or 'TRANSFORM_RAW_DATA'!")
 
         if dataset_name is None and dataset_type.value == "NORMAL":
             raise Exception("[SEFI] DatasetConfigError: Dataset Name must be specified!")
