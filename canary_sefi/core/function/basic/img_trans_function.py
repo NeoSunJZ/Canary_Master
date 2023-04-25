@@ -22,7 +22,8 @@ class Image_Transformer:
         self.trans_args = trans_args
         self.trans_component = SEFI_component_manager.trans_method_list.get(trans_name)
         # 攻击处理参数JSON转DICT
-        self.trans_args_dict = build_dict_with_json_args(self.trans_component, ComponentConfigHandlerType.TRANS_CONFIG_PARAMS,
+        self.trans_args_dict = build_dict_with_json_args(self.trans_component,
+                                                         ComponentConfigHandlerType.TRANS_CONFIG_PARAMS,
                                                          trans_args, run_device)
         self.trans_func = self.trans_component.get(SubComponentType.TRANS_FUNC)
 
@@ -46,7 +47,7 @@ class Image_Transformer:
         check_cuda_memory_alloc_status(empty_cache=True)
 
 
-def adv_trans_4_img_batch(trans_name, trans_args, atk_log, run_device=None):
+def adv_trans_4_img_batch(trans_name, trans_args, atk_log, run_device=None, use_raw_nparray_data=False):
     trans_img_id_list = []
     # 查找攻击样本日志
     attack_id = atk_log['attack_id']
@@ -57,8 +58,10 @@ def adv_trans_4_img_batch(trans_name, trans_args, atk_log, run_device=None):
         adv_img_cursor_list.append(adv_log["adv_img_file_id"])
 
     # 读取攻击样本
-    adv_dataset_info = DatasetInfo(None, None, None, adv_img_cursor_list)
-    adv_dataset_info.dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA
+    adv_dataset_info = DatasetInfo(None, None,
+                                   dataset_type=DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA
+                                   if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG,
+                                   img_cursor_list=adv_img_cursor_list)
 
     # 构建图片转换器
     adv_trans = Image_Transformer(trans_name, trans_args, run_device)
@@ -82,7 +85,8 @@ def adv_trans_4_img_batch(trans_name, trans_args, atk_log, run_device=None):
                 save_pic_to_temp(save_path, raw_file_name, trans_results[index], save_as_numpy_array=True)
 
             # 写入日志
-            adv_trans_img_file_id = add_adv_trans_img_file_log(trans_name, attack_id, adv_img_file_id, trans_img_file_name, raw_file_name)
+            adv_trans_img_file_id = add_adv_trans_img_file_log(trans_name, attack_id, adv_img_file_id,
+                                                               trans_img_file_name, raw_file_name)
             trans_img_id_list.append(adv_trans_img_file_id)
 
     dataset_image_reader(trans_iterator, adv_dataset_info)

@@ -153,9 +153,9 @@ class SecurityEvaluation:
 
         task_manager.test_data_logger.finish()
 
-    def adv_trans_generate(self):
+    def adv_trans_generate(self, use_raw_nparray_data=False):
         # 生成图片预处理防御样本
-        adv_trans_generate(self.trans_list, self.trans_config)
+        adv_trans_generate(self.trans_list, self.trans_config, use_raw_nparray_data)
         task_manager.test_data_logger.finish()
 
     def trans_test_and_evaluation(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
@@ -168,8 +168,8 @@ class SecurityEvaluation:
         trans_deflection_capability_evaluation(self.trans_list, self.dataset_info, use_raw_nparray_data)
         task_manager.test_data_logger.finish()
 
-    def trans_full_test(self, use_raw_nparray_data=True, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
-        self.adv_trans_generate()
+    def trans_full_test(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
+        self.adv_trans_generate(use_raw_nparray_data)
         self.trans_test_and_evaluation(use_raw_nparray_data, transfer_test_level)
 
     def adv_defense_training(self):

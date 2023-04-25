@@ -255,7 +255,7 @@ def attack_capability_evaluation_with_perturbation_increment(attacker_list, data
                                                                                   use_raw_nparray_data)
 
 
-def adv_trans_generate(trans_list, trans_config):
+def adv_trans_generate(trans_list, trans_config, use_raw_nparray_data=False):
     # 标记当前步骤
     task_manager.sys_log_logger.set_step(Step.ADV_TRANS_GENERATE)
     for atk_name in trans_list:
@@ -263,7 +263,8 @@ def adv_trans_generate(trans_list, trans_config):
             for base_model in trans_list[atk_name][trans_name]:
                 trans_args = trans_config.get(trans_name, None)
                 attack_log = find_attack_log_by_name_and_base_model(atk_name, base_model)
-                adv_trans_4_img_batch(trans_name=trans_name, trans_args=trans_args, atk_log=attack_log)
+                adv_trans_4_img_batch(trans_name=trans_name, trans_args=trans_args, atk_log=attack_log,
+                                      use_raw_nparray_data=use_raw_nparray_data)
 
 
 # 防御样本攻击偏转能力测试
