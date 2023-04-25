@@ -10,7 +10,6 @@ from canary_sefi.core.function.test_and_evaluation import adv_example_generate, 
     attack_adv_example_da_test_with_perturbation_increment, attack_capability_evaluation_with_perturbation_increment, \
     attack_adv_example_da_and_cost_evaluation, attack_adv_example_comparative_test, \
     attack_synthetical_capability_evaluation, \
-    defense_model_adv_inference_capability_evaluation, defense_model_normal_inference_capability_evaluation, \
     trans_deflection_capability_test, trans_deflection_capability_evaluation, adv_trans_generate, adv_defense_training
 from canary_sefi.handler.json_handler.json_io_handler import save_info_to_json_file, get_info_from_json_file
 
