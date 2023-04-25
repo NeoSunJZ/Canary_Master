@@ -9,7 +9,8 @@ sefi_component = SEFIComponent()
 
 @sefi_component.trans_class(trans_name="quantize")
 @sefi_component.config_params_handler(handler_target=ComponentType.TRANS, name="quantize",
-                                      handler_type=ComponentConfigHandlerType.TRANS_CONFIG_PARAMS, use_default_handler=True,
+                                      handler_type=ComponentConfigHandlerType.TRANS_CONFIG_PARAMS,
+                                      use_default_handler=True,
                                       params={
                                       })
 class Transform():
@@ -22,15 +23,15 @@ class Transform():
         for img in imgs:
             if not torch.is_tensor(img):
                 img = torch.from_numpy(img)
-            result.append(_quantize_img(img, depth=self.quantize_depth))
+            result.append(self._quantize_img(img, depth=self.quantize_depth))
         return result
 
-
-def _quantize_img(im, depth=3):
-    assert torch.is_tensor(im)
-    im /= 255
-    N = int(math.pow(2, depth))
-    im = (im * N).round()
-    im = im / N
-    im *= 255
-    return im
+    @staticmethod
+    def _quantize_img(im, depth=3):
+        assert torch.is_tensor(im)
+        im /= 255
+        N = int(math.pow(2, depth))
+        im = (im * N).round()
+        im = im / N
+        im *= 255
+        return im

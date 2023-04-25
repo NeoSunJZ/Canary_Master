@@ -5,7 +5,7 @@ from PIL import Image
 from canary_sefi.core.component.component_decorator import SEFIComponent
 from canary_sefi.core.component.component_enum import ComponentType, ComponentConfigHandlerType
 
-from Defense_Method.Img_Preprocess.tvm.tvm import reconstruct as tvm
+from canary_lib.canary_defense_method.img_preprocess.tvm.tvm import reconstruct as tvm
 
 sefi_component = SEFIComponent()
 
