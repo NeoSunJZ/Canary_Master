@@ -4,6 +4,7 @@ from torchvision.transforms import Normalize
 
 from canary_sefi.core.component.component_decorator import SEFIComponent
 from canary_lib.canary_model.cifar_10.GoogLeNet.googlenet import googlenet
+from canary_sefi.core.component.component_enum import SubComponentType, ComponentType
 
 sefi_component = SEFIComponent()
 
@@ -20,3 +21,9 @@ def create_model(is_pretrained=True, pretrained_file=None, no_normalize_layer=Fa
             googlenet(pretrained=is_pretrained, pretrained_file=pretrained_file)
         ).to(run_device).eval()
     return googlenet_model
+
+
+@sefi_component.util(util_type=SubComponentType.MODEL_TARGET_LAYERS_GETTER, util_target=ComponentType.MODEL, name="GoogLeNet(CIFAR-10)")
+def target_layers_getter(model):
+    target_layers = [model[1].inception5b]
+    return target_layers, None

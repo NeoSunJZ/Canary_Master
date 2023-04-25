@@ -82,23 +82,17 @@ class WideResNet(nn.Module):
                 m.bias.data.zero_()
             elif isinstance(m, nn.Linear):
                 m.bias.data.zero_()
-        self.features = nn.Sequential(
-            self.conv1,
-            self.block1,
-            self.block2,
-            self.block3
-        )
 
     def forward(self, x):
-        # out = self.conv1(x)
-        # out = self.block1(out)
-        # out = self.block2(out)
-        # out = self.block3(out)
-        out = self.features(x)
+        out = self.conv1(x)
+        out = self.block1(out)
+        out = self.block2(out)
+        out = self.block3(out)
         out = self.relu(self.bn1(out))
         out = F.avg_pool2d(out, 8)
         out = out.view(-1, self.nChannels)
         return self.fc(out)
+
 
 def _wideresnet(
         arch,
@@ -112,13 +106,13 @@ def _wideresnet(
     if pretrained:
         script_dir = os.path.dirname(__file__)
         state_dict = torch.load(
-            (script_dir + "/weight/" + arch + ".pt") if pretrained_file is None else pretrained_file, map_location=device
+            (script_dir + "/weight/" + arch + ".pt") if pretrained_file is None else pretrained_file,
+            map_location=device
         )
-        model.load_state_dict(state_dict,strict=False)
+        model.load_state_dict(state_dict, strict=False)
 
     return model
 
-def wideresnet(pretrained=False, pretrained_file=None, progress=True, device="cpu", **kwargs):
-    return _wideresnet(
-        'WideResNet', pretrained, pretrained_file, progress, device, **kwargs
-    )
+
+def wideresnet34_10(pretrained=False, pretrained_file=None, progress=True, device="cpu", **kwargs):
+    return _wideresnet('WideResNet', pretrained, pretrained_file, progress, device, **kwargs)
