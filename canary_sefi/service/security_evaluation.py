@@ -132,7 +132,7 @@ class SecurityEvaluation:
 
         if use_img_file:
             # 测试
-            attack_deflection_capability_test_with_perturbation_increment(self.attacker_list, self.model_config,
+            attack_deflection_capability_test_with_perturbation_increment(self.dataset_info, self.attacker_list, self.model_config,
                                                                           self.img_proc_config,
                                                                           use_raw_nparray_data=False)
             attack_adv_example_da_test_with_perturbation_increment(self.attacker_list, self.dataset_info,
@@ -142,7 +142,7 @@ class SecurityEvaluation:
                                                                      use_raw_nparray_data=False)
         if use_raw_nparray_data:
             # 测试
-            attack_deflection_capability_test_with_perturbation_increment(self.attacker_list, self.model_config,
+            attack_deflection_capability_test_with_perturbation_increment(self.dataset_info, self.attacker_list, self.model_config,
                                                                           self.img_proc_config,
                                                                           use_raw_nparray_data=True)
             attack_adv_example_da_test_with_perturbation_increment(self.attacker_list, self.dataset_info,
@@ -160,7 +160,7 @@ class SecurityEvaluation:
 
     def trans_test_and_evaluation(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
         # 防御样本攻击偏转能力测试
-        trans_deflection_capability_test(self.trans_list, self.model_config, self.img_proc_config,
+        trans_deflection_capability_test(self.dataset_info, self.trans_list, self.model_config, self.img_proc_config,
                                          self.inference_batch_config,
                                          self.transfer_attack_test_mode, self.transfer_attack_test_on_model_list,
                                          use_raw_nparray_data, transfer_test_level)

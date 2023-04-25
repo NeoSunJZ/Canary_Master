@@ -204,7 +204,7 @@ def adv_example_generate_with_perturbation_increment(dataset_info, attacker_list
 
 
 # 攻击偏转能力测试(扰动递增)
-def attack_deflection_capability_test_with_perturbation_increment(attacker_list, model_config, img_proc_config,
+def attack_deflection_capability_test_with_perturbation_increment(dataset_info, attacker_list, model_config, img_proc_config,
                                                                   use_raw_nparray_data=False):
     # 标记当前步骤
     task_manager.sys_log_logger.set_step(Step.ATTACK_DEFLECTION_CAPABILITY_TEST_WITH_PERTURBATION_INCREMENT)
@@ -222,7 +222,7 @@ def attack_deflection_capability_test_with_perturbation_increment(attacker_list,
                                                                      perturbation_increment_mode=True)
 
                 for attack_log in attack_logs:
-                    adv_inference(attack_log, model_name, model_args, img_proc_args, use_raw_nparray_data,
+                    adv_inference(dataset_info, attack_log, model_name, model_args, img_proc_args, use_raw_nparray_data,
                                   run_device=run_device)
 
             BatchListIterator.model_list_iterator([base_model], model_config, img_proc_config, function)
@@ -267,7 +267,7 @@ def adv_trans_generate(trans_list, trans_config):
 
 
 # 防御样本攻击偏转能力测试
-def trans_deflection_capability_test(trans_list, model_config, img_proc_config,
+def trans_deflection_capability_test(dataset_info, trans_list, model_config, img_proc_config,
                                      inference_batch_config,
                                      transfer_attack_test=TransferAttackType.NOT,
                                      transfer_attack_test_on_model_list=None, use_raw_nparray_data=False,
@@ -303,7 +303,7 @@ def trans_deflection_capability_test(trans_list, model_config, img_proc_config,
 
                     attack_log = find_attack_log_by_name_and_base_model(atk_name, base_model)
 
-                    adv_inference(attack_log, model_name, model_args, img_proc_args,
+                    adv_inference(dataset_info, attack_log, model_name, model_args, img_proc_args,
                                   inference_batch_config=inference_batch_config,
                                   use_raw_nparray_data=use_raw_nparray_data, run_device=run_device,
                                   test_level=test_level, trans_name=trans_name)
