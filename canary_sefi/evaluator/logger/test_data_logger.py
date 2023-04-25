@@ -132,7 +132,6 @@ class TestDataLogger(SqliteDBLogger):
                        'AQN_B integer, '
                        'UNIQUE (atk_name, base_model, atk_perturbation_budget))')
 
-
         # 缩写释义:
         # AMD: average maximum disturbance
         # AED: average euclidean distortion
@@ -152,7 +151,6 @@ class TestDataLogger(SqliteDBLogger):
                        'ADMS float, '
                        'ALMS float, '
                        'UNIQUE (atk_name, base_model, atk_perturbation_budget, adv_example_file_type))')
-
 
         cursor.execute('create table if not exists model_dimension_summary '
                        '(model_name varchar, '
@@ -190,7 +188,7 @@ class TestDataLogger(SqliteDBLogger):
                        'ACAMC_A float, '
                        'ACAMC_T float, '
                        'OTR_MR float, '
-                       'OTR_AIAC float, ' 
+                       'OTR_AIAC float, '
                        'OTR_ARTC float, '
                        'ACT float,'
                        'AQN_F integer, '
@@ -203,26 +201,12 @@ class TestDataLogger(SqliteDBLogger):
                        'ADMS float, '
                        'ALMS float)')
 
-        cursor.execute('create table if not exists defense_model_normal_inference_capability_indicator_data '
-                       '(model_name varchar PRIMARY KEY, '
-                       'CAV float, '
-                       'RRSR float, '
-                       'ConV float,'
-                       'COS float)')
-
-        cursor.execute('create table if not exists defense_model_adv_inference_capability_indicator_data '
-                       '(model_name varchar PRIMARY KEY, '
-                       'attack_name varchar, '
-                       'DCAV float, '
-                       'TCAV float)')
-
         cursor.execute('create table if not exists adv_training_weight_path_info '
                        '(model_name varchar, '
                        'defense_name varchar, '
                        'epoch_cursor varchar, '
                        'weight_file_path varchar,'
                        'UNIQUE (model_name, defense_name, epoch_cursor))')
-
 
         cursor.close()
         self.conn.commit()
