@@ -115,43 +115,43 @@ We support the full collection of the following four types of metrics. Please re
 
 #### Model capability measurement metrics
 
-**Clean Example Accuracy (Clear Accuracy, CA)**
+- Clean Example Accuracy (Clear Accuracy, CA)
 
-**Clean example F1 score (Clear F1, CF)**
+- Clean example F1 score (Clear F1, CF)
 
-**Clear Confidence (CC)**
+- Clear Confidence (CC)
 
 #### Attack effectiveness measurement metrics
 
-**Misclassification Ratio (MR) /  Targeted Attack Success (TAS)**
+- Misclassification Ratio (MR) /  Targeted Attack Success (TAS)
 
-**Adversarial Example Confidence Change (ACC): Average Increase in Adversarial-class Confidence (AIAC) / Average Reduction in True-class Confidence (ARTC)**
+- Adversarial Example Confidence Change (ACC): Average Increase in Adversarial-class Confidence (AIAC) / Average Reduction in True-class Confidence (ARTC)
 
-**Average Class Activation Mapping Change (ACAMC)**
+- Average Class Activation Mapping Change (ACAMC)
 
-**Observable Transfer Rate (OTR)**
+- Observable Transfer Rate (OTR)
 
 #### Cost of attack measurement metrics
 
-**Calculation Time Cost (CTC)**
+- Calculation Time Cost (CTC)
 
-**Query** **Number Cost (QNC)**
+- Query Number Cost (QNC)
 
-**Average** **Norm** **Distortion** **(AND): Average Maximum Distortion (AMD) / Average Euclidean Distortion (AED) / Average** **Pixel** **Change Ratio (APCR)**
+- Average Norm Distortion(AND): Average Maximum Distortion (AMD) / Average Euclidean Distortion (AED) / Average Pixel Change Ratio (APCR)
 
-**Average Euclidean** **Distortion** **in** **Frequency Domain** **(AED-FD)**
+- Average Euclidean Distortion in Frequency Domain (AED-FD)
 
-**Average Metrics Similarity (AMS): Average Deep Metrics Similarity (ADMS) / Average Low-level Metrics Similarity (ALMS)**
+- Average Metrics Similarity (AMS): Average Deep Metrics Similarity (ADMS) / Average Low-level Metrics Similarity (ALMS)
 
 #### Effectiveness of defense measurement metrics
 
-**Model Capability Variance (MCV): Accuracy Variance (AV) / F1-Score Variance (FV) / Mean Confidence Variance (CV)** 
+- Model Capability Variance (MCV): Accuracy Variance (AV) / F1-Score Variance (FV) / Mean Confidence Variance (CV)
 
-**Rectify/Sacrifice Ratio (RR/SR)**
+- Rectify/Sacrifice Ratio (RR/SR)
 
-**Attack Capability** **Variance** **(ACV): MR Variance (MRV) / AND Variance (ANDV) / AMS Variance (AMSV)**
+- Attack Capability Variance (ACV): MR Variance (MRV) / AND Variance (ANDV) / AMS Variance (AMSV)
 
-**Average Adversarial Confidence Change (AACC):Average Reduction in Adversarial-class Confidence (ARAC) / Average Increase in True-class Confidence (AITC)**
+- Average Adversarial Confidence Change (AACC):Average Reduction in Adversarial-class Confidence (ARAC) / Average Increase in True-class Confidence (AITC)
 
 ## Quick Start
 
