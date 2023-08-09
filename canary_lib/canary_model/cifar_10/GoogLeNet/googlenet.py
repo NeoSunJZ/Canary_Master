@@ -13,7 +13,7 @@ _GoogLeNetOuputs = namedtuple(
 )
 
 
-def googlenet(pretrained=False, progress=True, device="cpu", **kwargs):
+def googlenet(pretrained=False, pretrained_file=None, progress=True, device="cpu", **kwargs):
     r"""GoogLeNet (Inception v1) model architecture from
     `"Going Deeper with Convolutions" <http://arxiv.org/abs/1409.4842>`_.
 
@@ -29,7 +29,7 @@ def googlenet(pretrained=False, progress=True, device="cpu", **kwargs):
     if pretrained:
         script_dir = os.path.dirname(__file__)
         state_dict = torch.load(
-            script_dir + "/weight/googlenet.pt", map_location=device
+            (script_dir + "/weight/googlenet.pt") if pretrained_file is None else pretrained_file, map_location=device
         )
         model.load_state_dict(state_dict)
     return model

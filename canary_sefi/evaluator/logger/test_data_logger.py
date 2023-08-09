@@ -48,6 +48,16 @@ class TestDataLogger(SqliteDBLogger):
                        'tlabel varchar, '
                        'UNIQUE (attack_id, ori_img_id))')
 
+        cursor.execute('create table if not exists adv_trans_img_file_log '
+                       '(adv_trans_img_file_id INTEGER PRIMARY KEY AUTOINCREMENT, '
+                       'trans_name varchar, '
+                       'attack_id integer, '
+                       'adv_img_file_id integer, '
+                       'adv_trans_img_filename varchar, '
+                       'adv_trans_raw_nparray_filename varchar, '
+                       'ground_valid varchar,'
+                       'UNIQUE (trans_name, adv_img_file_id))')
+
         cursor.execute('create table if not exists adv_example_da_test_data '
                        '(adv_img_file_id integer, '
                        'adv_example_file_type varchar, '
@@ -95,6 +105,20 @@ class TestDataLogger(SqliteDBLogger):
                        'ACAMC_T float, '
                        'UNIQUE (atk_name, base_model, atk_perturbation_budget, inference_model, adv_example_file_type))')
 
+        cursor.execute('create table if not exists trans_deflection_capability_indicator_data '
+                       '(atk_name varchar, '
+                       'base_model varchar, '
+                       'atk_perturbation_budget float, '
+                       'trans_name varchar, '
+                       'inference_model varchar, '
+                       'trans_file_type varchar, '  # 防御样本文件类型 IMG文件可能导致真实误差，NP文件不会转换类型因而没有误差，但并不真实
+                       'MR float, '
+                       'AIAC float, '
+                       'ARTC float, '
+                       'ACAMC_A float, '
+                       'ACAMC_T float, '
+                       'UNIQUE (atk_name, base_model, atk_perturbation_budget, trans_name, inference_model, trans_file_type))')
+
         # 缩写释义:
         # ACT: average cost time
         # AQN_F: average query number (Forward)
@@ -107,7 +131,6 @@ class TestDataLogger(SqliteDBLogger):
                        'AQN_F integer, '
                        'AQN_B integer, '
                        'UNIQUE (atk_name, base_model, atk_perturbation_budget))')
-
 
         # 缩写释义:
         # AMD: average maximum disturbance
@@ -128,7 +151,6 @@ class TestDataLogger(SqliteDBLogger):
                        'ADMS float, '
                        'ALMS float, '
                        'UNIQUE (atk_name, base_model, atk_perturbation_budget, adv_example_file_type))')
-
 
         cursor.execute('create table if not exists model_dimension_summary '
                        '(model_name varchar, '
@@ -166,7 +188,7 @@ class TestDataLogger(SqliteDBLogger):
                        'ACAMC_A float, '
                        'ACAMC_T float, '
                        'OTR_MR float, '
-                       'OTR_AIAC float, ' 
+                       'OTR_AIAC float, '
                        'OTR_ARTC float, '
                        'ACT float,'
                        'AQN_F integer, '
@@ -178,6 +200,13 @@ class TestDataLogger(SqliteDBLogger):
                        'APCR float, '
                        'ADMS float, '
                        'ALMS float)')
+
+        cursor.execute('create table if not exists adv_training_weight_path_info '
+                       '(model_name varchar, '
+                       'defense_name varchar, '
+                       'epoch_cursor varchar, '
+                       'weight_file_path varchar,'
+                       'UNIQUE (model_name, defense_name, epoch_cursor))')
 
         cursor.close()
         self.conn.commit()

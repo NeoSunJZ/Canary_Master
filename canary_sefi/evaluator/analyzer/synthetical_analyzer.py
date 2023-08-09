@@ -190,7 +190,8 @@ def attack_synthetical_capability_analyzer_and_evaluation(attack_name, use_raw_n
     MR, TAS, AIAC, ARTC, ACAMC_A, ACAMC_T, ACT, AQN_F, AQN_B, AMD, AED, AED_HF, AED_LF, APCR, ADMS, ALMS =\
         adversarial_example_analyzer_log_handler(attack_deflection_capability_indicator_data,
                                                  attack_adv_example_da_indicator_data,
-                                                 attack_adv_example_cost_indicator_data)
+                                                 attack_adv_example_cost_indicator_data,
+                                                 include_transfer=False)
     OTR_MR, OTR_AIAC, OTR_ARTC =\
         adversarial_example_transfer_analyzer_log_handler(attack_deflection_capability_indicator_data, attack_name)
 

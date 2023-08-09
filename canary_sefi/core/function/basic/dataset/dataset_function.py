@@ -9,15 +9,19 @@ from canary_sefi.core.function.basic.dataset.memory_cache import memory_cache
 from canary_sefi.core.function.basic.dataset.tools import limit_img_size
 from canary_sefi.task_manager import task_manager
 from canary_sefi.core.config.config_manager import config_manager
+from canary_sefi.entity.dataset_info_entity import DatasetType
 from canary_sefi.evaluator.logger.img_file_info_handler import add_img_log, find_img_log_by_id
+
 
 # 传入dataset_size，根据dataset_size划分数据集子集，并读入全部的子集（特别的，全部读入则传入数据集原始大小即可）
 # 不再提供默认的数据集读入程序
 def dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num=0):
-
     # 对抗样本数据集读入
-    if dataset_info.dataset_type.value != "NORMAL":
+    if dataset_info.dataset_type == DatasetType.ADVERSARIAL_EXAMPLE_IMG or dataset_info.dataset_type == DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA:
         adv_dataset_image_reader(iterator, dataset_info, batch_size, completed_num)
+        return
+    if dataset_info.dataset_type == DatasetType.TRANSFORM_IMG or dataset_info.dataset_type == DatasetType.TRANSFORM_RAW_DATA:
+        adv_dataset_image_reader(iterator, dataset_info, batch_size, completed_num, trans=True)
         return
 
     dataset, _ = get_dataset(dataset_info)
@@ -39,7 +43,7 @@ def dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num=0):
         del _img_array, img_log_id_array, _img_label_array
 
     # Batch
-    all_batch = int(math.ceil(dataset_info.dataset_size/batch_size))
+    all_batch = int(math.ceil(dataset_info.dataset_size / batch_size))
     completed_batch = int(math.ceil(completed_num / batch_size))
 
     for batch_cursor in range(all_batch):
@@ -49,7 +53,8 @@ def dataset_image_reader(iterator, dataset_info, batch_size=1, completed_num=0):
         label_array = []
         img_cursor_array = []
 
-        for img_cursor in range(batch_cursor * batch_size, min((batch_cursor+1) * batch_size, dataset_info.dataset_size)):
+        for img_cursor in range(batch_cursor * batch_size,
+                                min((batch_cursor + 1) * batch_size, dataset_info.dataset_size)):
             img = dataset[int(img_cursor)][0]
             img_label = dataset[int(img_cursor)][1]
             if type(img) != numpy.ndarray:

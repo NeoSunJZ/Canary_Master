@@ -3,6 +3,8 @@ from tqdm import tqdm
 
 from canary_sefi.core.function.basic.dataset.adv_dataset_function import adv_dataset_single_image_reader
 from canary_sefi.core.function.basic.dataset.dataset_function import dataset_single_image_reader
+from canary_sefi.evaluator.logger.trans_file_info_handler import find_adv_trans_file_logs_by_attack_id_and_trans_name, \
+    set_adv_trans_file_ground_valid
 from canary_sefi.handler.image_handler.img_utils import get_img_cosine_similarity, img_size_uniform_fix
 from canary_sefi.handler.image_handler.plt_handler import cam_diff_fig_builder, figure_show_handler
 from canary_sefi.task_manager import task_manager
@@ -11,11 +13,11 @@ from canary_sefi.core.function.helper.recovery import global_recovery
 from canary_sefi.entity.dataset_info_entity import DatasetType
 from canary_sefi.evaluator.logger.adv_example_da_test_data_handler import find_adv_example_da_test_data_by_id_and_type
 from canary_sefi.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_logs_by_attack_id, \
-    set_adv_example_file_ground_valid
+    set_adv_example_file_ground_valid, find_adv_example_file_log_by_id
 from canary_sefi.evaluator.logger.img_file_info_handler import find_img_log_by_id
 from canary_sefi.evaluator.logger.indicator_data_handler import save_attack_deflection_capability_indicator_data, \
     save_attack_adv_example_da_indicator_data, save_model_capability_indicator_data, \
-    save_attack_adv_example_cost_indicator_data
+    save_attack_adv_example_cost_indicator_data, save_trans_deflection_capability_indicator_data
 from canary_sefi.evaluator.logger.attack_info_handler import find_attack_log_by_name_and_base_model
 from sklearn.metrics import f1_score, accuracy_score
 
@@ -61,29 +63,43 @@ def model_inference_capability_analyzer_and_evaluation(model_name):
 
 
 def attack_deflection_capability_analyzer_and_evaluation(atk_name, base_model, dataset_info=None,
-                                                         use_raw_nparray_data=False):
-    msg = "Analyzing and Evaluating Method({} *BaseModel {}*)'s deflection capability test result".format(atk_name,
-                                                                                                          base_model)
+                                                         use_raw_nparray_data=False, trans_name=None):
+    msg = "Analyzing and Evaluating Method({} *BaseModel {}".format(atk_name, base_model)
+    if trans_name is not None:
+        msg += "* Trans Method {}".format(trans_name)
+    msg += "*)'s deflection capability test result"
     reporter.console_log(msg, Fore.GREEN, show_task=True, show_step_sequence=True)
 
-    is_skip, completed_num = global_recovery.check_skip(atk_name + ":" + base_model)
+    if trans_name is None:
+        is_skip, completed_num = global_recovery.check_skip(atk_name + ":" + base_model)
+    else:
+        is_skip, completed_num = global_recovery.check_skip(atk_name + ":" + base_model + ":" + trans_name)
     if is_skip:
         return
     attack_info = find_attack_log_by_name_and_base_model(atk_name, base_model)
-    attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, dataset_info, use_raw_nparray_data)
+    attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, dataset_info, use_raw_nparray_data,
+                                                                 trans_name=trans_name)
 
 
 def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, dataset_info=None,
-                                                                 use_raw_nparray_data=False):
-    all_adv_example_file_log = find_adv_example_file_logs_by_attack_id(attack_info['attack_id'])
+                                                                 use_raw_nparray_data=False,
+                                                                 trans_name=None):
+    if trans_name is not None:
+        all_adv_example_file_log = find_adv_trans_file_logs_by_attack_id_and_trans_name(attack_info['attack_id'], trans_name)
+        adv_example_file_type = DatasetType.TRANSFORM_RAW_DATA.value if use_raw_nparray_data else DatasetType.TRANSFORM_IMG.value
+    else:
+        all_adv_example_file_log = find_adv_example_file_logs_by_attack_id(attack_info['attack_id'])
+        adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG.value
 
     attack_test_result = {}
 
-    adv_example_file_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value if use_raw_nparray_data else DatasetType.ADVERSARIAL_EXAMPLE_IMG.value
 
     for adv_example_file_log in tqdm(all_adv_example_file_log, desc="Adv-example Inference Result Analyze Progress"):
         ori_img_id = adv_example_file_log["ori_img_id"]  # 原始图片ID(干净样本O)
-        adv_img_file_id = adv_example_file_log["adv_img_file_id"]  # 对抗样本ID(干净样本O通过在M1上的攻击产生对抗样本A)
+        if trans_name is not None:
+            adv_img_file_id = adv_example_file_log["adv_trans_img_file_id"]  # 防御样本ID(对抗样本转换)
+        else:
+            adv_img_file_id = adv_example_file_log["adv_img_file_id"]  # 对抗样本ID(干净样本O通过在M1上的攻击产生对抗样本A)
 
         ori_img_log = find_img_log_by_id(ori_img_id)  # 原始图片记录
         ori_label = ori_img_log["ori_img_label"]  # 原始图片的标签
@@ -129,6 +145,8 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                             # API的预测结果为例外(可能与数据集标签不一致)
                             msg = "Adv Example(ImgID {}) is not VALID (due to the original img inference error (ON TEST MODEL)), has been temporarily abandoned.".format(
                                 adv_img_file_id)
+                            if trans_name is not None:
+                                msg = "Trans-" + msg
                             reporter.console_log(msg, Fore.GREEN, save_db=False, send_msg=False, show_task=True,
                                                  show_step_sequence=True)
                             bar.update(1)
@@ -158,7 +176,10 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
 
                     # 如果对抗样本没有设置有效性，且当前处理的是目标模型（而非迁移模型），则为其设置有效性
                     if test_on_base_model and adv_example_file_log["ground_valid"] is None:
-                        set_adv_example_file_ground_valid(adv_img_file_id, success_flag)
+                        if trans_name is None:
+                            set_adv_example_file_ground_valid(adv_img_file_id, success_flag)
+                        else:
+                            set_adv_trans_file_ground_valid(adv_img_file_id, success_flag)
 
                     # 获取置信偏移(IAC:Increase adversarial-class confidence/RTC:Reduction true-class confidence)
                     # API类模型的特殊处理，避免前后差异过大时没有置信度提供
@@ -196,15 +217,14 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                         continue
                     if dataset_info is not None:
                         ori_img, _ = dataset_single_image_reader(dataset_info, ori_img_cursor=ori_img_log['ori_img_cursor'])
-                        adv_img = adv_dataset_single_image_reader(adv_example_file_log,
-                                                                  DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA
-                                                                  if use_raw_nparray_data else
-                                                                  DatasetType.ADVERSARIAL_EXAMPLE_IMG,
+                        adv_img = adv_dataset_single_image_reader(adv_example_file_log, adv_example_file_type,
                                                                   is_gray=dataset_info.is_gray)
                     else:
                         ori_img, adv_img = None, None
 
                     atk_name = "{}({})".format(attack_info.get("atk_name"), attack_info.get("base_model"))
+                    if trans_name is not None:
+                        atk_name += "{}".format(trans_name)
                     if attack_info.get("atk_perturbation_budget") != 'None' and attack_info.get("atk_perturbation_budget") is not None:
                         atk_name + ":(e-{})".format(str(round(float(attack_info.get("atk_perturbation_budget")), 5)))
 
@@ -215,9 +235,12 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
                                                               model_name, atk_name, ori_img_id, adv_img_file_id, ori_label,
                                                               ori_inference_label, adv_inference_label
                                                           ))
-                    figure_show_handler(cam_result_plt,
-                                        file_path="Grad-CAM_analyze_result/",
-                                        file_name="adv_{}(Attack{})(InferenceModel{})".format(adv_img_file_id, atk_name, model_name))
+                    file_path = "Grad-CAM_analyze_result/"
+                    file_name = "adv_{}(Attack{})(InferenceModel{})".format(adv_img_file_id, atk_name, model_name)
+                    if trans_name is not None:
+                        file_path += trans_name+"/"
+                        file_name += "(Trans{})".format(trans_name)
+                    figure_show_handler(cam_result_plt, file_path=file_path, file_name=file_name)
                 bar.update(1)
 
     for inference_model in attack_test_result:
@@ -233,10 +256,16 @@ def attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, da
         ACAMC_T = calc_average(attack_test_result[inference_model]["CAMC_T"])
 
         # 写入日志
-        save_attack_deflection_capability_indicator_data(attack_info['atk_name'], attack_info['base_model'],
-                                                         inference_model, adv_example_file_type,
-                                                         MR, AIAC, ARTC, ACAMC_A, ACAMC_T,
-                                                         atk_perturbation_budget=attack_info['atk_perturbation_budget'])
+        if trans_name is None:
+            save_attack_deflection_capability_indicator_data(attack_info['atk_name'], attack_info['base_model'],
+                                                             inference_model, adv_example_file_type,
+                                                             MR, AIAC, ARTC, ACAMC_A, ACAMC_T,
+                                                             atk_perturbation_budget=attack_info['atk_perturbation_budget'])
+        else:
+            save_trans_deflection_capability_indicator_data(attack_info['atk_name'], attack_info['base_model'],
+                                                            trans_name, inference_model, adv_example_file_type,
+                                                            MR, AIAC, ARTC, ACAMC_A, ACAMC_T,
+                                                            atk_perturbation_budget=attack_info['atk_perturbation_budget'])
     # 增加计数
     task_manager.sys_log_logger.update_completed_num(1)
     task_manager.sys_log_logger.update_finish_status(True)
@@ -329,3 +358,5 @@ def attack_capability_with_perturbation_increment_analyzer_and_evaluation(atk_na
     for attack_info in attack_logs:
         attack_deflection_capability_analyzer_and_evaluation_handler(attack_info, dataset_info, use_raw_nparray_data)
         attack_adv_example_da_and_cost_analyzer_and_evaluation_handler(attack_info, use_raw_nparray_data)
+
+

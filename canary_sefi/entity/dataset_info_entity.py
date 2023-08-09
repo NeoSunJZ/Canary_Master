@@ -10,6 +10,8 @@ class DatasetType(Enum):
     NORMAL_TEST = "NORMAL"
     ADVERSARIAL_EXAMPLE_IMG = "ADVERSARIAL_EXAMPLE_IMG"
     ADVERSARIAL_EXAMPLE_RAW_DATA = "ADVERSARIAL_EXAMPLE_RAW_DATA"
+    TRANSFORM_IMG = "TRANSFORM_IMG"
+    TRANSFORM_RAW_DATA = "TRANSFORM_RAW_DATA"
 
 
 class DatasetInfo(object):
@@ -21,7 +23,7 @@ class DatasetInfo(object):
         if not isinstance(dataset_type, DatasetType):
             if dataset_type is None:
                 dataset_type = DatasetType.NORMAL
-            if dataset_type == "VAL":
+            elif dataset_type == "VAL":
                 dataset_type = DatasetType.NORMAL_VAL
             elif dataset_type == "TRAIN":
                 dataset_type = DatasetType.NORMAL_TRAIN
@@ -31,9 +33,13 @@ class DatasetInfo(object):
                 dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_IMG
             elif dataset_type == "ADV_RAW_DATA":
                 dataset_type = DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA
+            elif dataset_type == "TRANSFORM_IMG":
+                dataset_type = DatasetType.TRANSFORM_IMG
+            elif dataset_type == "TRANSFORM_RAW_DATA":
+                dataset_type = DatasetType.TRANSFORM_RAW_DATA
             else:
                 raise Exception("[SEFI] DatasetConfigError: Dataset Type must be an enum type DatasetType "
-                                "or string 'VAL', 'TRAIN', 'TEST', 'ADV_IMG' or 'ADV_RAW_DATA'!")
+                                "or string 'VAL', 'TRAIN', 'TEST', 'ADV_IMG', 'ADV_RAW_DATA', 'TRANSFORM_IMG' or 'TRANSFORM_RAW_DATA'!")
 
         if dataset_name is None and dataset_type.value == "NORMAL":
             raise Exception("[SEFI] DatasetConfigError: Dataset Name must be specified!")

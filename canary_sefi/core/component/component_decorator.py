@@ -2,7 +2,8 @@ import torch
 
 from canary_sefi.core.component.component_dict import ComponentDict, ComponentDictType
 from canary_sefi.core.component.component_enum import ComponentType, ComponentConfigHandlerType, SubComponentType, \
-    ModelComponentAttributeType, AttackComponentAttributeType
+    ModelComponentAttributeType, AttackComponentAttributeType, TransComponentAttributeType, \
+    DefenseComponentAttributeType
 from canary_sefi.core.component.component_exception import ParamsHandlerComponentTypeError, ComponentReturnTypeError, \
     UtilComponentTypeError, ComponentTypeError
 
@@ -18,6 +19,12 @@ class SEFIComponent:
         self.datasets = ComponentDict({},
                                       dict_type=ComponentDictType.ComponentDict,
                                       component_type=ComponentType.DATASET)
+        self.defense_methods = ComponentDict({},
+                                             dict_type=ComponentDictType.ComponentDict,
+                                             component_type=ComponentType.DEFENSE)
+        self.trans_methods = ComponentDict({},
+                                           dict_type=ComponentDictType.ComponentDict,
+                                           component_type=ComponentType.TRANS)
 
     def model(self, name, no_torch_model_check=False):
         target_model = self.get_models(name)
@@ -53,6 +60,16 @@ class SEFIComponent:
             if handler_type not in (ComponentConfigHandlerType.ATTACK_CONFIG_PARAMS, ):
                 raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target, error_type=handler_type)
             target[handler_type.value + AttackComponentAttributeType.CONFIG_PARAMS.value] = params
+        elif handler_target == ComponentType.DEFENSE:
+            target = self.get_defense_methods(name)
+            if handler_type not in (ComponentConfigHandlerType.DEFENSE_CONFIG_PARAMS,):
+                raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target, error_type=handler_type)
+            target[handler_type.value + DefenseComponentAttributeType.CONFIG_PARAMS.value] = params
+        elif handler_target == ComponentType.TRANS:
+            target = self.get_trans_methods(name)
+            if handler_type not in (ComponentConfigHandlerType.TRANS_CONFIG_PARAMS,):
+                raise ParamsHandlerComponentTypeError(component_name=name, component_type=handler_target, error_type=handler_type)
+            target[handler_type.value + TransComponentAttributeType.CONFIG_PARAMS.value] = params
 
         else:
             raise ComponentTypeError(component_name=name, component_type=handler_target)
@@ -146,7 +163,41 @@ class SEFIComponent:
 
             target_attack_method[AttackComponentAttributeType.SUPPORT_MODEL] = support_model
             # 扰动预算变量名
-            target_attack_method[AttackComponentAttributeType.PERTURBATION_BUDGET_VAR_NAME] = perturbation_budget_var_name
+            target_attack_method[
+                AttackComponentAttributeType.PERTURBATION_BUDGET_VAR_NAME] = perturbation_budget_var_name
+            return inner
+
+        return wrapper
+
+    def defense(self, name, is_inclass, support_model=[], defense_type=''):
+        target_defense_method = self.get_defense_methods(name)
+
+        def wrapper(decorated):
+            def inner(*args, **kwargs):
+                defense_method = decorated(*args, **kwargs)
+                return defense_method
+
+            target_defense_method[SubComponentType.DEFENSE_FUNC] = inner
+            target_defense_method[DefenseComponentAttributeType.SUPPORT_MODEL] = support_model
+            target_defense_method[DefenseComponentAttributeType.IS_INCLASS] = is_inclass
+            target_defense_method[DefenseComponentAttributeType.DEFENSE_TYPE] = defense_type
+
+            return inner
+
+        return wrapper
+
+    def trans(self, name, is_inclass, trans_type=''):
+        target_trans_method = self.get_trans_methods(name)
+
+        def wrapper(decorated):
+            def inner(*args, **kwargs):
+                trans_method = decorated(*args, **kwargs)
+                return trans_method
+
+            target_trans_method[SubComponentType.TRANS_FUNC] = inner
+            target_trans_method[TransComponentAttributeType.IS_INCLASS] = is_inclass
+            target_trans_method[TransComponentAttributeType.TRANS_TYPE] = trans_type
+
             return inner
 
         return wrapper
@@ -164,6 +215,32 @@ class SEFIComponent:
 
         return wrapper
 
+    def defense_init(self, name):
+        target_defense_method = self.get_defense_methods(name)
+
+        def wrapper(decorated):
+            def inner(*args, **kwargs):
+                defense_init = decorated(*args, **kwargs)
+                return defense_init
+
+            target_defense_method[SubComponentType.DEFENSE_INIT] = inner
+            return inner
+
+        return wrapper
+
+    def trans_init(self, name):
+        target_trans_method = self.get_trans_methods(name)
+
+        def wrapper(decorated):
+            def inner(*args, **kwargs):
+                trans_init = decorated(*args, **kwargs)
+                return trans_init
+
+            target_trans_method[SubComponentType.TRANS_INIT] = inner
+            return inner
+
+        return wrapper
+
     def attacker_class(self, attack_name,
                        model_var_name="model",
                        perturbation_budget_var_name=None):
@@ -173,6 +250,30 @@ class SEFIComponent:
             target_attack_method[SubComponentType.ATTACK_CLASS] = decorated
             target_attack_method[AttackComponentAttributeType.PERTURBATION_BUDGET_VAR_NAME] = perturbation_budget_var_name
             target_attack_method[AttackComponentAttributeType.MODEL_VAR_NAME] = model_var_name
+            return decorated
+
+        return wrapper
+
+    def defense_class(self, defense_name):
+        target_defense_method = self.defense_methods.get(defense_name, default=None, allow_not_exist=True)
+        if target_defense_method is None:
+            self.defense_methods[defense_name] = {}
+            target_defense_method = self.defense_methods.get(defense_name)
+
+        def wrapper(decorated):
+            target_defense_method[SubComponentType.DEFENSE_CLASS] = decorated
+            return decorated
+
+        return wrapper
+
+    def trans_class(self, trans_name):
+        target_trans_method = self.trans_methods.get(trans_name, default=None, allow_not_exist=True)
+        if target_trans_method is None:
+            self.trans_methods[trans_name] = {}
+            target_trans_method = self.trans_methods.get(trans_name)
+
+        def wrapper(decorated):
+            target_trans_method[SubComponentType.TRANS_CLASS] = decorated
             return decorated
 
         return wrapper
@@ -194,6 +295,24 @@ class SEFIComponent:
                                                       component_type=ComponentType.ATTACK, component_name=name)
             target_attack_method = self.attack_methods.get(name)
         return target_attack_method
+
+    def get_defense_methods(self, name):
+        target_defense_method = self.defense_methods.get(name, default=None, allow_not_exist=True)
+        if target_defense_method is None:
+            self.defense_methods[name] = ComponentDict({},
+                                                       dict_type=ComponentDictType.SubComponentDict,
+                                                       component_type=ComponentType.DEFENSE, component_name=name)
+            target_defense_method = self.defense_methods.get(name)
+        return target_defense_method
+
+    def get_trans_methods(self, name):
+        target_trans_method = self.trans_methods.get(name, default=None, allow_not_exist=True)
+        if target_trans_method is None:
+            self.trans_methods[name] = ComponentDict({},
+                                                     dict_type=ComponentDictType.SubComponentDict,
+                                                     component_type=ComponentType.TRANS, component_name=name)
+            target_trans_method = self.trans_methods.get(name)
+        return target_trans_method
 
     def get_datasets(self, name):
         target_datasets = self.datasets.get(name, default=None, allow_not_exist=True)

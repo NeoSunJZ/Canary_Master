@@ -259,25 +259,25 @@ class ResNet(nn.Module):
         return x
 
 
-def _resnet(arch, block, layers, pretrained, progress, device, **kwargs):
+def _resnet(arch, block, layers, pretrained, pretrained_file, progress, device, **kwargs):
     model = ResNet(block, layers, **kwargs)
-    if pretrained:
+    if pretrained :
         script_dir = os.path.dirname(__file__)
         state_dict = torch.load(
-            script_dir + "/weight/" + arch + ".pt", map_location=device
+            (script_dir + "/weight/" + arch + ".pt") if pretrained_file is None else pretrained_file, map_location=device
         )
         model.load_state_dict(state_dict)
     return model
 
 
-def resnet18(pretrained=False, progress=True, device="cpu", **kwargs):
+def resnet18(pretrained=False, pretrained_file=None, progress=True, device="cpu", **kwargs):
     """Constructs a ResNet-18 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
     return _resnet(
-        "resnet18", BasicBlock, [2, 2, 2, 2], pretrained, progress, device, **kwargs
+        "resnet18", BasicBlock, [2, 2, 2, 2], pretrained, pretrained_file, progress, device, **kwargs
     )
 
 

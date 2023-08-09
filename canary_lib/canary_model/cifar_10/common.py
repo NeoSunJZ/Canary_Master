@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from torch.autograd import Variable
-from torchvision.transforms import Resize
+from torchvision.transforms import Resize, RandomCrop, RandomHorizontalFlip, Normalize, Compose
 
 from canary_sefi.core.component.component_decorator import SEFIComponent
 
@@ -9,7 +9,8 @@ sefi_component = SEFIComponent()
 
 
 @sefi_component.util(util_type="img_preprocessor", util_target="model",
-                     name=["DenseNet(CIFAR-10)", "GoogLeNet(CIFAR-10)", "InceptionV3(CIFAR-10)", "MobileNetV2(CIFAR-10)",
+                     name=["DenseNet(CIFAR-10)", "GoogLeNet(CIFAR-10)", "InceptionV3(CIFAR-10)",
+                           "MobileNetV2(CIFAR-10)",
                            "ResNet(CIFAR-10)", "VGG(CIFAR-10)"])
 def img_pre_handler(ori_imgs, args):
     run_device = args.get("run_device", 'cuda' if torch.cuda.is_available() else 'cpu')
@@ -22,10 +23,15 @@ def img_pre_handler(ori_imgs, args):
         ori_img = Variable(torch.from_numpy(ori_img).to(run_device).float())
 
         # Resize
-        img_size_h = args.get("img_size_h", 32)
-        img_size_w = args.get("img_size_w", 32)
-        resize = Resize([img_size_h, img_size_w])
-        ori_img = resize(ori_img)
+        Resize_args = args.get("Resize", {"size": [32, 32]})
+        Resize_handler = Resize(**Resize_args)
+        ori_img = Resize_handler(ori_img)
+
+        transforms_args = args.get("transforms", None)
+        if transforms_args is not None:
+            compose_handler = Compose([eval(key)(**transforms_args[key]) for key in transforms_args])
+            ori_img = compose_handler(ori_img)
+
         ori_img = torch.unsqueeze(ori_img, dim=0)
         if result is None:
             result = ori_img
@@ -35,7 +41,8 @@ def img_pre_handler(ori_imgs, args):
 
 
 @sefi_component.util(util_type="img_reverse_processor", util_target="model",
-                     name=["DenseNet(CIFAR-10)", "GoogLeNet(CIFAR-10)", "InceptionV3(CIFAR-10)", "MobileNetV2(CIFAR-10)",
+                     name=["DenseNet(CIFAR-10)", "GoogLeNet(CIFAR-10)", "InceptionV3(CIFAR-10)",
+                           "MobileNetV2(CIFAR-10)",
                            "ResNet(CIFAR-10)", "VGG(CIFAR-10)"])
 def img_post_handler(adv_imgs, args):
     if type(adv_imgs) == torch.Tensor:
@@ -51,7 +58,8 @@ def img_post_handler(adv_imgs, args):
 
 
 @sefi_component.util(util_type="result_postprocessor", util_target="model",
-                     name=["DenseNet(CIFAR-10)", "GoogLeNet(CIFAR-10)", "InceptionV3(CIFAR-10)", "MobileNetV2(CIFAR-10)",
+                     name=["DenseNet(CIFAR-10)", "GoogLeNet(CIFAR-10)", "InceptionV3(CIFAR-10)",
+                           "MobileNetV2(CIFAR-10)",
                            "ResNet(CIFAR-10)", "VGG(CIFAR-10)"])
 def result_post_handler(logits, args):
     results = torch.nn.functional.softmax(logits, dim=1).detach().cpu().numpy()
@@ -62,7 +70,8 @@ def result_post_handler(logits, args):
 
 
 @sefi_component.util(util_type="inference_detector", util_target="model",
-                     name=["DenseNet(CIFAR-10)", "GoogLeNet(CIFAR-10)", "InceptionV3(CIFAR-10)", "MobileNetV2(CIFAR-10)",
+                     name=["DenseNet(CIFAR-10)", "GoogLeNet(CIFAR-10)", "InceptionV3(CIFAR-10)",
+                           "MobileNetV2(CIFAR-10)",
                            "ResNet(CIFAR-10)", "VGG(CIFAR-10)"])
 def inference_detector(model, img):
     model.eval()

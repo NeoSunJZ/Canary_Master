@@ -16,8 +16,8 @@ def save_inference_test_data(img_id, img_type, inference_model, inference_img_la
         task_manager.test_data_logger.update_log("DELETE FROM inference_test_data WHERE inference_test_data_id = ?",
                                                  (result['inference_test_data_id'],))
     sql_insert = "INSERT INTO inference_test_data (inference_test_data_id, img_id, img_type, " \
-          "inference_model, inference_img_label, inference_img_conf_array, true_class_cams, inference_class_cams) " \
-          "VALUES (NULL,?,?,?,?,?,?,?)"
+                 "inference_model, inference_img_label, inference_img_conf_array, true_class_cams, inference_class_cams) " \
+                 "VALUES (NULL,?,?,?,?,?,?,?)"
     if use_pickle_dump:
         inference_img_conf_array = pickle.dumps(inference_img_conf_array)
         if true_class_cams is not None:
@@ -31,7 +31,8 @@ def save_inference_test_data(img_id, img_type, inference_model, inference_img_la
             str(inference_class_cams))
     inference_test_data_id = task_manager.test_data_logger.insert_log(sql_insert, args)
     if task_manager.test_data_logger.debug_log:
-        msg = "[ LOGGER ] Logged. Image(ImgID:{} Type:{}) has Inferenced by Model({}). Inference result is {}. ".format(*args)
+        msg = "[ LOGGER ] Logged. Image(ImgID:{} Type:{}) has Inferenced by Model({}). Inference result is {}. ".format(
+            *args)
         if true_class_cams is not None and inference_class_cams is not None:
             msg += "G-CAM(Gradient-weighted Class Activation Mapping): Ready"
         else:
@@ -57,7 +58,7 @@ def handle_pickle_loads(dump):
 
 def get_all_inference_test_data(img_type):
     sql = "SELECT * FROM inference_test_data WHERE img_type = ? "
-    return handle_result(task_manager.test_data_logger.query_logs(sql, (str(img_type), )))
+    return handle_result(task_manager.test_data_logger.query_logs(sql, (str(img_type),)))
 
 
 def get_inference_test_data_by_model_name(model_name, img_type):
@@ -70,6 +71,11 @@ def get_inference_test_data_by_img_id(img_id, img_type):
     return handle_result(task_manager.test_data_logger.query_logs(sql, (str(img_type), img_id)))
 
 
+def get_inference_test_data_by_img_id_and_model(img_id, img_type, inference_model):
+    sql = "SELECT * FROM inference_test_data WHERE img_type = ? AND img_id = ? AND inference_model = ?"
+    return handle_result(task_manager.test_data_logger.query_logs(sql, (str(img_type), img_id, str(inference_model))))
+
+
 def get_clean_inference_test_data_with_img_info(inference_model):
     sql = "SELECT inference_test_data.*, ori_img_log.ori_img_label FROM inference_test_data, ori_img_log " \
           "WHERE inference_test_data.img_type = 'NORMAL' AND inference_test_data.img_id = ori_img_log.ori_img_id " \
@@ -77,7 +83,8 @@ def get_clean_inference_test_data_with_img_info(inference_model):
     return handle_result(task_manager.test_data_logger.query_logs(sql, (str(inference_model),)))
 
 
-def get_adv_inference_test_data_with_adv_info(inference_model, adv_example_file_type=DatasetType.ADVERSARIAL_EXAMPLE_IMG.value):
+def get_adv_inference_test_data_with_adv_info(inference_model,
+                                              adv_example_file_type=DatasetType.ADVERSARIAL_EXAMPLE_IMG.value):
     sql = "SELECT inference_test_data.*, ori_img_log.ori_img_label, ori_img_log.ori_img_id, " \
           "attack_info_log.atk_name, attack_info_log.base_model " \
           "FROM inference_test_data, adv_img_file_log, ori_img_log, attack_info_log " \
@@ -86,4 +93,5 @@ def get_adv_inference_test_data_with_adv_info(inference_model, adv_example_file_
           "AND adv_img_file_log.ori_img_id = ori_img_log.ori_img_id " \
           "AND adv_img_file_log.attack_id = attack_info_log.attack_id " \
           "AND inference_test_data.inference_model = ? "
-    return handle_result(task_manager.test_data_logger.query_logs(sql, (str(adv_example_file_type),str(inference_model))))
+    return handle_result(
+        task_manager.test_data_logger.query_logs(sql, (str(adv_example_file_type), str(inference_model))))

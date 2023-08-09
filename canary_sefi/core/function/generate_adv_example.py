@@ -21,7 +21,6 @@ def build_AEs(dataset_info, atk_name, atk_args, model_name, model_args, img_proc
         is_skip, completed_num = global_recovery.check_skip(participant)
         if is_skip:
             return None
-
         batch_size = atk_batch_config.get(atk_name, {}).get(model_name, 1)
         adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_args, dataset_info,
                                each_img_finish_callback=each_img_finish_callback,
