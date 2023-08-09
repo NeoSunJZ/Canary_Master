@@ -14,4 +14,4 @@ SEFI_component_manager.add_all(canary_lib)
 if __name__ == "__main__":
     app = create_app()
     CORS(app, resources=r'/*')
-    reporter.get_socket(app).run(app, host="0.0.0.0")
+    reporter.get_socket(app).run(app, host="0.0.0.0", allow_unsafe_werkzeug=True)
