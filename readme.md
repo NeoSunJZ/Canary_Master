@@ -11,41 +11,9 @@ It additionally provides a toolkit with multiple models, SOTA attack methods and
 
 SEFI is created and maintained by researchers at Beijing Institute of Technology.
 
-## Install
+## User's Manual
 
-This project uses [python](https://www.python.org/), [pip](https://pypi.org/project/pip/) and [pytorch](https://pytorch.org/). Go check them out if you don't have them locally installed.
-
-We recommend using [conda](https://github.com/conda/conda) to create a python environment rather than installing python directly.
-
-```sh
-pip install sefi
-```
-
-## Usage
-
-
-## Supported
-
-### Model
-
-| Model Name |    Dataset    |                         Model Source                         | Best Acc | Support Grad-CAM |
-| :--------: | :-----------: | :----------------------------------------------------------: | :------: | :--------------: |
-|  AlexNet   | Fashion-MNIST | [CNN-for-Fashion-MNIST](https://github.com/wzyjsha-00/CNN-for-Fashion-MNIST) |  92.19%  |                  |
-|  AlexNet   |   ImageNet    |                         Torchvision                          |          |        ✔         |
-|    VGG     | Fashion-MNIST | [CNN-for-Fashion-MNIST](https://github.com/wzyjsha-00/CNN-for-Fashion-MNIST) |  91.35%  |                  |
-|    VGG     |   CIFAR-10    |                                                              |          |        ✔         |
-|    VGG     |   ImageNet    |                         Torchvision                          |          |        ✔         |
-|            |               |                                                              |          |                  |
-
-
-
-### Attack Method
-
-
-
-### Database
-
-
+We are actively preparing the user manual and will be publicly available soon.
 
 ## Maintainers
 

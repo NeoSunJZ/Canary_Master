@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 
 def get_system_version():
-    return "1.0.1"
+    return "1.1.1"
 
 
 def print_logo(color=Fore.BLUE):
@@ -13,9 +13,9 @@ def print_logo(color=Fore.BLUE):
     tqdm.write(r"  _\ \/ _// _/_/ /   / /__/ / _ \ ")
     tqdm.write(r" /___/___/_/ /___/  /____/_/_.__/ ")
     tqdm.write(" Security Evaluation Fast Integration Framework [Library]")
-    tqdm.write(" V20230411.beta 内部代号[1]["+get_system_version()+"] \n")
+    tqdm.write(" V20230425.beta 内部代号[1]["+get_system_version()+"] \n")
     tqdm.write(" Design By Jiazheng Sun")
-    tqdm.write(" Contributor: Li Chen \ Chenxiao Xia \ Zhang DA \ Xiong Wenqi \ Rong Huang \ DongLi Tan \ Zhi Qu")
+    tqdm.write(" Contributor: Li Chen \ Chenxiao Xia \ Da Zhang \ Wenqi Xiong \ Rong Huang \ DongLi Tan \ Zhi Qu")
     tqdm.write(" Referenced Component Source: ")
     tqdm.write(" - Model -")
     tqdm.write(" - Github Project: Torchvision [https://github.com/pytorch/pytorch]")

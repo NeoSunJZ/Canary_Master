@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 
 def get_system_version():
-    return "2.0.4"
+    return "2.1.0"
 
 def print_logo(color=Fore.GREEN):
     tqdm.write(color + "\n")
@@ -17,11 +17,11 @@ def print_logo(color=Fore.GREEN):
     tqdm.write(" ╚══════╝ ╚══════╝ ╚═╝      ╚═╝")
     tqdm.write("\n")
     tqdm.write(" Security Evaluation Fast Integration Framework")
-    tqdm.write(" V20230418.beta 内部代号[2]["+get_system_version()+"] \n")
+    tqdm.write(" V20230425.beta 内部代号[1]["+get_system_version()+"] \n")
 
     tqdm.write(" Copyright 2022 BIT ")
     tqdm.write(" Design By Jiazheng Sun")
-    tqdm.write(" Contributor: Chenxiao Xia \ Zhang DA \ Xiong Wenqi \n")
+    tqdm.write(" Contributor: Chenxiao Xia \ Da Zhang \ Wenqi Xiong \n")
     tqdm.write(" Licensed under the Apache License, Version 2.0 (the 'License')      ")
     tqdm.write(" you may not use this file except in compliance with the License.    ")
     tqdm.write(" You may obtain a copy of the License at ")

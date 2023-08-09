@@ -53,7 +53,6 @@ def get_pic_nparray_from_temp(file_path, file_name, is_numpy_array_file=False, i
 
 def save_pic_to_temp(file_path, file_name, pic_numpy_array, save_as_numpy_array=False):
     file_name = img_file_name_handler(file_name, save_as_numpy_array)
-
     full_path = task_manager.base_temp_path + "pic/" + file_path + ("npy/" if save_as_numpy_array else "img/")
     if not os.path.exists(full_path):
         os.makedirs(full_path)

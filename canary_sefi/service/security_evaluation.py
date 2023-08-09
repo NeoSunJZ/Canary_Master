@@ -9,7 +9,8 @@ from canary_sefi.core.function.test_and_evaluation import adv_example_generate, 
     adv_example_generate_with_perturbation_increment, attack_deflection_capability_test_with_perturbation_increment, \
     attack_adv_example_da_test_with_perturbation_increment, attack_capability_evaluation_with_perturbation_increment, \
     attack_adv_example_da_and_cost_evaluation, attack_adv_example_comparative_test, \
-    attack_synthetical_capability_evaluation
+    attack_synthetical_capability_evaluation, \
+    trans_deflection_capability_test, trans_deflection_capability_evaluation, adv_trans_generate, adv_defense_training
 from canary_sefi.handler.json_handler.json_io_handler import save_info_to_json_file, get_info_from_json_file
 
 
@@ -26,7 +27,8 @@ class SecurityEvaluation:
 
         # 初始化数据集
         if isinstance(config.get("dataset"), str):
-            self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size", None), config.get("dataset_seed", None))
+            self.dataset_info = init_dataset(config.get("dataset"), config.get("dataset_size", None),
+                                             config.get("dataset_seed", None))
         elif isinstance(config.get("dataset"), dict):
             dataset_extra_config = config.get("dataset")
             self.dataset_info = init_dataset(
@@ -41,14 +43,18 @@ class SecurityEvaluation:
 
         self.model_list = config.get("model_list", None)
         self.attacker_list = config.get("attacker_list", None)
+        self.trans_list = config.get("trans_list", None)
+        self.defense_AT_list = config.get("defense_AT_list", None)
 
         self.transfer_attack_test_mode = TransferAttackType(config.get("transfer_attack_test_mode", "NOT"))
-        print(self.transfer_attack_test_mode)
         self.transfer_attack_test_on_model_list = config.get("transfer_attack_test_on_model_list", {})
 
         self.model_config = config.get("model_config", None)
         self.attacker_config = config.get("attacker_config", None)
+        self.trans_config = config.get("trans_config", None)
+        self.defense_AT_config = config.get("defense_AT_config", None)
         self.img_proc_config = config.get("img_proc_config", None)
+        self.img_train_proc_config = config.get("img_train_proc_config", None)
 
         self.perturbation_increment_config = config.get("perturbation_increment_config", None)
 
@@ -57,19 +63,22 @@ class SecurityEvaluation:
 
     def adv_example_generate(self):
         # 生成对抗样本与对抗样本质量分析
-        adv_example_generate(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config, self.img_proc_config, self.adv_example_generate_batch_config)
+        adv_example_generate(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config,
+                             self.img_proc_config, self.adv_example_generate_batch_config)
         task_manager.test_data_logger.finish()
 
     def model_inference_capability_test_and_evaluation(self):
         # 模型推理能力测试
-        model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config, self.inference_batch_config)
+        model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config,
+                                        self.inference_batch_config)
         # 模型推理能力评估
         model_inference_capability_evaluation(self.model_list)
         task_manager.test_data_logger.finish()
 
     def attack_test_and_evaluation(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
         # 攻击偏转能力测试
-        attack_deflection_capability_test(self.attacker_list, self.dataset_info, self.model_config, self.img_proc_config,
+        attack_deflection_capability_test(self.attacker_list, self.dataset_info, self.model_config,
+                                          self.img_proc_config,
                                           self.inference_batch_config,
                                           self.transfer_attack_test_mode, self.transfer_attack_test_on_model_list,
                                           use_raw_nparray_data, transfer_test_level)
@@ -85,7 +94,8 @@ class SecurityEvaluation:
         attack_synthetical_capability_evaluation(self.attacker_list, use_raw_nparray_data)
         model_security_synthetical_capability_evaluation(self.model_list, use_raw_nparray_data)
 
-    def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
+    def attack_full_test(self, use_img_file=True, use_raw_nparray_data=False,
+                         transfer_test_level=TestLevel.ESSENTIAL_ONLY):
         skip_step_list, finish_callback = task_manager.multi_database.get_skip_step()
         if not skip_step_list["model_inference_capability_test_and_evaluation"]:
             self.model_inference_capability_test_and_evaluation()
@@ -116,22 +126,72 @@ class SecurityEvaluation:
                                                          self.adv_example_generate_batch_config,
                                                          self.perturbation_increment_config)
         # 模型推理能力测试
-        model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config, self.inference_batch_config)
+        model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config,
+                                        self.inference_batch_config)
 
         if use_img_file:
             # 测试
-            attack_deflection_capability_test_with_perturbation_increment(self.attacker_list, self.model_config, self.img_proc_config, use_raw_nparray_data=False)
-            attack_adv_example_da_test_with_perturbation_increment(self.attacker_list, self.dataset_info, use_raw_nparray_data=False)
+            attack_deflection_capability_test_with_perturbation_increment(self.dataset_info, self.attacker_list, self.model_config,
+                                                                          self.img_proc_config,
+                                                                          use_raw_nparray_data=False)
+            attack_adv_example_da_test_with_perturbation_increment(self.attacker_list, self.dataset_info,
+                                                                   use_raw_nparray_data=False)
             # 结果分析
-            attack_capability_evaluation_with_perturbation_increment(self.attacker_list, self.dataset_info, use_raw_nparray_data=False)
+            attack_capability_evaluation_with_perturbation_increment(self.attacker_list, self.dataset_info,
+                                                                     use_raw_nparray_data=False)
         if use_raw_nparray_data:
             # 测试
-            attack_deflection_capability_test_with_perturbation_increment(self.attacker_list, self.model_config, self.img_proc_config, use_raw_nparray_data=True)
-            attack_adv_example_da_test_with_perturbation_increment(self.attacker_list, self.dataset_info, use_raw_nparray_data=True)
+            attack_deflection_capability_test_with_perturbation_increment(self.dataset_info, self.attacker_list, self.model_config,
+                                                                          self.img_proc_config,
+                                                                          use_raw_nparray_data=True)
+            attack_adv_example_da_test_with_perturbation_increment(self.attacker_list, self.dataset_info,
+                                                                   use_raw_nparray_data=True)
             # 结果分析
-            attack_capability_evaluation_with_perturbation_increment(self.attacker_list, self.dataset_info, use_raw_nparray_data=True)
+            attack_capability_evaluation_with_perturbation_increment(self.attacker_list, self.dataset_info,
+                                                                     use_raw_nparray_data=True)
 
         task_manager.test_data_logger.finish()
 
+    def adv_trans_generate(self, use_raw_nparray_data=False):
+        # 生成图片预处理防御样本
+        adv_trans_generate(self.trans_list, self.trans_config, use_raw_nparray_data)
+        task_manager.test_data_logger.finish()
+
+    def trans_test_and_evaluation(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
+        # 防御样本攻击偏转能力测试
+        trans_deflection_capability_test(self.dataset_info, self.trans_list, self.model_config, self.img_proc_config,
+                                         self.inference_batch_config,
+                                         self.transfer_attack_test_mode, self.transfer_attack_test_on_model_list,
+                                         use_raw_nparray_data, transfer_test_level)
+        # 防御样本攻击方法推理偏转效果/模型注意力偏转效果评估
+        trans_deflection_capability_evaluation(self.trans_list, self.dataset_info, use_raw_nparray_data)
+        task_manager.test_data_logger.finish()
+
+    def trans_full_test(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.ESSENTIAL_ONLY):
+        self.adv_trans_generate(use_raw_nparray_data)
+        self.trans_test_and_evaluation(use_raw_nparray_data, transfer_test_level)
+
+    def adv_defense_training(self):
+        # 对抗防御训练
+        adv_defense_training(self.dataset_info, self.defense_AT_list, self.defense_AT_config, self.model_config,
+                             self.img_train_proc_config)
+        task_manager.test_data_logger.finish()
+
+    def defense_test_and_evaluation(self, use_raw_nparray_data=False, transfer_test_level=TestLevel.FULL):
+        # 干净图像预测及评估
+        model_inference_capability_test(self.dataset_info, self.model_list, self.model_config, self.img_proc_config,
+                                        self.inference_batch_config)
+        model_inference_capability_evaluation(self.model_list)
+        # 对抗样本预测及评估
+        adv_example_generate(self.dataset_info, self.attacker_list, self.attacker_config, self.model_config,
+                             self.img_proc_config, self.adv_example_generate_batch_config)
+        attack_deflection_capability_test(self.attacker_list, self.model_config, self.img_proc_config,
+                                          self.inference_batch_config,
+                                          self.transfer_attack_test_mode,
+                                          self.transfer_attack_test_on_model_list,
+                                          use_raw_nparray_data,
+                                          transfer_test_level)
+        attack_deflection_capability_evaluation(self.attacker_list, self.dataset_info, use_raw_nparray_data)
+        task_manager.test_data_logger.finish()
 
 # sys.excepthook = excepthook

@@ -65,7 +65,7 @@ def inference_detector_4_img_batch(inference_model_name, model_args, img_proc_ar
                                    each_img_finish_callback=None, batch_size=1, completed_num=0, run_device=None,
                                    test_level=TestLevel.FULL):
     img_log_id_list = []
-    inference_detector = InferenceDetector(inference_model_name, model_args, img_proc_args, run_device, test_level)
+    inference_detector = InferenceDetector(inference_model_name.split("_")[0], model_args, img_proc_args, run_device, test_level)
 
     def inference_iterator(imgs, img_log_ids, img_labels):
         # 执行预测
