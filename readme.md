@@ -1,30 +1,173 @@
-# SEFI
+# Canary SEFI
 <img src="https://github.com/NeoSunJZ/Canary_Master/blob/main/logo.png?raw=true" width="200" alt="">
 
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
+[中文版](https://github.com/NeoSunJZ/Canary_Master/blob/main/readme_cn.md)
+
 ## Introduction
 
-SEFI is a framework for evaluating the robustness of artificial intelligence. It will generate adversarial samples based on selected models using selected attack methods and use these adversarial samples to attack any model you wish. In the process it will collect data including adversarial sample quality, model result deflection and model baseline inference as a basis for evaluating the robustness of AI models and the effectiveness of attack methods, while finding the best defense solution.
+SEFI is a framework for evaluating the robustness of deep learning-based image recognition models.
 
-It additionally provides a toolkit with multiple models, SOTA attack methods and defense methods, and allows users to integrate more on their own.
+It uses selected attack methods to generate adversarial samples based on selected models and uses these adversarial examples to attack any model you want. In the process, it collects data including multiple evaluation metrics to assess AI model robustness and attack method effectiveness while trying to find the best defense solution.
 
-SEFI is created and maintained by researchers at Beijing Institute of Technology.
+It also provides a toolkit containing multiple models, SOTA attack methods and defense methods, and allows users to make additional integrations themselves.
 
-## User's Manual
+SEFI was created and is maintained by researchers at BIT.
 
-We are actively preparing the user manual and will be publicly available soon.
+<img src="https://github.com/NeoSunJZ/Canary_Master/blob/main/framework_structure.png?raw=true" width="800" alt="">
+
+## Functions
+
+### What models do we support？
+
+We have supported 15 models on 4 datasets, of which all 15 models for the ImageNet dataset are available. We hope that you will participate in improving our model library and share your own model structure and weighting information to help more people.
+
+We have built a public repository of model weights located: https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight
+
+| Models                | Substructure    | Dataset       | Fully Available | Source                | Support GCAM? | Weights Available | Top-1 Acc |
+| --------------------- | --------------- | ------------- | --------------- | --------------------- | ------------- | ----------------- | --------- |
+| **LeNetV5**           | N/A             | Fashion-MNIST | Come Soon       | CNN-for-Fashion-MNIST | Planned       | Waiting Upload    |           |
+| **AlexNet**           | N/A             | Fashion-MNIST | Come Soon       | CNN-for-Fashion-MNIST | Planned       | Waiting Upload    | 92.19%    |
+| **AlexNet**           | N/A             | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **VGG**               | vgg16_bn        | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **VGG**               | vgg16_bn        | CIFAR-10      | Come Soon       |                       | ✔             | Waiting Upload    |           |
+| **VGG**               | -               | CIFAR-100     | Come Soon       | Pytorch-Cifar-Models  | N/A           | Waiting Upload    |           |
+| **GoogLeNet**         | N/A             | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **GoogLeNet**         | N/A             | CIFAR-10      | Come Soon       |                       | ✔             | Waiting Upload    |           |
+| **InceptionV3**       | N/A             | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **InceptionV3**       | N/A             | CIFAR-10      | Come Soon       |                       | ✔             | Waiting Upload    |           |
+| **ResNet**            | resnet50        | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **ResNet**            | resnet50        | CIFAR-10      | Come Soon       |                       | ✔             | Waiting Upload    |           |
+| **ResNet**            | resnet56        | CIFAR-100     | Come Soon       | Pytorch-Cifar-Models  | Planned       | ✔SEFI-LW          | 72.63%    |
+| **ResNet**            | resnet19light   | Fashion-MNIST | Come Soon       | CNN-for-Fashion-MNIST | Planned       | Waiting Upload    |           |
+| **DenseNet**          | densenet161*    | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **DenseNet**          | densenet161     | CIFAR-10      | Come Soon       |                       | ✔             | Waiting Upload    |           |
+| **SqueezeNet**        | squeezenet1_1   | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **MobileNetV3**       | v3_large        | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **MobileNetV2**       | N/A             | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **MobileNetV2**       | N/A             | CIFAR-10      | Come Soon       |                       | Planned       | Waiting Upload    |           |
+| **MobileNetV2**       | v2_x1_0         | CIFAR-100     | Come Soon       | Pytorch-Cifar-Models  | Planned       | ✔SEFI-LW          | 73.61%    |
+| **ShuffleNetV2**      | v2_x2_0         | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **ShuffleNetV2**      | -               | CIFAR-10      | Come Soon       |                       | N/A           | Waiting Upload    |           |
+| **ShuffleNetV2**      | -               | CIFAR-100     | Come Soon       | Pytorch-Cifar-Models  | N/A           | Waiting Upload    |           |
+| **MNASNet**           | mnasnet1_3      | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **EfficientNetV2**    | v2_s            | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **VisionTransformer** | vit_b_32        | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **RegNet**            | y_8gf           | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **SwinTransformer**   | swin_s          | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **ConvNext**          | convnext_base   | ImageNet      | ✔               | Torchvision           | ✔             | ✔Official         |           |
+| **WideResNet**        | wideresnet34_10 | CIFAR-10      | Come Soon       |                       | ✔             | Waiting Upload    |           |
+
+### What attack methods do we support？
+
+We support 22 common attack methods, including:
+
+| Attack Methods                               | Method Type            | Attack Approach    | Not Support Models        | Provide default parameters? |
+| -------------------------------------------- | ---------------------- | ------------------ | ------------------------- | --------------------------- |
+| **FGSM**                                     | White-Box              | Gradient           | None                      | Yes, applicable to ImageNet |
+| **JSMA**                                     | White-Box              | Gradient           | None                      | Yes, applicable to ImageNet |
+| **DeepFool**                                 | White-Box              | Gradient           | None                      | Yes, applicable to ImageNet |
+| **I-FGSM (****BIM****)**                     | White-Box              | Gradient           | None                      | Yes, applicable to ImageNet |
+| **C&W Attack**                               | White-Box              | Gradient           | None                      | Yes, applicable to ImageNet |
+| **Projected** **Gradient Descent** **(PGD)** | White-Box              | Gradient           | None                      | Yes, applicable to ImageNet |
+| **MI-FGSM (MIM)**                            | Transferable Black-box | Transfer, Gradient | None                      | Yes, applicable to ImageNet |
+| **SI-FGSM (SIM)**                            | Transferable Black-box | Transfer, Gradient | None                      | Yes, applicable to ImageNet |
+| **NI-FGSM (NIM)**                            | Transferable Black-box | Transfer, Gradient | None                      | Yes, applicable to ImageNet |
+| **VMI-FGSM (VMIM)**                          | Transferable Black-box | Transfer, Gradient | None                      | Yes, applicable to ImageNet |
+| **Elastic-Net Attack (EAD)**                 | White-Box              | Gradient           | None                      | Yes, applicable to ImageNet |
+| **SSAH**                                     | White-Box              | Gradient           | InceptionV3、SwinT、ViT   | Yes, applicable to ImageNet |
+| **One-pixel Attack (OPA)**                   | Black-Box              | Query, Score       | Not tested                | No                          |
+| **Local Search Attack (LSA)**                | Black-Box              | Query, Score       | None                      | Yes, applicable to ImageNet |
+| **Boundary Attack (BA)**                     | Black-Box              | Query, Decision    | None                      | Yes, applicable to ImageNet |
+| **Spatial Attack (SA)**                      | Black-Box              | Query              | None                      | Yes, applicable to ImageNet |
+| **Hop Skip Jump Attack (HSJA)**              | Black-Box              | Query, Decision    | None                      | Yes, applicable to ImageNet |
+| **Gen Attack (GA)**                          | Black-Box              | Query, Score       | None                      | Yes, applicable to ImageNet |
+| **SPSA**                                     | Black-Box              | Query, Score       | None                      | Yes, applicable to ImageNet |
+| **Zeroth-Order** **Optimization** **(ZOO)**  | Black-Box              | Query, Score       | Not tested                | No                          |
+| **AdvGan**                                   | Black-Box              | Query, Score       | None                      | Yes, applicable to ImageNet |
+| **TREMBA**                                   | Black-Box              | Query, Score       | GoogLeNet、EfficientNetV2 | Yes, applicable to ImageNet |
+
+We are looking for more good and classic attack methods to add to our library, if you are the author of a method, feel free to contribute your method. Some of the methods that are not fully tested may not be shown in the above table, but it may appear in the code earlier, if it fails to appear in the above list it means it may not be stable or have stable support for the time being.
+
+### What defense methods do we support? (Experimental)
+
+**The entire defense module is currently experimental, which means they may not be stable.**
+
+We support 8 common defense methods, including:
+
+| Defense Methods | Method Type          | Not Support Models | Provide default parameters? |
+| --------------- | -------------------- | ------------------ | --------------------------- |
+| NAT             | Adversarial Training |                    |                             |
+| Mart            | Adversarial Training |                    |                             |
+| Natural         | Adversarial Training |                    |                             |
+| Trades          | Adversarial Training |                    |                             |
+| Jpeg            | Image Processing     |                    |                             |
+| Quantize        | Image Processing     |                    |                             |
+| TVM             | Image Processing     |                    |                             |
+| Quilting        | Image Processing     |                    |                             |
+
+We are looking for more good and classic defense methods to add to our library, if you are the author of a method, feel free to contribute your method. Some of the methods that are not fully tested may not be shown in the above table, but it may appear in the code earlier, if it fails to appear in the above list it means it may not be stable or have stable support for the time being.
+
+### What data do we support collecting？
+
+We support the full collection of the following four types of metrics. Please refer to our Paper section 3.1 or the user manual for the specific meaning of the metrics.
+
+#### Model capability measurement metrics
+
+**Clean Example Accuracy (Clear Accuracy, CA)**
+
+**Clean example F1 score (Clear F1, CF)**
+
+**Clear Confidence (CC)**
+
+#### Attack effectiveness measurement metrics
+
+**Misclassification Ratio (MR) /  Targeted Attack Success (TAS)**
+
+**Adversarial Example Confidence Change (ACC): Average Increase in Adversarial-class Confidence (AIAC) / Average Reduction in True-class Confidence (ARTC)**
+
+**Average Class Activation Mapping Change (ACAMC)**
+
+**Observable Transfer Rate (OTR)**
+
+#### Cost of attack measurement metrics
+
+**Calculation Time Cost (CTC)**
+
+**Query** **Number Cost (QNC)**
+
+**Average** **Norm** **Distortion** **(AND): Average Maximum Distortion (AMD) / Average Euclidean Distortion (AED) / Average** **Pixel** **Change Ratio (APCR)**
+
+**Average Euclidean** **Distortion** **in** **Frequency Domain** **(AED-FD)**
+
+**Average Metrics Similarity (AMS): Average Deep Metrics Similarity (ADMS) / Average Low-level Metrics Similarity (ALMS)**
+
+#### Effectiveness of defense measurement metrics
+
+**Model Capability Variance (MCV): Accuracy Variance (AV) / F1-Score Variance (FV) / Mean Confidence Variance (CV)** 
+
+**Rectify/Sacrifice Ratio (RR/SR)**
+
+**Attack Capability** **Variance** **(ACV): MR Variance (MRV) / AND Variance (ANDV) / AMS Variance (AMSV)**
+
+**Average Adversarial Confidence Change (AACC):Average Reduction in Adversarial-class Confidence (ARAC) / Average Increase in True-class Confidence (AITC)**
+
+## Quick Start
+
+Please refer to the Quick Start Example in the project
+
+We are preparing the user manual and will release it soon.
 
 ## Maintainers
 
 [@NeoSunJz](https://github.com/NeoSunJz).
 
-## Contributing
+## Contributors
 
-### Contributors
-
-This project exists thanks to all the people who contribute.
+Our main contributors are：**孙家正（Jiazheng Sun）、Li Chen、Chenxiao Xia、Da Zhang、 Rong Huang、Zhi Qu、Wenqi Xiong**
+We are particularly grateful for：**Jun Zheng 、Yu’an Tan**
 
 ## License
 
-[Apache 2.0](LICENSE) © Beijing Institute of Technology
+[Apache 2.0](LICENSE) © Beijing Institute of Technology (BIT)
