@@ -19,4 +19,11 @@ argparse~=1.4.0
 eagerpy~=0.30.0
 scipy~=1.8.1
 PyWavelets
+seaborn
 timm
+psutil
+pynvml
+alibabacloud_imagerecog20190930
+huaweicloudsdkcore
+huaweicloudsdkimage
+tencentcloud-sdk-python
