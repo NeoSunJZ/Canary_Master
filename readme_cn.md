@@ -13,7 +13,7 @@ SEFI是一个评估基于深度学习的图像识别模型稳健性的框架。
 
 它还提供了一个包含多个模型、SOTA攻击方法和防御方法的工具包，并允许用户自己进行更多集成。
 
-SEFI由北京理工学院的研究人员创建和维护。
+SEFI由北京理工大学（BIT）网络空间安全学院（Cyberspace Science & Technology）的研究人员创建和维护。
 
 <img src="https://github.com/NeoSunJZ/Canary_Master/blob/main/framework_structure.png?raw=true" width="800" alt="">
 
@@ -167,6 +167,7 @@ SEFI由北京理工学院的研究人员创建和维护。
 ## 贡献者
 
 我们的主要贡献者是：**孙家正（Jiazheng Sun）、Li Chen、Chenxiao Xia、Da Zhang、 Rong Huang、Zhi Qu、Wenqi Xiong**
+
 我们格外致谢：**Jun Zheng 、Yu’an Tan**
 
 ## 许可证
