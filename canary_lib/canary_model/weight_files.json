@@ -37,19 +37,19 @@
       }
     },
     "shufflenet_v2": {
-      "shufflenetv2_x0_5": {
+      "x0_5": {
         "file_name": "cifar100_shufflenetv2_x0_5-1977720f.pt",
         "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/ShuffleNetV2(Cifar100)/cifar100_shufflenetv2_x0_5-1977720f.pt"
       },
-      "shufflenetv2_x1_0": {
+      "x1_0": {
         "file_name": "cifar100_shufflenetv2_x1_0-9ae22beb.pt",
         "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/ShuffleNetV2(Cifar100)/cifar100_shufflenetv2_x1_0-9ae22beb.pt"
       },
-      "shufflenetv2_x1_5": {
+      "x1_5": {
         "file_name": "cifar100_shufflenetv2_x1_5-e2c85ad8.pt",
         "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/ShuffleNetV2(Cifar100)/cifar100_shufflenetv2_x1_5-e2c85ad8.pt"
       },
-      "shufflenetv2_x2_0": {
+      "x2_0": {
         "file_name": "cifar100_shufflenetv2_x2_0-e7e584cd.pt",
         "remote_path": "https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight/releases/download/ShuffleNetV2(Cifar100)/cifar100_shufflenetv2_x2_0-e7e584cd.pt"
       }

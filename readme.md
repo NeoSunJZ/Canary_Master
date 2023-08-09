@@ -32,7 +32,7 @@ We have built a public repository of model weights(SEFI-LW) located: https://git
 | **AlexNet**           | N/A             | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **VGG**               | vgg16_bn        | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **VGG**               | vgg16_bn        | CIFAR-10      | Come Soon       | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
-| **VGG**               | -               | CIFAR-100     | Come Soon       | [PyTorch CIFAR Models](https://github.com/chenyaofo/pytorch-cifar-models) | N/A           | ✔SEFI-LW          |           |
+| **VGG**               | vgg16_bn        | CIFAR-100     | ✔               | [PyTorch CIFAR Models](https://github.com/chenyaofo/pytorch-cifar-models) | Planned       | ✔SEFI-LW          |           |
 | **GoogLeNet**         | N/A             | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **GoogLeNet**         | N/A             | CIFAR-10      | Come Soon       | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
 | **InceptionV3**       | N/A             | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
@@ -47,17 +47,17 @@ We have built a public repository of model weights(SEFI-LW) located: https://git
 | **MobileNetV3**       | v3_large        | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **MobileNetV2**       | N/A             | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **MobileNetV2**       | N/A             | CIFAR-10      | Come Soon       | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | Planned       | ✔SEFI-LW          |           |
-| **MobileNetV2**       | v2_x1_0         | CIFAR-100     | Come Soon       | [PyTorch CIFAR Models](https://github.com/chenyaofo/pytorch-cifar-models) | Planned       | ✔SEFI-LW          | 73.61%    |
+| **MobileNetV2**       | v2_x1_0         | CIFAR-100     | ✔               | [PyTorch CIFAR Models](https://github.com/chenyaofo/pytorch-cifar-models) | Planned       | ✔SEFI-LW          | 73.61%    |
 | **ShuffleNetV2**      | v2_x2_0         | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
-| **ShuffleNetV2**      | -               | CIFAR-10      | Come Soon       | Come Soon                                                    | N/A           | Waiting Upload    |           |
-| **ShuffleNetV2**      | -               | CIFAR-100     | Come Soon       | [PyTorch CIFAR Models](https://github.com/chenyaofo/pytorch-cifar-models) | N/A           | ✔SEFI-LW          |           |
+| **ShuffleNetV2**      | v2_x2_0         | CIFAR-10      | Come Soon       | [PyTorch CIFAR Models](https://github.com/chenyaofo/pytorch-cifar-models) | N/A           | Waiting Upload    |           |
+| **ShuffleNetV2**      | v2_x2_0         | CIFAR-100     | ✔               | [PyTorch CIFAR Models](https://github.com/chenyaofo/pytorch-cifar-models) | Planned       | ✔SEFI-LW          |           |
 | **MNASNet**           | mnasnet1_3      | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **EfficientNetV2**    | v2_s            | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **VisionTransformer** | vit_b_32        | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **RegNet**            | y_8gf           | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **SwinTransformer**   | swin_s          | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **ConvNext**          | convnext_base   | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
-| **WideResNet**        | wideresnet34_10 | CIFAR-10      | Come Soon       | Come Soon                                                    | ✔             | Waiting Upload    |           |
+| **WideResNet**        | wideresnet34_10 | CIFAR-10      | Come Soon       | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | Waiting Upload    |           |
 
 ### What attack methods do we support？
 
