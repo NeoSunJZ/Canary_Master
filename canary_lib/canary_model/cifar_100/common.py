@@ -9,7 +9,7 @@ sefi_component = SEFIComponent()
 
 
 @sefi_component.util(util_type="img_preprocessor", util_target="model",
-                     name=["MobileNetV2(CIFAR-100)", "ResNet(CIFAR-100)"])
+                     name=["MobileNetV2(CIFAR-100)", "ResNet(CIFAR-100)", "ShuffleNetV2(CIFAR-100)", "VGG(CIFAR-100)"])
 def img_pre_handler(ori_imgs, args):
     run_device = args.get("run_device", 'cuda' if torch.cuda.is_available() else 'cpu')
     result = None
@@ -34,7 +34,7 @@ def img_pre_handler(ori_imgs, args):
 
 
 @sefi_component.util(util_type="img_reverse_processor", util_target="model",
-                     name=["MobileNetV2(CIFAR-100)", "ResNet(CIFAR-100)"])
+                     name=["MobileNetV2(CIFAR-100)", "ResNet(CIFAR-100)", "ShuffleNetV2(CIFAR-100)", "VGG(CIFAR-100)"])
 def img_post_handler(adv_imgs, args):
     if type(adv_imgs) == torch.Tensor:
         adv_imgs = adv_imgs.data.cpu().numpy()
@@ -49,7 +49,7 @@ def img_post_handler(adv_imgs, args):
 
 
 @sefi_component.util(util_type="result_postprocessor", util_target="model",
-                     name=["MobileNetV2(CIFAR-100)", "ResNet(CIFAR-100)"])
+                     name=["MobileNetV2(CIFAR-100)", "ResNet(CIFAR-100)", "ShuffleNetV2(CIFAR-100)", "VGG(CIFAR-100)"])
 def result_post_handler(logits, args):
     results = torch.nn.functional.softmax(logits, dim=1).detach().cpu().numpy()
     predicts = []
@@ -59,7 +59,7 @@ def result_post_handler(logits, args):
 
 
 @sefi_component.util(util_type="inference_detector", util_target="model",
-                     name=["MobileNetV2(CIFAR-100)", "ResNet(CIFAR-100)"])
+                     name=["MobileNetV2(CIFAR-100)", "ResNet(CIFAR-100)", "ShuffleNetV2(CIFAR-100)", "VGG(CIFAR-100)"])
 def inference_detector(model, img):
     model.eval()
     return model(img)

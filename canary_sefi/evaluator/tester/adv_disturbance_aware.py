@@ -54,7 +54,7 @@ class AdvDisturbanceAwareTester:
             ori_img, img = self.img_handler(ori_img), self.img_handler(img)
         # L-2
         all_pixel = reduce(lambda x, y: x * y, img.shape)
-        result = torch.norm(img - ori_img, 2).cpu().detach().numpy() / all_pixel
+        result = torch.norm(img - ori_img, 2).cpu().detach().numpy() / (all_pixel ** 1/2)
         return float(result)
 
     def calculate_pixel_change_ratio(self, ori_img=None, img=None, test_all_model=False):
