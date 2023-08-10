@@ -7,6 +7,7 @@ from canary_sefi.core.function.helper.realtime_reporter import reporter
 # they need to be loaded into the SEFI Component Manager to be effective
 from canary_sefi.core.component.component_manager import SEFI_component_manager
 from canary_lib import canary_lib  # Canary Lib
+
 SEFI_component_manager.add_all(canary_lib)
 
 # In network mode, you can directly start it

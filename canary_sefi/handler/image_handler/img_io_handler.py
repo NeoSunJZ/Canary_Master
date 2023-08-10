@@ -34,9 +34,10 @@ def pic_buffer_to_base64(buffer):
     return "data:image/jpg;base64," + new_image_string
 
 
-def get_pic_nparray_from_temp(file_path, file_name, is_numpy_array_file=False, is_gray=False):
+def get_pic_nparray_from_temp(file_path, file_name, is_numpy_array_file=False, is_gray=False, force_use_provided_path=False):
     file_name = img_file_name_handler(file_name, is_numpy_array_file)
-    full_path = file_path + ("npy/" if is_numpy_array_file else "img/")
+    if not force_use_provided_path:
+        full_path = file_path + ("npy/" if is_numpy_array_file else "img/")
     if full_path is None:
         raise RuntimeError("[ Config Error ] The dataset path is NOT FOUND, please check your config")
     if not is_numpy_array_file:

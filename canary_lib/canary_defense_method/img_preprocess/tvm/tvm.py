@@ -11,7 +11,7 @@ from skimage.util import img_as_float
 from skimage import color
 
 try:
-    from Defense_Method.Img_Preprocess.tvm.tv_bregman import _denoise_tv_bregman
+    from canary_lib.canary_defense_method.img_preprocess.tvm.tv_bregman import _denoise_tv_bregman
 except ImportError:
     raise ImportError("tv_bregman not found. Check build script")
 

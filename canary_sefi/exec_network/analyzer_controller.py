@@ -1,7 +1,6 @@
 from flask import Blueprint, request
 
 from canary_sefi.core.function.basic.dataset.dataset_function import dataset_single_image_reader
-from canary_sefi.task_manager import task_manager
 from canary_sefi.core.function.init_dataset import dataset_seed_handler
 from canary_sefi.entity.dataset_info_entity import DatasetInfo
 from canary_sefi.entity.msg_entity import MsgEntity
@@ -12,8 +11,10 @@ from canary_sefi.evaluator.logger.indicator_data_handler import get_model_securi
 from canary_sefi.evaluator.logger.inference_test_data_handler import get_clean_inference_test_data_with_img_info, \
     get_adv_inference_test_data_with_adv_info
 from canary_sefi.handler.image_handler.img_io_handler import get_pic_nparray_from_temp, get_pic_base64_from_nparray
-from canary_sefi.handler.image_handler.img_utils import get_img_diff
+from canary_sefi.handler.image_handler.img_utils import img_size_uniform_fix
+from canary_sefi.handler.image_handler.plt_handler import img_diff_fig_builder, get_base64_by_fig
 from canary_sefi.handler.json_handler.json_io_handler import get_info_from_json_file
+from canary_sefi.task_manager import task_manager
 
 api = Blueprint('analyzer_api', __name__)
 
@@ -74,23 +75,25 @@ def get_adv_info_by_adv_img_id():
     is_numpy_array_file = request.args.get("isNumpyArrayFile", False)
 
     adv_example_file_log = find_adv_example_file_log_by_id(adv_img_file_id)
-
     if need_adv_img == "1":
         ori_img_log = find_img_log_by_id(adv_example_file_log["ori_img_id"])
 
-        config = get_info_from_json_file("config.json")
+        config = get_info_from_json_file(task_manager.base_temp_path, "config.json")
 
-        dataset_info = DatasetInfo(config.get('dataset'), int(dataset_seed_handler(config.get('dataset_seed',None))),
+        dataset_info = DatasetInfo(config.get('dataset'), None, "VAL",
+                                   int(dataset_seed_handler(config.get('dataset_seed', None))),
                                    int(config.get('dataset_size')))
         original_img, _ = dataset_single_image_reader(dataset_info, int(ori_img_log["ori_img_cursor"]))
 
         adv_file_path = task_manager.base_temp_path + "pic/" + str(adv_example_file_log["attack_id"]) + "/"
-        adversarial_img = get_pic_nparray_from_temp(adv_file_path, adv_example_file_log["adv_img_filename"], is_numpy_array_file)
-
+        adversarial_img = get_pic_nparray_from_temp(adv_file_path, adv_example_file_log["adv_img_filename"],
+                                                    is_numpy_array_file)
+        original_nparray, adversarial_nparray = img_size_uniform_fix(original_img, adversarial_img, True)
         adv_example_file_log['adv_img'] = {
             "original_img": get_pic_base64_from_nparray(original_img),
             "adversarial_img": get_pic_base64_from_nparray(adversarial_img),
-            "diff": get_img_diff(original_img, adversarial_img)
+            "diff": get_base64_by_fig(
+                img_diff_fig_builder(original_img=original_nparray, adversarial_img=adversarial_nparray))
         }
 
     return MsgEntity("SUCCESS", "1", adv_example_file_log).msg2json()

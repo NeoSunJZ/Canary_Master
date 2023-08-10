@@ -1,7 +1,7 @@
 import random
 
 from colorama import Fore, Style
-from flask_socketio import SocketIO, join_room, emit
+from flask_socketio import SocketIO, join_room, leave_room, emit
 from tqdm import tqdm
 
 from canary_sefi.task_manager import task_manager
@@ -10,7 +10,7 @@ from canary_sefi.task_manager import task_manager
 class RealtimeReport:
 
     def __init__(self):
-        self.room = None
+        self.rooms = []
 
     def console_log(self, msg, fore, type="INFO", save_db=True, send_msg=True, show_task=False,
                     show_step_sequence=False):
@@ -22,7 +22,7 @@ class RealtimeReport:
         if show_step_sequence:
             msg = "[ STEP {} ] ".format(task_manager.sys_log_logger.step_sequence) + msg
 
-        if self.room is not None and send_msg:
+        if len(self.rooms) != 0 and send_msg:
             self.send_realtime_msg(msg, type)
         tqdm.write(fore + msg + Fore.RESET)
 
@@ -40,9 +40,16 @@ class RealtimeReport:
 
         @socketio.on('join', namespace='/realtime_msg')
         def on_join():
-            self.room = str(random.randint(10000, 100000))
-            join_room(self.room)
-            emit("join_room", self.room, room=self.room)
+            room_tmp = str(random.randint(10000, 100000))
+            self.rooms.append(room_tmp)
+            join_room(room_tmp)
+            emit("join_room", room_tmp, room=room_tmp)
+
+        @socketio.on('leave_room', namespace='/realtime_msg')
+        def on_leave(room):
+            self.rooms.remove(room)
+            leave_room(room)
+            emit("disconnect", None, room=room)
 
         return socketio
 
@@ -51,10 +58,13 @@ class RealtimeReport:
             "type": type,
             "msg": msg
         }
-        emit("message", info, room=self.room, namespace='/realtime_msg')
+        for room in self.rooms:
+            emit("message", info, room=room, namespace='/realtime_msg')
 
     def send_disconnect(self):
-        emit("disconnect", None, room=self.room, namespace='/realtime_msg')
+        for room in self.rooms:
+            emit("disconnect", None, room=room, namespace='/realtime_msg')
+        self.rooms = []
 
 
 reporter = RealtimeReport()

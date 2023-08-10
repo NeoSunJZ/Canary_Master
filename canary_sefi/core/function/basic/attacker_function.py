@@ -3,6 +3,9 @@ import random
 
 from canary_sefi.core.component.component_enum import SubComponentType, ComponentConfigHandlerType, \
     AttackComponentAttributeType
+from canary_sefi.core.function.helper.realtime_reporter import reporter
+from canary_sefi.handler.image_handler.img_utils import img_size_uniform_fix
+from canary_sefi.handler.image_handler.plt_handler import get_base64_by_fig, img_diff_fig_builder
 from canary_sefi.task_manager import task_manager
 from canary_sefi.core.config.config_manager import config_manager
 from canary_sefi.core.component.component_manager import SEFI_component_manager
@@ -190,6 +193,8 @@ def adv_attack_4_img_batch(atk_name, atk_args, model_name, model_args, img_proc_
             # 因为直接转储为PNG会导致精度丢失，产生很多奇怪的结论
             img_file_name = "adv_{}.png".format(img_log_id)
             save_pic_to_temp(str(attack_id) + "/", img_file_name, adv_result, save_as_numpy_array=False)
+            original_img, adversarial_img = img_size_uniform_fix(imgs[index], adv_result, True)
+            reporter.send_realtime_msg(msg=get_base64_by_fig(img_diff_fig_builder(original_img=original_img, adversarial_img=adversarial_img)), type="BASE64")
 
             raw_file_name = None
             if save_raw_data:
