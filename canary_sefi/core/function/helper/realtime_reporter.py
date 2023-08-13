@@ -43,7 +43,6 @@ class RealtimeReport:
         def on_join():
             room_tmp = str(random.randint(10000, 100000))
             self.rooms.append(room_tmp)
-            # print("on_join---selfrooms:"+str(self.rooms))
             join_room(room_tmp)
             emit("join_room", room_tmp, room=room_tmp)
 
@@ -51,7 +50,6 @@ class RealtimeReport:
         def on_leave(room):
             self.rooms.remove(room)
             leave_room(room)
-            # print("on_leave:"+room)
             emit("disconnect", None, room=room)
 
         return socketio
@@ -62,13 +60,10 @@ class RealtimeReport:
             "msg": msg
         }
         for room in self.rooms:
-            # print("send_realtime_msg:"+room)
-            # print("send_realtime_msg---info:"+str(info))
             emit("message", info, room=room, namespace='/realtime_msg')
 
     def send_disconnect(self):
         for room in self.rooms:
-            # print("send_disconnect:"+room)
             emit("disconnect", None, room=room, namespace='/realtime_msg')
         self.rooms = []
 
