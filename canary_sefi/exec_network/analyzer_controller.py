@@ -13,8 +13,11 @@ from canary_sefi.evaluator.logger.indicator_data_handler import get_model_securi
 from canary_sefi.evaluator.logger.inference_test_data_handler import get_clean_inference_test_data_with_img_info, \
     get_adv_inference_test_data_with_adv_info
 from canary_sefi.handler.image_handler.img_io_handler import get_pic_nparray_from_temp, get_pic_base64_from_nparray
+from canary_sefi.handler.image_handler.img_utils import img_size_uniform_fix
+from canary_sefi.handler.image_handler.plt_handler import img_diff_fig_builder, get_base64_by_fig
 from canary_sefi.handler.image_handler.img_utils import get_img_diff, img_size_uniform_fix
 from canary_sefi.handler.json_handler.json_io_handler import get_info_from_json_file
+from canary_sefi.task_manager import task_manager
 
 api = Blueprint('analyzer_api', __name__)
 
@@ -75,7 +78,6 @@ def get_adv_info_by_adv_img_id():
     is_numpy_array_file = request.args.get("isNumpyArrayFile", False)
 
     adv_example_file_log = find_adv_example_file_log_by_id(adv_img_file_id)
-
     if need_adv_img == "1":
         ori_img_log = find_img_log_by_id(adv_example_file_log["ori_img_id"])
 
