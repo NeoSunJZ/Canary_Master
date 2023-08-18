@@ -21,10 +21,13 @@ scipy~=1.8.1
 PyWavelets
 seaborn
 timm
-scikit-image==0.15.0
 psutil
 pynvml
 alibabacloud_imagerecog20190930
 huaweicloudsdkcore
 huaweicloudsdkimage
 tencentcloud-sdk-python
+
+# defense
+scikit-image==0.15.0
+faiss
