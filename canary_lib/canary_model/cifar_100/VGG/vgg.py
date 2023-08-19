@@ -31,14 +31,30 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
-import os
 
+import sys
 import torch
 import torch.nn as nn
+try:
+    from torch.hub import load_state_dict_from_url
+except ImportError:
+    from torch.utils.model_zoo import load_url as load_state_dict_from_url
 from functools import partial
 from typing import Union, List, Dict, Any, cast
 
-from canary_lib.canary_model.pretrained_weight_loader import pretrained_weight_loader
+cifar10_pretrained_weight_urls = {
+    'vgg11_bn': 'https://github.com/chenyaofo/pytorch-cifar-models/releases/download/vgg/cifar10_vgg11_bn-eaeebf42.pt',
+    'vgg13_bn': 'https://github.com/chenyaofo/pytorch-cifar-models/releases/download/vgg/cifar10_vgg13_bn-c01e4a43.pt',
+    'vgg16_bn': 'https://github.com/chenyaofo/pytorch-cifar-models/releases/download/vgg/cifar10_vgg16_bn-6ee7ea24.pt',
+    'vgg19_bn': 'https://github.com/chenyaofo/pytorch-cifar-models/releases/download/vgg/cifar10_vgg19_bn-57191229.pt',
+}
+
+cifar100_pretrained_weight_urls = {
+    'vgg11_bn': 'https://github.com/chenyaofo/pytorch-cifar-models/releases/download/vgg/cifar100_vgg11_bn-57d0759e.pt',
+    'vgg13_bn': 'https://github.com/chenyaofo/pytorch-cifar-models/releases/download/vgg/cifar100_vgg13_bn-5ebe5778.pt',
+    'vgg16_bn': 'https://github.com/chenyaofo/pytorch-cifar-models/releases/download/vgg/cifar100_vgg16_bn-7d8c4031.pt',
+    'vgg19_bn': 'https://github.com/chenyaofo/pytorch-cifar-models/releases/download/vgg/cifar100_vgg19_bn-b98f7bd7.pt',
+}
 
 
 class VGG(nn.Module):
@@ -107,69 +123,45 @@ cfgs: Dict[str, List[Union[str, int]]] = {
     'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
 }
 
+
 def _vgg(arch: str, cfg: str, batch_norm: bool,
-         pretrained: bool,
-         device,
-         progress: bool = True, **kwargs: Any) -> VGG:
+         model_urls: Dict[str, str],
+         pretrained: bool = False, progress: bool = True, **kwargs: Any) -> VGG:
     if pretrained:
         kwargs['init_weights'] = False
     model = VGG(make_layers(cfgs[cfg], batch_norm=batch_norm), **kwargs)
-
     if pretrained:
-        pretrained_weight_loader(
-            weight_path=os.path.dirname(__file__) + "/weight/",
-            dataset_name="cifar-100",
-            model_name="mobilenet_v2",
-            model_arch=arch,
-            model=model,
-            device=device,
-            progress=progress)
+        state_dict = load_state_dict_from_url(model_urls[arch],
+                                              progress=progress)
+        model.load_state_dict(state_dict)
     return model
 
-def cifar100_vgg11_bn(pretrained=False, progress=True, device="cpu", **kwargs) -> VGG:
-    return _vgg(
-        arch="vgg11_bn",
-        cfg="A",
-        batch_norm=True,
-        device=device,
-        progress=progress,
-        pretrained=pretrained,
-        num_classes=100,
-        **kwargs
-    )
 
-def cifar100_vgg13_bn(pretrained=False, progress=True, device="cpu", **kwargs) -> VGG:
-    return _vgg(
-        arch="vgg13_bn",
-        cfg="B",
-        batch_norm=True,
-        device=device,
-        progress=progress,
-        pretrained=pretrained,
-        num_classes=100,
-        **kwargs
-    )
+def cifar10_vgg11_bn(*args, **kwargs) -> VGG: pass
+def cifar10_vgg13_bn(*args, **kwargs) -> VGG: pass
+def cifar10_vgg16_bn(*args, **kwargs) -> VGG: pass
+def cifar10_vgg19_bn(*args, **kwargs) -> VGG: pass
 
-def cifar100_vgg16_bn(pretrained=False, progress=True, device="cpu", **kwargs) -> VGG:
-    return _vgg(
-        arch="vgg16_bn",
-        cfg="D",
-        batch_norm=True,
-        device=device,
-        progress=progress,
-        pretrained=pretrained,
-        num_classes=100,
-        **kwargs
-    )
 
-def cifar100_vgg19_bn(pretrained=False, progress=True, device="cpu", **kwargs) -> VGG:
-    return _vgg(
-        arch="vgg19_bn",
-        cfg="E",
-        batch_norm=True,
-        device=device,
-        progress=progress,
-        pretrained=pretrained,
-        num_classes=100,
-        **kwargs
-    )
+def cifar100_vgg11_bn(*args, **kwargs) -> VGG: pass
+def cifar100_vgg13_bn(*args, **kwargs) -> VGG: pass
+def cifar100_vgg16_bn(*args, **kwargs) -> VGG: pass
+def cifar100_vgg19_bn(*args, **kwargs) -> VGG: pass
+
+
+thismodule = sys.modules[__name__]
+for dataset in ["cifar10", "cifar100"]:
+    for cfg, model_name in zip(["A", "B", "D", "E"], ["vgg11_bn", "vgg13_bn", "vgg16_bn", "vgg19_bn"]):
+        method_name = f"{dataset}_{model_name}"
+        model_urls = cifar10_pretrained_weight_urls if dataset == "cifar10" else cifar100_pretrained_weight_urls
+        num_classes = 10 if dataset == "cifar10" else 100
+        setattr(
+            thismodule,
+            method_name,
+            partial(_vgg,
+                    arch=model_name,
+                    cfg=cfg,
+                    batch_norm=True,
+                    model_urls=model_urls,
+                    num_classes=num_classes)
+        )

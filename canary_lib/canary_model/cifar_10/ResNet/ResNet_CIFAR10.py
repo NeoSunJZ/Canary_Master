@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torchvision.transforms import Normalize
 
-from canary_lib.canary_model.cifar_10.ResNet.resnet import resnet50
+from canary_lib.canary_model.cifar_10.ResNet.resnet import resnet18
 from canary_sefi.core.component.component_decorator import SEFIComponent
 from canary_sefi.core.component.component_enum import SubComponentType, ComponentType
 
@@ -14,11 +14,11 @@ def create_model(is_pretrained=True, pretrained_file=None, no_normalize_layer=Fa
     run_device = run_device if run_device is not None else ('cuda' if torch.cuda.is_available() else 'cpu')
     norm_layer = Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2471, 0.2435, 0.2616])
     if no_normalize_layer:
-        resnet_model = resnet50(pretrained=is_pretrained, pretrained_file=pretrained_file).to(run_device)
+        resnet_model = resnet18(pretrained=is_pretrained, pretrained_file=pretrained_file).to(run_device)
     else:
         resnet_model = nn.Sequential(
             norm_layer,
-            resnet50(pretrained=is_pretrained, pretrained_file=pretrained_file)
+            resnet18(pretrained=is_pretrained, pretrained_file=pretrained_file)
         ).to(run_device).eval()
     return resnet_model
 

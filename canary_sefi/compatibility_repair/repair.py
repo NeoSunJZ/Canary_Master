@@ -1,12 +1,10 @@
 from colorama import Fore
 
-from canary_sefi.compatibility_repair.repair_v2_0_3 import repair_v2_0_3
-from canary_sefi.compatibility_repair.repair_v2_0_0 import repair_v2_0_0
+from canary_sefi.compatibility_repair.repair_v2_0_1 import repair_v2_0_1
 from canary_sefi.copyright import get_system_version
 
 repair_program_list = {
-    "2.0.0": repair_v2_0_0,
-    "2.0.3": repair_v2_0_3,
+    "2.0.1": repair_v2_0_1,
 }
 
 

@@ -1,4 +1,4 @@
-def repair_v2_0_0(database_list):
+def repair_v2_0_1(database_list):
     test_data_logger = database_list.get("test_data_logger")
     cursor = test_data_logger.conn.cursor()
     cursor.execute("ALTER TABLE attack_dimension_summary add column ACAMC_T float")

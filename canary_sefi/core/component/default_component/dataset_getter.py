@@ -5,7 +5,7 @@ from typing import Tuple, Any
 import numpy as np
 import torch
 from colorama import Fore
-from numpy.compat import long
+from numpy import long
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
 from canary_sefi.core.component.component_enum import SubComponentType

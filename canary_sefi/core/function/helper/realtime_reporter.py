@@ -1,4 +1,5 @@
 import random
+import string
 
 from colorama import Fore, Style
 from flask_socketio import SocketIO, join_room, leave_room, emit
@@ -68,3 +69,4 @@ class RealtimeReport:
 
 
 reporter = RealtimeReport()
+
