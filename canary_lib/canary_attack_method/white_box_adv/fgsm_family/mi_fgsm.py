@@ -40,7 +40,6 @@ class MI_FGSM():
 
     @sefi_component.attack(name="MI_FGSM", is_inclass=True, support_model=[], attack_type="WHITE_BOX")
     def attack(self, img, ori_labels, tlabels=None):
-        print(ori_labels)
         batch_size = img.shape[0]
         tlabels = np.repeat(self.tlabel, batch_size) if tlabels is None else tlabels
 

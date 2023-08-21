@@ -1,8 +1,6 @@
 from flask import Blueprint, request
 
 from canary_sefi.core.function.basic.dataset.dataset_function import dataset_single_image_reader
-from canary_sefi.handler.image_handler.plt_handler import get_base64_by_fig, img_diff_fig_builder
-from canary_sefi.task_manager import task_manager
 from canary_sefi.core.function.init_dataset import dataset_seed_handler
 from canary_sefi.entity.dataset_info_entity import DatasetInfo
 from canary_sefi.entity.msg_entity import MsgEntity
@@ -15,7 +13,6 @@ from canary_sefi.evaluator.logger.inference_test_data_handler import get_clean_i
 from canary_sefi.handler.image_handler.img_io_handler import get_pic_nparray_from_temp, get_pic_base64_from_nparray
 from canary_sefi.handler.image_handler.img_utils import img_size_uniform_fix
 from canary_sefi.handler.image_handler.plt_handler import img_diff_fig_builder, get_base64_by_fig
-from canary_sefi.handler.image_handler.img_utils import get_img_diff, img_size_uniform_fix
 from canary_sefi.handler.json_handler.json_io_handler import get_info_from_json_file
 from canary_sefi.task_manager import task_manager
 
@@ -98,4 +95,5 @@ def get_adv_info_by_adv_img_id():
             "diff": get_base64_by_fig(
                 img_diff_fig_builder(original_img=original_nparray, adversarial_img=adversarial_nparray))
         }
+
     return MsgEntity("SUCCESS", "1", adv_example_file_log).msg2json()

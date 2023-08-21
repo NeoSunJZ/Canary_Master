@@ -6,7 +6,6 @@ class SingleTaskThread:
         self.executor = ThreadPoolExecutor(max_workers = 1)
         self.execute_task_list = {}
         self.stop_flag = False
-        self.watch_dog = 10
 
     def execute_task(self, task_token, *args, **kwargs):
         for index in self.execute_task_list:
@@ -26,4 +25,3 @@ class SingleTaskThread:
 
 
 task_thread = SingleTaskThread()
-monitor_thread = SingleTaskThread()
