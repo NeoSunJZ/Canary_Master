@@ -17,6 +17,7 @@ from canary_sefi.handler.json_handler.json_io_handler import get_info_from_json_
 class TaskManager(object):
     def __init__(self):
         self.task_token = None
+        self.monitor_token = None
         self.test_data_logger = None
         self.sys_log_logger = None
         self.base_temp_path = None
