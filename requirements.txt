@@ -29,5 +29,4 @@ huaweicloudsdkimage
 tencentcloud-sdk-python
 
 # defense
-scikit-image==0.15.0
-faiss
+scikit-image

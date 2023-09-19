@@ -18,7 +18,7 @@ sefi_component = SEFIComponent()
                                       params={
                                       })
 class Transform():
-    def __init__(self, quilting_size=8, kemeans=5):
+    def __init__(self, quilting_size=2, kemeans=16):
         self.quilting_size = quilting_size
         self.kemeans = kemeans
 
