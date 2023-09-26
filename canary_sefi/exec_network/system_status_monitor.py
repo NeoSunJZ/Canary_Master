@@ -2,6 +2,7 @@ import os
 import random
 import string
 import time
+from datetime import datetime
 
 import psutil
 import pynvml
@@ -57,7 +58,8 @@ def get_system_usage(context):
                     "cpuUsage": psutil.cpu_percent(),
                     "gpuUsage": pynvml.nvmlDeviceGetUtilizationRates(gpu_device).gpu,
                     "cpuUseMemorySize": "%.1f" % (psutil.virtual_memory().used / (1024 * 1024 * 1024)),
-                    "gpuUseMemorySize": "%.1f" % (pynvml.nvmlDeviceGetMemoryInfo(gpu_device).used / (1024 * 1024 * 1024))
+                    "gpuUseMemorySize": "%.1f" % (pynvml.nvmlDeviceGetMemoryInfo(gpu_device).used / (1024 * 1024 * 1024)),
+                    "systemDatetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S").__str__()
                 }
                 reporter.send_realtime_msg(msg=system_usage, type="USAGE")
                 time.sleep(1)
@@ -73,7 +75,7 @@ def get_system_usage(context):
 def start_system_monitor():
     if task_manager.monitor_token is not None:
         end_system_monitor()
-    task_manager.monitor_token = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+    task_manager.monitor_token = 'SystemMonitor_'+''.join(random.sample(string.ascii_letters + string.digits, 8))
     monitor_thread.execute_task(task_manager.monitor_token, get_system_usage, current_app.app_context)
     return MsgEntity("SUCCESS", "1", task_manager.monitor_token).msg2json()
 
