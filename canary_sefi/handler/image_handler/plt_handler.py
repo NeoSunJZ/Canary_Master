@@ -87,7 +87,7 @@ def save_pic_by_fig(file_path, file_name, fig):
     full_path = task_manager.base_temp_path + "pic/" + file_path
     if not os.path.exists(full_path):
         os.makedirs(full_path)
-    fig.savefig(full_path + file_name + ".PNG", format='png', bbox_inches="tight", pad_inches=0.0)
+    fig.savefig(full_path + file_name + ".PNG", format='png', pad_inches=10.0)
 
 
 def show_plt(fig):
