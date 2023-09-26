@@ -43,8 +43,11 @@ def start_full_test():
         reporter.console_log("恢复测试启动 任务标识{}".format(str(task_manager.task_token)), Fore.GREEN, type="SUCCESS")
 
     try:
+        reporter.send_realtime_msg(msg=task_manager.task_token, type="TOKEN")
         task_thread.execute_task(task_manager.task_token, full_test, request.json.get("debugMode", False), request.json.get("config"), current_app.app_context)
     except RuntimeError as e:
+        return MsgEntity("ERROR", "-1", e).msg2json()
+    except Exception as e:
         return MsgEntity("ERROR", "-1", e).msg2json()
 
     return MsgEntity("SUCCESS", "1", task_manager.task_token).msg2json()
