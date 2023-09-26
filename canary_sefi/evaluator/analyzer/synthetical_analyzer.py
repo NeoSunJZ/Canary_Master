@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import seaborn as sns
 from colorama import Fore
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, axes
 
 from canary_sefi.handler.image_handler.plt_handler import figure_show_handler
 from canary_sefi.task_manager import task_manager
@@ -58,7 +58,9 @@ def adversarial_example_transfer_analyzer_log_handler(attack_deflection_capabili
     AIAC_data_df = pd.DataFrame(AIAC_data_map)
     ARTC_data_df = pd.DataFrame(ARTC_data_map)
 
-    fig = plt.figure(figsize=(24, 6.8), dpi=75)
+    plt.rcParams['font.sans-serif'] = ['Palatino Linotype']
+    plt.rcParams['axes.unicode_minus'] = True
+    fig = plt.figure(figsize=(24, 6.8), dpi=400)
 
     def show(data_df, title, subplot):
         data_df = data_df.reindex(data_df.mean(axis=0).sort_values().index, axis=1)
@@ -66,7 +68,8 @@ def adversarial_example_transfer_analyzer_log_handler(attack_deflection_capabili
 
         # 设置标题、坐标轴标签及字体大小
         ax = fig.add_subplot(subplot)
-        sns.heatmap(data_df, vmin=0, vmax=1, annot=True, fmt='.2f', cmap='Blues', cbar=True, ax=ax, annot_kws={"fontsize": 7.5})
+
+        sns.heatmap(data_df, vmin=0, vmax=1, annot=True, fmt='.2f', cmap='Blues', cbar=True, ax=ax, annot_kws={"fontsize": 10})
         ax.set_xticklabels(ax.get_xticklabels(), rotation=35, ha='right', rotation_mode='anchor', size=10)
         ax.set_yticklabels(ax.get_yticklabels(), rotation=35, ha='right', rotation_mode='anchor', size=10)
         ax.set_title('{} {} Heat Map'.format(attack_name, title), size="14")
@@ -74,11 +77,10 @@ def adversarial_example_transfer_analyzer_log_handler(attack_deflection_capabili
         ax.set_ylabel('AEs Transferred Target Model', size="13")
 
     show(MR_data_df, 'Misclassification Radio', 131)
-    show(AIAC_data_df, 'Increase Adversarial-Class Confidence', 132)
+    show(AIAC_data_df, 'Increase Adversarial-class Confidence', 132)
     show(ARTC_data_df, 'Reduction True-class Confidence', 133)
     fig.tight_layout()
     figure_show_handler(fig, file_path="transfer_analyze_result/", file_name="{}_transfer_heat_map".format(attack_name))
-
     OTR_MR = calc_average(adversarial_example_analyzer_log["T_MR"])
     OTR_AIAC = calc_average(adversarial_example_analyzer_log["T_AIAC"])
     OTR_ARTC = calc_average(adversarial_example_analyzer_log["T_ARTC"])
