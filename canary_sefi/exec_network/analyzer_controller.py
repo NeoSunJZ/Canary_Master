@@ -2,8 +2,9 @@ from flask import Blueprint, request
 
 from canary_sefi.core.function.basic.dataset.dataset_function import dataset_single_image_reader
 from canary_sefi.core.function.init_dataset import dataset_seed_handler
-from canary_sefi.entity.dataset_info_entity import DatasetInfo
+from canary_sefi.entity.dataset_info_entity import DatasetInfo, DatasetType
 from canary_sefi.entity.msg_entity import MsgEntity
+from canary_sefi.evaluator.logger.adv_example_da_test_data_handler import find_adv_example_da_test_data_by_id_and_type
 from canary_sefi.evaluator.logger.adv_example_file_info_handler import find_adv_example_file_log_by_id
 from canary_sefi.evaluator.logger.img_file_info_handler import find_img_log_by_id
 from canary_sefi.evaluator.logger.indicator_data_handler import get_model_security_synthetical_capability_log, \
@@ -89,6 +90,12 @@ def get_adv_info_by_adv_img_id():
         adversarial_img = get_pic_nparray_from_temp(adv_file_path, adv_example_file_log["adv_img_filename"],
                                                     is_numpy_array_file)
         original_nparray, adversarial_nparray = img_size_uniform_fix(original_img, adversarial_img, True)
+        adv_example_file_log['adv_da_info'] = \
+                find_adv_example_da_test_data_by_id_and_type(adv_img_file_id, DatasetType.ADVERSARIAL_EXAMPLE_RAW_DATA.value)
+        if adv_example_file_log['adv_da_info'] is None:
+            adv_example_file_log['adv_da_info'] = \
+                find_adv_example_da_test_data_by_id_and_type(adv_img_file_id,
+                                                             DatasetType.ADVERSARIAL_EXAMPLE_IMG.value)
         adv_example_file_log['adv_img'] = {
             "original_img": get_pic_base64_from_nparray(original_img),
             "adversarial_img": get_pic_base64_from_nparray(adversarial_img),

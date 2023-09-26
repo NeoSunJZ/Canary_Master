@@ -26,4 +26,4 @@ def save_adv_example_da_test_data(adv_img_file_id, adv_example_file_type, adv_da
 
 def find_adv_example_da_test_data_by_id_and_type(adv_img_file_id, adv_example_file_type):
     sql = "SELECT * FROM adv_example_da_test_data WHERE adv_img_file_id = ? AND adv_example_file_type = ? "
-    return task_manager.test_data_logger.query_log(sql, (adv_img_file_id,adv_example_file_type))
+    return task_manager.test_data_logger.query_log(sql, (adv_img_file_id, adv_example_file_type))
