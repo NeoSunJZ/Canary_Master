@@ -1,5 +1,6 @@
 import copy
 import importlib
+import os
 import random
 from typing import Tuple, Any
 import numpy as np
@@ -72,6 +73,9 @@ def default_folder_dataset_getter(dataset_info):
             return np.array(sample, dtype=np.uint8), target
 
     try:
+        if not os.path.exists(dataset_info.dataset_path):
+            os.makedirs(dataset_info.dataset_path)
+        print(dataset_info.dataset_path)
         dataset = ImageFolderCustom(root=dataset_info.dataset_path)
         return dataset
     except Exception as e:
