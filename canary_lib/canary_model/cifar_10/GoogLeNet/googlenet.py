@@ -7,6 +7,7 @@ import torch.nn.functional as F
 
 __all__ = ["GoogLeNet", "googlenet"]
 
+from canary_lib.canary_model.pretrained_weight_loader import pretrained_weight_loader
 
 _GoogLeNetOuputs = namedtuple(
     "GoogLeNetOuputs", ["logits", "aux_logits2", "aux_logits1"]
@@ -27,11 +28,14 @@ def googlenet(pretrained=False, pretrained_file=None, progress=True, device="cpu
     """
     model = GoogLeNet()
     if pretrained:
-        script_dir = os.path.dirname(__file__)
-        state_dict = torch.load(
-            (script_dir + "/weight/googlenet.pt") if pretrained_file is None else pretrained_file, map_location=device
-        )
-        model.load_state_dict(state_dict)
+        pretrained_weight_loader(
+            weight_path=os.path.dirname(__file__) + "/weight/",
+            dataset_name="cifar-10",
+            model_name="googlenet",
+            model_arch="googlenet",
+            model=model,
+            device=device,
+            progress=progress)
     return model
 
 

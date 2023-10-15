@@ -9,6 +9,8 @@ __all__ = [
     "resnet50",
 ]
 
+from canary_lib.canary_model.pretrained_weight_loader import pretrained_weight_loader
+
 
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
     """3x3 convolution with padding"""
@@ -261,12 +263,15 @@ class ResNet(nn.Module):
 
 def _resnet(arch, block, layers, pretrained, pretrained_file, progress, device, **kwargs):
     model = ResNet(block, layers, **kwargs)
-    if pretrained :
-        script_dir = os.path.dirname(__file__)
-        state_dict = torch.load(
-            (script_dir + "/weight/" + arch + ".pt") if pretrained_file is None else pretrained_file, map_location=device
-        )
-        model.load_state_dict(state_dict)
+    if pretrained:
+        pretrained_weight_loader(
+            weight_path=os.path.dirname(__file__) + "/weight/",
+            dataset_name="cifar-10",
+            model_name="resnet",
+            model_arch=arch,
+            model=model,
+            device=device,
+            progress=progress)
     return model
 
 
@@ -281,23 +286,23 @@ def resnet18(pretrained=False, pretrained_file=None, progress=True, device="cpu"
     )
 
 
-def resnet34(pretrained=False, progress=True, device="cpu", **kwargs):
+def resnet34(pretrained=False, pretrained_file=None, progress=True, device="cpu", **kwargs):
     """Constructs a ResNet-34 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
     return _resnet(
-        "resnet34", BasicBlock, [3, 4, 6, 3], pretrained, progress, device, **kwargs
+        "resnet34", BasicBlock, [3, 4, 6, 3], pretrained, pretrained_file, progress, device, **kwargs
     )
 
 
-def resnet50(pretrained=False, progress=True, device="cpu", **kwargs):
+def resnet50(pretrained=False, pretrained_file=None, progress=True, device="cpu", **kwargs):
     """Constructs a ResNet-50 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
     return _resnet(
-        "resnet50", Bottleneck, [3, 4, 6, 3], pretrained, progress, device, **kwargs
+        "resnet50", Bottleneck, [3, 4, 6, 3], pretrained, pretrained_file, progress, device, **kwargs
     )

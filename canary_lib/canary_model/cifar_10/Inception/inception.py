@@ -7,6 +7,7 @@ import torch.nn.functional as F
 
 __all__ = ["Inception3", "inception_v3"]
 
+from canary_lib.canary_model.pretrained_weight_loader import pretrained_weight_loader
 
 _InceptionOuputs = namedtuple("InceptionOuputs", ["logits", "aux_logits"])
 
@@ -36,11 +37,14 @@ def inception_v3(pretrained=False, pretrained_file=None, progress=True, device="
     """
     model = Inception3()
     if pretrained:
-        script_dir = os.path.dirname(__file__)
-        state_dict = torch.load(
-            (script_dir + "/weight/inception_v3.pt") if pretrained_file is None else pretrained_file, map_location=device
-        )
-        model.load_state_dict(state_dict)
+        pretrained_weight_loader(
+            weight_path=os.path.dirname(__file__) + "/weight/",
+            dataset_name="cifar-10",
+            model_name="inception_v3",
+            model_arch="inception_v3",
+            model=model,
+            device=device,
+            progress=progress)
     return model
 
 

@@ -5,6 +5,7 @@ from .Inception.InceptionV3_CIFAR10 import sefi_component as inception_model_cif
 from .MobileNetV2.MobileNetV2_CIFAR10 import sefi_component as mobilenet_model_cifar10
 from .ResNet.ResNet_CIFAR10 import sefi_component as resnet_model_cifar10
 from .VGG.VGG_CIFAR10 import sefi_component as vgg_model_cifar10
+from .WideResNet.WideResNet_CIFAR10 import sefi_component as wideresnet_model_cifar10
 from .common import sefi_component as common_cifar10
 
 model_list = [
@@ -14,5 +15,6 @@ model_list = [
     mobilenet_model_cifar10,
     resnet_model_cifar10,
     vgg_model_cifar10,
+    wideresnet_model_cifar10,
     common_cifar10
 ]

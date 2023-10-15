@@ -31,22 +31,22 @@ We have built a public repository of model weights(SEFI-LW) located: https://git
 | **AlexNet**           | N/A             | Fashion-MNIST | Come Soon       | [CNN-for-Fashion-MNIST](https://github.com/wzyjsha-00/CNN-for-Fashion-MNIST) | Planned       | ✔SEFI-LW          | 92.19%    |
 | **AlexNet**           | N/A             | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **VGG**               | vgg16_bn        | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
-| **VGG**               | vgg16_bn        | CIFAR-10      | Come Soon       | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
+| **VGG**               | vgg16_bn        | CIFAR-10      | ✔               | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
 | **VGG**               | vgg16_bn        | CIFAR-100     | ✔               | [PyTorch CIFAR Models](https://github.com/chenyaofo/pytorch-cifar-models) | Planned       | ✔SEFI-LW          |           |
 | **GoogLeNet**         | N/A             | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
-| **GoogLeNet**         | N/A             | CIFAR-10      | Come Soon       | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
+| **GoogLeNet**         | N/A             | CIFAR-10      | ✔               | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
 | **InceptionV3**       | N/A             | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
-| **InceptionV3**       | N/A             | CIFAR-10      | Come Soon       | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
+| **InceptionV3**       | N/A             | CIFAR-10      | ✔               | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
 | **ResNet**            | resnet50        | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
-| **ResNet**            | resnet50        | CIFAR-10      | Come Soon       | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
+| **ResNet**            | resnet50        | CIFAR-10      | ✔               | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
 | **ResNet**            | resnet56        | CIFAR-100     | Come Soon       | [PyTorch CIFAR Models](https://github.com/chenyaofo/pytorch-cifar-models) | Planned       | ✔SEFI-LW          | 72.63%    |
 | **ResNet**            | resnet19light   | Fashion-MNIST | Come Soon       | [CNN-for-Fashion-MNIST](https://github.com/wzyjsha-00/CNN-for-Fashion-MNIST) | Planned       | ✔SEFI-LW          |           |
 | **DenseNet**          | densenet161*    | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
-| **DenseNet**          | densenet161     | CIFAR-10      | Come Soon       | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
+| **DenseNet**          | densenet161     | CIFAR-10      | ✔               | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | ✔SEFI-LW          |           |
 | **SqueezeNet**        | squeezenet1_1   | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **MobileNetV3**       | v3_large        | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **MobileNetV2**       | N/A             | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
-| **MobileNetV2**       | N/A             | CIFAR-10      | Come Soon       | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | Planned       | ✔SEFI-LW          |           |
+| **MobileNetV2**       | N/A             | CIFAR-10      | ✔               | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | Planned       | ✔SEFI-LW          |           |
 | **MobileNetV2**       | v2_x1_0         | CIFAR-100     | ✔               | [PyTorch CIFAR Models](https://github.com/chenyaofo/pytorch-cifar-models) | Planned       | ✔SEFI-LW          | 73.61%    |
 | **ShuffleNetV2**      | v2_x2_0         | ImageNet      | ✔               | Torchvision                                                  | ✔             | ✔Official         |           |
 | **ShuffleNetV2**      | v2_x2_0         | CIFAR-10      | Come Soon       | [PyTorch CIFAR Models](https://github.com/chenyaofo/pytorch-cifar-models) | N/A           | Waiting Upload    |           |

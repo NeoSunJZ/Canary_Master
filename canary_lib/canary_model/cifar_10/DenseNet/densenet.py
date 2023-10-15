@@ -7,6 +7,8 @@ import torch.nn.functional as F
 
 __all__ = ["DenseNet", "densenet121", "densenet169", "densenet161"]
 
+from canary_lib.canary_model.pretrained_weight_loader import pretrained_weight_loader
+
 
 class _DenseLayer(nn.Sequential):
     def __init__(self, num_input_features, growth_rate, bn_size, drop_rate):
@@ -183,11 +185,14 @@ def _densenet(
 ):
     model = DenseNet(growth_rate, block_config, num_init_features, **kwargs)
     if pretrained:
-        script_dir = os.path.dirname(__file__)
-        state_dict = torch.load(
-            (script_dir + "/weight/" + arch + ".pt") if pretrained_file is None else pretrained_file, map_location=device
-        )
-        model.load_state_dict(state_dict)
+        pretrained_weight_loader(
+            weight_path=os.path.dirname(__file__) + "/weight/",
+            dataset_name="cifar-10",
+            model_name="densenet",
+            model_arch=arch,
+            model=model,
+            device=device,
+            progress=progress)
     return model
 
 

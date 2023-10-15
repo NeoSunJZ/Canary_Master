@@ -5,6 +5,8 @@ import torch.nn as nn
 
 __all__ = ["MobileNetV2", "mobilenet_v2"]
 
+from canary_lib.canary_model.pretrained_weight_loader import pretrained_weight_loader
+
 
 class ConvBNReLU(nn.Sequential):
     def __init__(self, in_planes, out_planes, kernel_size=3, stride=1, groups=1):
@@ -134,9 +136,12 @@ def mobilenet_v2(pretrained=False, pretrained_file=None, progress=True, device="
     """
     model = MobileNetV2(**kwargs)
     if pretrained:
-        script_dir = os.path.dirname(__file__)
-        state_dict = torch.load(
-            (script_dir + "/weight/mobilenet_v2.pt") if pretrained_file is None else pretrained_file, map_location=device
-        )
-        model.load_state_dict(state_dict)
+        pretrained_weight_loader(
+            weight_path=os.path.dirname(__file__) + "/weight/",
+            dataset_name="cifar-10",
+            model_name="mobilenet_v2",
+            model_arch="mobilenet_v2",
+            model=model,
+            device=device,
+            progress=progress)
     return model

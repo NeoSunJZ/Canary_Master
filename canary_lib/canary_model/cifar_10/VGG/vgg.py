@@ -11,6 +11,8 @@ __all__ = [
     "vgg19_bn",
 ]
 
+from canary_lib.canary_model.pretrained_weight_loader import pretrained_weight_loader
+
 
 class VGG(nn.Module):
     def __init__(self, features, num_classes=10, init_weights=True):
@@ -124,11 +126,14 @@ def _vgg(arch, cfg, batch_norm, pretrained, pretrained_file, progress, device, *
         kwargs["init_weights"] = False
     model = VGG(make_layers(cfgs[cfg], batch_norm=batch_norm), **kwargs)
     if pretrained:
-        script_dir = os.path.dirname(__file__)
-        state_dict = torch.load(
-            (script_dir + "/weight/" + arch + ".pt") if pretrained_file is None else pretrained_file, map_location=device
-        )
-        model.load_state_dict(state_dict)
+        pretrained_weight_loader(
+            weight_path=os.path.dirname(__file__) + "/weight/",
+            dataset_name="cifar-10",
+            model_name="vgg",
+            model_arch=arch,
+            model=model,
+            device=device,
+            progress=progress)
     return model
 
 

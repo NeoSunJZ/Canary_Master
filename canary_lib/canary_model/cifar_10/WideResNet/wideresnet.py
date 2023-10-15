@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from canary_lib.canary_model.pretrained_weight_loader import pretrained_weight_loader
+
 
 class BasicBlock(nn.Module):
     def __init__(self, in_planes, out_planes, stride, dropRate=0.0):
@@ -104,12 +106,14 @@ def _wideresnet(
 ):
     model = WideResNet(**kwargs)
     if pretrained:
-        script_dir = os.path.dirname(__file__)
-        state_dict = torch.load(
-            (script_dir + "/weight/" + arch + ".pt") if pretrained_file is None else pretrained_file,
-            map_location=device
-        )
-        model.load_state_dict(state_dict, strict=False)
+        pretrained_weight_loader(
+            weight_path=os.path.dirname(__file__) + "/weight/",
+            dataset_name="cifar-10",
+            model_name="wideresnet",
+            model_arch=arch,
+            model=model,
+            device=device,
+            progress=progress)
 
     return model
 
