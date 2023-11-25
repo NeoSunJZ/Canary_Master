@@ -14,6 +14,8 @@ api = Blueprint('task_status_api', __name__)
 def running_status():
     task_token = request.args.get("batchToken")
     task = task_thread.execute_task_list.get(task_token, None)
+    if "FAST_TASK_" in task_token:
+        return MsgEntity("SUCCESS", "4", "unfinished").msg2json()
     if task is None or task.done():
         if check_abnormal_termination(task_token):
             return MsgEntity("SUCCESS", "1", "finished").msg2json()

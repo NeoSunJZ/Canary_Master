@@ -1,6 +1,7 @@
 from enum import Enum
 
 from canary_sefi.core.config.config_manager import config_manager
+from canary_sefi.task_manager import task_manager
 
 
 class DatasetType(Enum):
@@ -52,8 +53,11 @@ class DatasetInfo(object):
 
         # 数据集存储路径
         if dataset_type.value == "NORMAL":
-            self.dataset_path = dataset_extra_info.get('path', config_manager.config.get("datasetPath") +
-                                                        dataset_extra_info.get('folder', dataset_name))
+            if dataset_extra_info.get('is_fast_test', False):
+                dataset_path = task_manager.base_temp_path + 'dataset/'
+            else:
+                dataset_path = config_manager.config.get("datasetPath")
+            self.dataset_path = dataset_extra_info.get('path', dataset_path + dataset_extra_info.get('folder', dataset_name))
             self.n_classes = dataset_extra_info.get('n_classes', None)
         elif dataset_type.value.find("ADV") != -1:
             self.dataset_path = None

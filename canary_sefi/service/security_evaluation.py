@@ -39,7 +39,9 @@ class SecurityEvaluation:
                 dataset_folder=dataset_extra_config.get("dataset_folder", None),
                 dataset_type=dataset_extra_config.get("dataset_type", DatasetType.NORMAL),
                 n_classes=dataset_extra_config.get("n_classes", None),
-                is_gray=dataset_extra_config.get("is_gray", False))
+                is_gray=dataset_extra_config.get("is_gray", False),
+                is_fast_test=dataset_extra_config.get("is_fast_test", False)
+            )
 
         self.model_list = config.get("model_list", None)
         self.attacker_list = config.get("attacker_list", None)

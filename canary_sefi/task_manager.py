@@ -25,7 +25,8 @@ class TaskManager(object):
         # 分批次核心数据库构建模式
         self.multi_database = None
 
-    def init_task(self, task_token=None, show_logo=False, run_device=None, not_retain_same_token=False, logo_color=Fore.GREEN):
+    def init_task(self, task_token=None, show_logo=False, run_device=None, not_retain_same_token=False,
+                  logo_color=Fore.GREEN, is_fast_test=False):
         if task_token == self.task_token and task_token is not None:
             print("Initialization skipped!")
             return
@@ -33,6 +34,9 @@ class TaskManager(object):
             print_logo(color=logo_color)
         if task_token is None:
             task_token = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+
+        if is_fast_test:
+            task_token = 'FAST_TASK_' + task_token
 
         base_temp_path = self.get_base_temp_path(task_token)
         if not os.path.exists(base_temp_path) or not_retain_same_token is True:
@@ -45,6 +49,8 @@ class TaskManager(object):
             self.load_task(task_token, run_device)
         else:
             self.load_task(task_token, run_device)
+
+        return task_token
 
     def load_task(self, task_token, run_device=None):
         if task_token == self.task_token:

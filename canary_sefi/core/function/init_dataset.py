@@ -9,7 +9,7 @@ from canary_sefi.entity.dataset_info_entity import DatasetInfo, DatasetType
 
 
 def init_dataset(dataset_name, dataset_size, dataset_seed=None, dataset_path=None, dataset_folder=None,
-                 dataset_type=DatasetType.NORMAL, n_classes=None, is_gray=False):
+                 dataset_type=DatasetType.NORMAL, n_classes=None, is_gray=False, is_fast_test=False):
     # 标记当前步骤
     task_manager.sys_log_logger.set_step(Step.INIT, is_first=True)
 
@@ -26,6 +26,8 @@ def init_dataset(dataset_name, dataset_size, dataset_seed=None, dataset_path=Non
         dataset_extra_info["path"] = dataset_path
     if dataset_folder is not None:
         dataset_extra_info["folder"] = dataset_folder
+
+    dataset_extra_info["is_fast_test"] = is_fast_test
     dataset_info = DatasetInfo(dataset_name, dataset_extra_info, dataset_type, dataset_seed, dataset_size, img_cursor_list=None)
 
     msg = "From Dataset {} (based seed {}) selected {} sample(s)".format(dataset_name, dataset_seed, dataset_size)
