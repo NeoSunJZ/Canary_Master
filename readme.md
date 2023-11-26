@@ -5,8 +5,12 @@
 
 [中文版](https://github.com/NeoSunJZ/Canary_Master/blob/main/readme_cn.md)
 
-## Introduction
+## Document
+**Please refer to our 📖document 👉👉[Canary Document](https://neosunjz.github.io/Canary/)👈👈 for using Canary.**
 
+The document you are currently reading is an early version, which is incomplete and is being edited by the author and will be updated continuously. We will provide the complete document as soon as possible, as well as the English version of the document. If you have questions, please contact `jiazheng.sun@bit.edu.cn` for more information.
+
+## Introduction
 SEFI is a framework for evaluating the robustness of deep learning-based image recognition models.
 
 It uses selected attack methods to generate adversarial samples based on selected models and uses these adversarial examples to attack any model you want. In the process, it collects data including multiple evaluation metrics to assess AI model robustness and attack method effectiveness while trying to find the best defense solution.
@@ -20,7 +24,6 @@ SEFI was created and is maintained by researchers at BIT.
 ## Functions
 
 ### What models do we support？
-
 We have supported 15 models on 4 datasets, of which all 15 models for the ImageNet dataset are available. We hope that you will participate in improving our model library and share your own model structure and weighting information to help more people.
 
 We have built a public repository of model weights(SEFI-LW) located: https://github.com/NeoSunJZ/Canary_SEFI_Lib_Weight
@@ -60,7 +63,6 @@ We have built a public repository of model weights(SEFI-LW) located: https://git
 | **WideResNet**        | wideresnet34_10 | CIFAR-10      | Come Soon       | [PyTorch CIFAR10](https://github.com/huyvnphan/PyTorch_CIFAR10) | ✔             | Waiting Upload    |           |
 
 ### What attack methods do we support？
-
 We support 22 common attack methods, including:
 
 | Attack Methods                               | Method Type            | Attack Approach    | Not Support Models        | Provide default parameters? |
@@ -91,7 +93,6 @@ We support 22 common attack methods, including:
 We are looking for more good and classic attack methods to add to our library, if you are the author of a method, feel free to contribute your method. Some of the methods that are not fully tested may not be shown in the above table, but it may appear in the code earlier, if it fails to appear in the above list it means it may not be stable or have stable support for the time being.
 
 ### What defense methods do we support? (Experimental)
-
 **The entire defense module is currently experimental, which means they may not be stable.**
 
 We support 8 common defense methods, including:
@@ -110,64 +111,56 @@ We support 8 common defense methods, including:
 We are looking for more good and classic defense methods to add to our library, if you are the author of a method, feel free to contribute your method. Some of the methods that are not fully tested may not be shown in the above table, but it may appear in the code earlier, if it fails to appear in the above list it means it may not be stable or have stable support for the time being.
 
 ### What data do we support collecting？
-
 We support the full collection of the following four types of metrics. Please refer to our Paper section 3.1 or the user manual for the specific meaning of the metrics.
 
 #### Model capability measurement metrics
-
-- Clean Example Accuracy (Clear Accuracy, CA)
-
-- Clean example F1 score (Clear F1, CF)
-
-- Clear Confidence (CC)
+* Clean Example Accuracy (Clear Accuracy, CA)
+* Clean example F1 score (Clear F1, CF)
+* Clear Confidence (CC)
 
 #### Attack effectiveness measurement metrics
-
-- Misclassification Ratio (MR) /  Targeted Attack Success (TAS)
-
-- Adversarial Example Confidence Change (ACC): Average Increase in Adversarial-class Confidence (AIAC) / Average Reduction in True-class Confidence (ARTC)
-
-- Average Class Activation Mapping Change (ACAMC)
-
-- Observable Transfer Rate (OTR)
+* Misclassification Ratio (MR) /  Targeted Attack Success (TAS)
+* Adversarial Example Confidence Change (ACC): Average Increase in Adversarial-class Confidence (AIAC) / Average Reduction in True-class Confidence (ARTC)
+* Average Class Activation Mapping Change (ACAMC)
+* Observable Transfer Rate (OTR)
 
 #### Cost of attack measurement metrics
-
-- Calculation Time Cost (CTC)
-
-- Query Number Cost (QNC)
-
-- Average Norm Distortion(AND): Average Maximum Distortion (AMD) / Average Euclidean Distortion (AED) / Average Pixel Change Ratio (APCR)
-
-- Average Euclidean Distortion in Frequency Domain (AED-FD)
-
-- Average Metrics Similarity (AMS): Average Deep Metrics Similarity (ADMS) / Average Low-level Metrics Similarity (ALMS)
+* Calculation Time Cost (CTC)
+* Query Number Cost (QNC)
+* Average Norm Distortion(AND): Average Maximum Distortion (AMD) / Average Euclidean Distortion (AED) / Average Pixel Change Ratio (APCR)
+* Average Euclidean Distortion in Frequency Domain (AED-FD)
+* Average Metrics Similarity (AMS): Average Deep Metrics Similarity (ADMS) / Average Low-level Metrics Similarity (ALMS)
 
 #### Effectiveness of defense measurement metrics
-
-- Model Capability Variance (MCV): Accuracy Variance (AV) / F1-Score Variance (FV) / Mean Confidence Variance (CV)
-
-- Rectify/Sacrifice Ratio (RR/SR)
-
-- Attack Capability Variance (ACV): MR Variance (MRV) / AND Variance (ANDV) / AMS Variance (AMSV)
-
-- Average Adversarial Confidence Change (AACC):Average Reduction in Adversarial-class Confidence (ARAC) / Average Increase in True-class Confidence (AITC)
-
-## Quick Start
-
-Please refer to the Quick Start Example in the project
-
-We are preparing the user manual and will release it soon.
+* Model Capability Variance (MCV): Accuracy Variance (AV) / F1-Score Variance (FV) / Mean Confidence Variance (CV)
+* Rectify/Sacrifice Ratio (RR/SR)
+* Attack Capability Variance (ACV): MR Variance (MRV) / AND Variance (ANDV) / AMS Variance (AMSV)
+* Average Adversarial Confidence Change (AACC):Average Reduction in Adversarial-class Confidence (ARAC) / Average Increase in True-class Confidence (AITC)
 
 ## Maintainers
-
 [@NeoSunJz](https://github.com/NeoSunJz).
 
 ## Contributors
-
 Our main contributors are：**孙家正（Jiazheng Sun）、Li Chen、Chenxiao Xia、Da Zhang、 Rong Huang、Zhi Qu、Wenqi Xiong**
+
 We are particularly grateful for：**Jun Zheng 、Yu’an Tan**
 
-## License
+## Cite
+We sincerely hope that Canary can be helpful to you, and we also welcome you to cite our articles when using Canary to complete your research work:
+```
+@Article{electronics12173665,
+  AUTHOR = {Sun, Jiazheng and Chen, Li and Xia, Chenxiao and Zhang, Da and Huang, Rong and Qiu, Zhi and Xiong, Wenqi and Zheng, Jun and Tan, Yu-An},
+  TITLE = {CANARY: An Adversarial Robustness Evaluation Platform for Deep Learning Models on Image Classification},
+  JOURNAL = {Electronics},
+  VOLUME = {12},
+  YEAR = {2023},
+  NUMBER = {17},
+  ARTICLE-NUMBER = {3665},
+  URL = {https://www.mdpi.com/2079-9292/12/17/3665},
+  ISSN = {2079-9292},
+  DOI = {10.3390/electronics12173665}
+}
+```
 
+## License
 [Apache 2.0](LICENSE) © Beijing Institute of Technology (BIT)
