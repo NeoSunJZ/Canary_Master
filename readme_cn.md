@@ -5,6 +5,12 @@
 
 [English](https://github.com/NeoSunJZ/Canary_Master/blob/main/readme.md)
 
+## 文档
+
+**欲开始使用Canary，请参考我们的 📖文档 👉👉[Canary 文档(中文)](https://neosunjz.github.io/Canary/)👈👈**
+
+您当前所阅读的文档系初期版本，该版本并不完整，作者正在尽力编辑并将持续更新。我们将尽快提供完整的文档，以及文档的英文版。如您有疑问，请咨询jiazheng.sun@bit.edu.cn以获取详细信息。
+
 ## 简介
 
 SEFI是一个评估基于深度学习的图像识别模型稳健性的框架。
@@ -114,51 +120,28 @@ SEFI由北京理工大学（BIT）网络空间安全学院（Cyberspace Science 
 我们支持以下四类指标的完全采集。针对指标的具体意义请参考我们的论文3.1章节或用户手册。
 
 #### 模型能力评估指标 (Model capability measurement metrics)
-
 - 干净样本正确率 (Clear Accuracy, CA)
-
 - 干净样本F1分数 (Clear F1, CF)
-
 - 干净样本平均正确分类置信度 (Clear Confidence, CC)
 
 #### 攻击效果评估指标 (Attack effectiveness measurement metrics)
-
 - 误分类比例 (Misclassification Ratio, MR) /  攻击准确性 (Targeted Attack Success, TAS)
-
-- 对抗样本置信偏移 (Average Confidence Change, ACC): 抗类平均置信增高(Average Increase in Adversarial-class Confidence, AIAC)、真实类平均置度降低(Average Reduction in True-class Confidence, ARTC)
-
+- 对抗样本置信偏移 (Average Confidence Change, ACC): 抗类平均置信增高(Average Increase in Adversarial-class Confidence, AIAC)、真实类平均置度降低(Average Reduction in True-class Confidence, ARTC)+
 - 对抗样本模型关注区域偏移 (Average Class Activation Mapping Change, ACAMC)
-
 - 对抗样本可观测转移率 (Observable Transfer Rate, OTR)
 
 #### 攻击代价评估指标 (Cost of attack measurement metrics)
-
 - 攻击耗时代价 (Calculation Time Cost, CTC)
-
 - 攻击查询量代价 (Query Number Cost, QNC)
-
 - 平均范数距离 (Average Norm Distortion, AND): 最大像素距离(Average Maximum Distortion, AMD)、平均欧式距离(Average Euclidean Distortion, AED)、像素变化比例(Average Pixel Change Ratio, APCR)
-
 - 平均频域欧式距离 (Average Euclidean Distortion in Frequency Domain, AED-FD)
-
 - 平均特征相似性 (Average Metrics Similarity, AMS): 平均深度特征相似性(Average Deep Metrics Similarity, ADMS)、平均低层特征相似性(Average Low-level MetricsSimilarity, ALMS)
 
 #### 防御效果评估指标 (Effectiveness of defense measurement metrics)
-
 - 模型能力损失 (Model Capability Variance, MCV): 准确率差异（(Accuracy Variance, AccV)、F1-Score差异(F1-Score Variance, F1V)、平均置信差异(Confidence Variance, ConfV)
-
 - 矫正/牺牲比率 (Rectify/Sacrifice Ratio, RR/SR)
-
 - 攻击能力弱化(Attack Capability Variance, ACV): MR差异(MR Variance, MRV)、AND差异(AND Variance, ANDV)、AMS差异(AMS Variance, AMSV)
-
 - 对抗置信偏移(Average Adversarial Confidence Change, AACC): 对抗类平均置信降低(Average Reduction in Adversarial-class Confidence, ARAC)、真实类平均置度升高(Average Increase in True-class Confidence, AITC)
-
-
-## 快速使用
-
-请参考工程中的 Quick Start Example
-
-我们正在准备用户手册，并将于最近发布。
 
 ## 维护者
 
