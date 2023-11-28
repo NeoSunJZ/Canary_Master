@@ -1,5 +1,7 @@
 **/*.pyc
 Raw_Data/
 .idea/
-.Dead_Code/
-*/__pycache__
+**/__pycache__
+dist
+*.egg-info
+build

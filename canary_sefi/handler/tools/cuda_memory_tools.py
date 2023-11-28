@@ -1,6 +1,5 @@
+import torch
 from colorama import Fore
-from eagerpy import torch
-from tqdm import tqdm
 
 from canary_sefi.core.function.helper.realtime_reporter import reporter
 

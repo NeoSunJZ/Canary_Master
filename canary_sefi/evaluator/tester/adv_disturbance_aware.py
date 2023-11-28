@@ -116,7 +116,7 @@ class AdvDisturbanceAwareTester:
 
     def img_handler(self, img, forced_int=False):
         if forced_int:
-            img = img.copy().astype(np.int)
+            img = img.copy().astype(int)
         img = img / (self.max_pixel - self.min_pixel)
         if len(img.shape) == 3:
             img = img.transpose(2, 0, 1)

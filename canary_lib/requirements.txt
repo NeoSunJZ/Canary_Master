@@ -1,25 +1,11 @@
-torch
-torchvision
-piq~=0.7.0
-sklearn~=0.0
-numpy~=1.22.4
-opencv-python~=4.6.0.66
-tqdm~=4.64.0
-colorama~=0.4.4
-flask~=2.1.2
-pandas~=1.4.2
-matplotlib~=3.5.2
 pillow~=7.1.2
 scikit-learn~=1.1.1
 cleverhans~=4.0.0
 foolbox~=3.3.3
-flask_cors
-flask_socketio
 argparse~=1.4.0
 eagerpy~=0.30.0
 scipy~=1.8.1
 PyWavelets
-seaborn
 timm
 psutil
 pynvml
@@ -27,6 +13,4 @@ alibabacloud_imagerecog20190930
 huaweicloudsdkcore
 huaweicloudsdkimage
 tencentcloud-sdk-python
-
-# defense
 scikit-image

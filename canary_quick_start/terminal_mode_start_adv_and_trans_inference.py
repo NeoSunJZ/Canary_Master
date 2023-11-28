@@ -1,6 +1,6 @@
 import numpy as np
 from canary_sefi.core.function.enum.multi_db_mode_enum import MultiDatabaseMode
-from canary_sefi.core.function.helper.multi_db import use_multi_database
+from .core.function.helper.multi_db import use_multi_database
 from canary_sefi.service.security_evaluation import SecurityEvaluation
 from canary_sefi.task_manager import task_manager
 from canary_sefi.core.component.component_manager import SEFI_component_manager

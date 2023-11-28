@@ -11,7 +11,7 @@ def img_size_uniform_fix(ori_img, target_img, use_raw_nparray_data):
     if use_raw_nparray_data:
         img_type = np.float32
     else:
-        img_type = np.int
+        img_type = int
     ori_h, ori_w = ori_img.shape[0], ori_img.shape[1]
     adv_h, adv_w = target_img.shape[0], target_img.shape[1]
     if ori_h != adv_h or ori_w != adv_w:
