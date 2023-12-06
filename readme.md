@@ -19,6 +19,32 @@ It also provides a toolkit containing multiple models, SOTA attack methods and d
 
 SEFI was created and is maintained by researchers at BIT.
 
+## Quick Start
+
+### Install
+
+We provide a stable version on PyPI, which you can install by:
+
+```sh
+python -m pip install torch torchvision torchaudio
+python -m pip install canary-sefi
+```
+
+We recommend that you install PyTorch beforehand. Canary requires at least PyTorch 2.0.1, but we recommend using PyTorch 2.1.1 or higher.
+
+### Example Project
+
+We provide an [Example Project](https://github.com/NeoSunJZ/Canary_Example) located in Github, which you can directly run to try.
+
+Please execute the following command on the terminal to clone the code locally and run the Example Project:
+
+```sh
+git clone https://github.com/NeoSunJZ/Canary_Example.git
+python run.py
+```
+
+## Framework
+
 <img src="https://github.com/NeoSunJZ/Canary_Master/blob/main/framework_structure.png?raw=true" width="800" alt="">
 
 ## Functions
