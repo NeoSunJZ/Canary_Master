@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import seaborn as sns
 from colorama import Fore
-from matplotlib import pyplot as plt, axes
+from matplotlib import pyplot as plt
 
 from canary_sefi.handler.image_handler.plt_handler import figure_show_handler
 from canary_sefi.task_manager import task_manager
@@ -11,7 +11,6 @@ from canary_sefi.core.function.helper.realtime_reporter import reporter
 from canary_sefi.core.function.helper.recovery import global_recovery
 from canary_sefi.entity.dataset_info_entity import DatasetType
 from canary_sefi.evaluator.logger.indicator_data_handler import get_model_capability_indicator_data, \
-    get_attack_deflection_capability_indicator_data_by_base_model, \
     get_attack_adv_example_da_indicator_data_by_base_model, add_model_security_synthetical_capability_log, \
     get_attack_deflection_capability_indicator_data_by_attack_name, \
     get_attack_adv_example_da_indicator_data_by_attack_name, get_attack_adv_example_cost_indicator_data_by_attack_name, \

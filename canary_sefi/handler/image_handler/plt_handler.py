@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from canary_sefi.core.config.config_manager import config_manager
 from canary_sefi.core.function.helper.realtime_reporter import reporter
-from canary_sefi.handler.image_handler.img_crm_hander import show_cam_on_image
+from canary_sefi.handler.image_handler.img_crm_handler import show_cam_on_image
 from canary_sefi.handler.image_handler.img_io_handler import pic_buffer_to_base64
 from canary_sefi.handler.image_handler.img_utils import get_img_diff
 from canary_sefi.task_manager import task_manager
@@ -97,7 +97,7 @@ def show_plt(fig):
 
 
 def figure_show_handler(fig, file_path=None, file_name=None):
-    action = config_manager.config.get("system", {}).get("save_fig_model", "no_action")
+    action = config_manager.config.get("system", {}).get("save_fig_mode", "no_action")
     if action == "no_action":
         return
     elif action == "save_img_file":

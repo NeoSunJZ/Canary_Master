@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 from flask import Flask
-
-# from attacker_controller import api as attacker_api
-# from dataset_controller import api as dataset_api
-# from model_controller import api as model_api
-from canary_sefi.core.component.component_manager import SEFI_component_manager
 from canary_sefi.exec_network.security_evaluation_controller import api as security_evaluation_api
 from canary_sefi.exec_network.task_controller import api as task_api
 from canary_sefi.exec_network.analyzer_controller import api as analyzer_api

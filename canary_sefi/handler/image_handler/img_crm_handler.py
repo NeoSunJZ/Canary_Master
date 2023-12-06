@@ -33,5 +33,5 @@ def show_cam_on_image(img,
 
 def get_cam_img(img, cam):
     if img is not None:
-        img, cam = img_size_uniform_fix(img, cam)
+        img, cam = img_size_uniform_fix(img, cam, True)
     return show_cam_on_image(img / 255.0, cam, use_rgb=True)

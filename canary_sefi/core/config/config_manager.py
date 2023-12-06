@@ -15,15 +15,15 @@ class ConfigManager:
             self.config = json.load(open("config.json", encoding='utf-8'))
         else:
             self.config = {
-                "appName": "Canary SEFI",
+                "appName": "Canary SEFI Project",
                 "appDesc": "Canary SEFI Default Project",
-                "datasetPath": "SEFI_temp/dataset/",
-                "baseTempPath": "SEFI_temp/data/",
-                "centerDatabasePath": "SEFI_temp/data/",
+                "datasetPath": "/SEFI_temp/dataset/",
+                "baseTempPath": "/SEFI_temp/data/",
+                "centerDatabasePath": "/SEFI_temp/data/",
                 "system": {
-                    "limited_read_img_size": 900,
+                    "limited_read_img_size": None,
                     "use_file_memory_cache": True,
-                    "save_fig_model": "save_img_file"
+                    "save_fig_mode": "save_img_file"
                 }
             }
             print(Fore.RED + "[SEFI WARNING] Unable to find startup config JSON file, default config used!")
