@@ -62,11 +62,11 @@ class UAP:
         return v
 
     @sefi_component.attack_init(name="UAP")
-    def init_attack(self, dataset, batch_size, model_name):
+    def init_attack(self, dataset, dataset_loader, batch_size, model_name):
         print('[ UAP Attack ] p =', self.p, self.xi)
 
         sub_dataset = []
-        for cur_img in tqdm(dataset):
+        for cur_img in tqdm(dataset_loader(dataset)):
             if len(sub_dataset) < batch_size:
                 sub_dataset.append(cur_img)
             else:

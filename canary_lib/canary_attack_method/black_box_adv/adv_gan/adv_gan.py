@@ -40,7 +40,7 @@ class AdvGan():
         self.pretrained_G = None
 
     @sefi_component.attack_init(name="AdvGan")
-    def universal_perturbation(self, dataset, batch_size, model_name):
+    def universal_perturbation(self, dataset, dataset_loader, batch_size, model_name):
         self.netG_file_name = self.models_path + "netG_epoch_{}_{}.pth".format(self.epochs, model_name)
         if os.path.exists(self.netG_file_name):
             return
@@ -51,7 +51,7 @@ class AdvGan():
                                box_min=self.clip_min,
                                box_max=self.clip_max)
 
-        advGAN.train(dataset, batch_size, self.epochs, netG_file_name=self.netG_file_name)
+        advGAN.train(dataset_loader(dataset), batch_size, self.epochs, netG_file_name=self.netG_file_name)
 
     @sefi_component.attack(name="AdvGan", is_inclass=True, support_model=[])
     def attack(self, imgs, ori_labels, tlabels=None):
