@@ -59,7 +59,7 @@ def adv_dataset_single_image_reader(adv_file_log, adv_img_type, is_gray=False):
 
 def get_adv_img(adv_img_id, adv_img_type, is_gray, disable_memory_cache=False, trans=False):
     # 若禁用内存缓存增强
-    if not config_manager.config.get("system", {}).get("use_file_memory_cache", False) or disable_memory_cache:
+    if not config_manager.config.get("system", {}).get("use_file_memory_cache", False) or disable_memory_cache or trans:
         if trans:
             adv_example_file_log = find_adv_trans_file_log_by_id(adv_img_id)
         else:
