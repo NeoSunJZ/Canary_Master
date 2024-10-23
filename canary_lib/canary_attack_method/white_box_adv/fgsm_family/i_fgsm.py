@@ -52,7 +52,7 @@ class I_FGSM():
                                              norm=self.norm,
                                              clip_min=self.clip_min,
                                              clip_max=self.clip_max,
-                                             y=torch.from_numpy(np.array(ori_labels)).to(self.device),
+                                             y=torch.from_numpy(np.array(ori_labels)).to(self.device).to(torch.int64),
                                              targeted=False,
                                              rand_init=self.rand_init,
                                              rand_minmax=None,
