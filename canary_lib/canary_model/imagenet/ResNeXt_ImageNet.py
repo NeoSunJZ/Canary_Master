@@ -5,6 +5,7 @@ from torchvision.models import ResNeXt101_64X4D_Weights
 from torchvision.transforms import Normalize
 
 from canary_sefi.core.component.component_decorator import SEFIComponent
+from canary_sefi.core.component.component_enum import SubComponentType, ComponentType
 
 sefi_component = SEFIComponent()
 
@@ -17,3 +18,8 @@ def create_model(run_device):
         norm_layer,
         models.resnext101_64x4d(weights=ResNeXt101_64X4D_Weights.IMAGENET1K_V1)).to(run_device).eval()
     return resnext_model.eval()
+
+@sefi_component.util(util_type=SubComponentType.MODEL_TARGET_LAYERS_GETTER, util_target=ComponentType.MODEL, name="ResNeXt(ImageNet)")
+def target_layers_getter(model):
+    target_layers = [model[1].layer4]
+    return target_layers, None
