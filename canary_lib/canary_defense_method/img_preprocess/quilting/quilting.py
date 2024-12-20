@@ -4,9 +4,9 @@ from sklearn.cluster import KMeans
 from torchvision.transforms import ToTensor
 
 
-def quilting(image, quilting_size=2, kemeans=16):
+def quilting(image, quilting_size=2, kmeans=16):
     M = quilting_size
-    K = kemeans
+    K = kmeans
     image = image.numpy()
     image = image.astype(np.uint8)
     image = Image.fromarray(image)
@@ -38,7 +38,7 @@ def quilting(image, quilting_size=2, kemeans=16):
     out_image = Image.new('RGB', (width, height))
     for i in range(NX):
         for j in range(NY):
-            patch_index = i * NX + j
+            patch_index = i * NY + j
             label = labels[patch_index]
             centroid_patch = centroids[label].reshape((M, M, 3)).astype('uint8')
             centroid_image = Image.fromarray(centroid_patch)
